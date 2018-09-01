@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+
+   <extension
+         point="org.eclipse.ui.commands">
+      <category
+            id="strongpoint-sdfcli.commands.category"
+            name="Sample Category">
+      </category>
+      <command
+            categoryId="strongpoint-sdfcli.commands.category"
+            name="SDFCLI Create Project"
+            id="strongpoint-sdfcli.commands.sampleCommand">
+      </command>
+   </extension>
+   <extension
+         point="org.eclipse.ui.handlers">
+      <handler
+            class="org.strongpoint.sdfcli.plugin.handlers.SdfcliHandler"
+            commandId="strongpoint-sdfcli.commands.sampleCommand">
+      </handler>
+   </extension>
+   <extension
+         point="org.eclipse.ui.bindings">
+      <key
+            commandId="strongpoint-sdfcli.commands.sampleCommand"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            contextId="org.eclipse.ui.contexts.window"
+            sequence="M1+6">
+      </key>
+   </extension>
+   <extension
+         point="org.eclipse.ui.menus">
+      <menuContribution
+            locationURI="menu:org.eclipse.ui.main.menu?after=additions">
+         <menu
+               id="strongpoint-sdfcli.menus.sampleMenu"
+               label="Strongpoint"
+               mnemonic="M">
+            <command
+                  commandId="strongpoint-sdfcli.commands.sampleCommand"
+                  id="strongpoint-sdfcli.menus.sampleCommand"
+                  mnemonic="S">
+            </command>
+         </menu>
+      </menuContribution>
+      <menuContribution
+            locationURI="toolbar:org.eclipse.ui.main.toolbar?after=additions">
+         <toolbar
+               id="strongpoint-sdfcli.toolbars.sampleToolbar">
+            <command
+                  id="strongpoint-sdfcli.toolbars.sampleCommand"
+                  commandId="strongpoint-sdfcli.commands.sampleCommand"
+                  icon="icons/sample.png"
+                  tooltip="Say hello world">
+            </command>
+         </toolbar>
+      </menuContribution>
+   </extension>
+
+</plugin>

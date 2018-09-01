@@ -1,0 +1,9 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Strongpoint-sdfcli
+Bundle-SymbolicName: strongpoint-sdfcli;singleton:=true
+Bundle-Version: 1.0.0.qualifier
+Require-Bundle: org.eclipse.ui,
+ org.eclipse.ui.workbench
+Automatic-Module-Name: strongpoint-sdfcli
+Bundle-RequiredExecutionEnvironment: JavaSE-1.8
