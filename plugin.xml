@@ -52,8 +52,8 @@
             <command
                   id="strongpoint-sdfcli.toolbars.sampleCommand"
                   commandId="strongpoint-sdfcli.commands.sampleCommand"
-                  icon="icons/sample.png"
-                  tooltip="Say hello world">
+                  icon="icons/strpnt.png"
+                  tooltip="Strongpoint SdfCli">
             </command>
          </toolbar>
       </menuContribution>

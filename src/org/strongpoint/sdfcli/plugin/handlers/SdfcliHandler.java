@@ -18,11 +18,11 @@ public class SdfcliHandler extends AbstractHandler {
 		IWorkbenchWindow window = HandlerUtil.getActiveWorkbenchWindowChecked(event);
 		MessageDialog.openInformation(
 				window.getShell(),
-				"Strongpoint-sdfcli",
-				"Hello, Eclipse world");
+				"Strongpoint SDF CLI",
+				"This is a test run!");
         try {
             Runtime runtime = Runtime.getRuntime();
-            Process process = runtime.exec("pwd");
+            Process process = runtime.exec("ls -l");
 
             BufferedReader input = new BufferedReader(new InputStreamReader(process.getInputStream()));
 
