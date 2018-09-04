@@ -4,6 +4,7 @@ Bundle-Name: Strongpoint-sdfcli
 Bundle-SymbolicName: strongpoint-sdfcli;singleton:=true
 Bundle-Version: 1.0.0.qualifier
 Require-Bundle: org.eclipse.ui,
- org.eclipse.ui.workbench
+ org.eclipse.ui.workbench,
+ org.eclipse.core.runtime;bundle-version="3.14.0"
 Automatic-Module-Name: strongpoint-sdfcli
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
