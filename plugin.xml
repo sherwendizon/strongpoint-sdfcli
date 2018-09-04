@@ -10,9 +10,19 @@
       </category>
       <command
             categoryId="strongpoint-sdfcli.commands.category"
-            name="SDFCLI Create Project"
+            name="Create Project"
             id="strongpoint-sdfcli.commands.sampleCommand">
       </command>
+      <command
+            categoryId="strongpoint-sdfcli.commands.category"
+            name="Deploy"
+            id="strongpoint-sdfcli.commands.deployCommand">
+      </command>
+      <command
+            categoryId="strongpoint-sdfcli.commands.category"
+            name="Impact Analysis"
+            id="strongpoint-sdfcli.commands.impactAnalysisCommand">
+      </command>            
    </extension>
    <extension
          point="org.eclipse.ui.handlers">
@@ -20,6 +30,14 @@
             class="org.strongpoint.sdfcli.plugin.handlers.SdfcliHandler"
             commandId="strongpoint-sdfcli.commands.sampleCommand">
       </handler>
+      <handler
+            class="org.strongpoint.sdfcli.plugin.handlers.SdfcliDeployHandler"
+            commandId="strongpoint-sdfcli.commands.deployCommand">
+      </handler>
+      <handler
+            class="org.strongpoint.sdfcli.plugin.handlers.SdfcliImpactAnalysisHandler"
+            commandId="strongpoint-sdfcli.commands.impactAnalysisCommand">
+      </handler>            
    </extension>
    <extension
          point="org.eclipse.ui.bindings">
@@ -29,6 +47,18 @@
             contextId="org.eclipse.ui.contexts.window"
             sequence="M1+6">
       </key>
+      <key
+            commandId="strongpoint-sdfcli.commands.deployCommand"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            contextId="org.eclipse.ui.contexts.window"
+            sequence="M1+6">
+      </key>
+      <key
+            commandId="strongpoint-sdfcli.commands.impactAnalysisCommand"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            contextId="org.eclipse.ui.contexts.window"
+            sequence="M1+6">
+      </key>            
    </extension>
    <extension
          point="org.eclipse.ui.menus">
@@ -43,6 +73,16 @@
                   id="strongpoint-sdfcli.menus.sampleCommand"
                   mnemonic="S">
             </command>
+            <command
+                  commandId="strongpoint-sdfcli.commands.deployCommand"
+                  id="strongpoint-sdfcli.menus.deployCommand"
+                  mnemonic="D">
+            </command>
+            <command
+                  commandId="strongpoint-sdfcli.commands.impactAnalysisCommand"
+                  id="strongpoint-sdfcli.menus.impactAnalysisCommand"
+                  mnemonic="I">
+            </command>                        
          </menu>
       </menuContribution>
       <menuContribution
@@ -53,7 +93,7 @@
                   id="strongpoint-sdfcli.toolbars.sampleCommand"
                   commandId="strongpoint-sdfcli.commands.sampleCommand"
                   icon="icons/strpnt.png"
-                  tooltip="Strongpoint SdfCli">
+                  tooltip="Strongpoint">
             </command>
          </toolbar>
       </menuContribution>
