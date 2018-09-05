@@ -116,7 +116,7 @@ public class SdfcliImpactAnalysisHandler extends AbstractHandler {
     	streamOut.println("Not Safe:");    	
     	streamOut.println("    - Script ID: " + "customscript_flo_notsafetrigger");
     	streamOut.println("    - Name: " + "Strongpoint Not Safe Trigger Script");
-    	streamOut.println("    - Warning: " + "RECENTLY USED");
+    	streamOut.println("    - Warning: " + "Dependent record not include in the project");
     	streamOut.println("    - Impacted:");
     	streamOut.println("        - Script ID: " + "customrecord1");
     	streamOut.println("        - Name: " + "Record 1");
@@ -129,7 +129,7 @@ public class SdfcliImpactAnalysisHandler extends AbstractHandler {
     	streamOut.println();    	
     	streamOut.println("    - Script ID: " + "customsearch_flo_testsearch");
     	streamOut.println("    - Name: " + "Strongpoint Test Search");
-    	streamOut.println("    - Warning: " + "RECENTLY USED");
+    	streamOut.println("    - Warning: " + "Dependent record not include in the project");
     	streamOut.println("    - Impacted:");
     	streamOut.println("        - Script ID: " + "customrecord1");
     	streamOut.println("        - Name: " + "Record 1");
