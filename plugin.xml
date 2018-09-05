@@ -15,6 +15,11 @@
       </command>
       <command
             categoryId="strongpoint-sdfcli.commands.category"
+            name="Create Change Request"
+            id="strongpoint-sdfcli.commands.createCrCommand">
+      </command>      
+      <command
+            categoryId="strongpoint-sdfcli.commands.category"
             name="Deploy"
             id="strongpoint-sdfcli.commands.deployCommand">
       </command>
@@ -30,6 +35,10 @@
             class="org.strongpoint.sdfcli.plugin.handlers.SdfcliHandler"
             commandId="strongpoint-sdfcli.commands.sampleCommand">
       </handler>
+      <handler
+            class="org.strongpoint.sdfcli.plugin.handlers.SdfcliChangeRequestHandler"
+            commandId="strongpoint-sdfcli.commands.createCrCommand">
+      </handler>      
       <handler
             class="org.strongpoint.sdfcli.plugin.handlers.SdfcliDeployHandler"
             commandId="strongpoint-sdfcli.commands.deployCommand">
@@ -47,6 +56,12 @@
             contextId="org.eclipse.ui.contexts.window"
             sequence="M1+6">
       </key>
+      <key
+            commandId="strongpoint-sdfcli.commands.createCrCommand"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            contextId="org.eclipse.ui.contexts.window"
+            sequence="M1+6">
+      </key>      
       <key
             commandId="strongpoint-sdfcli.commands.deployCommand"
             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
@@ -73,6 +88,11 @@
                   id="strongpoint-sdfcli.menus.sampleCommand"
                   mnemonic="S">
             </command>
+            <command
+                  commandId="strongpoint-sdfcli.commands.createCrCommand"
+                  id="strongpoint-sdfcli.menus.createCrCommand"
+                  mnemonic="R">
+            </command>            
             <command
                   commandId="strongpoint-sdfcli.commands.deployCommand"
                   id="strongpoint-sdfcli.menus.deployCommand"

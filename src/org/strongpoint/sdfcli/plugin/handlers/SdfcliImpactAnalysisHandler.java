@@ -22,9 +22,10 @@ import org.eclipse.ui.console.IConsoleView;
 import org.eclipse.ui.console.MessageConsole;
 import org.eclipse.ui.console.MessageConsoleStream;
 import org.eclipse.ui.handlers.HandlerUtil;
-import org.json.simple.JSONArray;
-import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
+//import org.json.simple.JSONArray;
+//import org.json.simple.JSONObject;
+//import org.json.simple.parser.JSONParser;
+import org.eclipse.ui.internal.console.ConsoleView;
 
 public class SdfcliImpactAnalysisHandler extends AbstractHandler {
 
@@ -32,7 +33,8 @@ public class SdfcliImpactAnalysisHandler extends AbstractHandler {
 	public Object execute(ExecutionEvent event) throws ExecutionException {
 		IWorkbenchWindow window = HandlerUtil.getActiveWorkbenchWindowChecked(event);
 		IWorkbenchPage page = window.getActivePage();
-		MessageConsole myConsole = findConsole("Strongpoint Console");
+		MessageConsole myConsole = findConsole("Impact Analysis");
+		myConsole.clearConsole();
 		MessageConsoleStream out = myConsole.newMessageStream();
 //		out.println("safe: [\\n\" + \n" + 
 //				"				\"		{scriptid: 'customscript_flo_trigger', name: 'Strongpoint Trigger Script'},\\n\" + \n" + 
@@ -56,10 +58,10 @@ public class SdfcliImpactAnalysisHandler extends AbstractHandler {
 		} catch (PartInitException e) {
 			e.printStackTrace();
 		}
-		MessageDialog.openInformation(
-				window.getShell(),
-				"Strongpoint Impact Analysis",
-				"No significant impact to show!");
+//		MessageDialog.openInformation(
+//				window.getShell(),
+//				"Strongpoint Impact Analysis",
+//				"No significant impact to show!");
 		return null;
 	}
 	
@@ -98,48 +100,49 @@ public class SdfcliImpactAnalysisHandler extends AbstractHandler {
 //    }
     
     private void testData(MessageConsoleStream streamOut) {
-    	streamOut.println("safe: [");
-    	streamOut.println("scriptid: " + "customscript_flo_trigger");
-    	streamOut.println("name: " + "Strongpoint Trigger Script");
-    	streamOut.println("scriptid: " + "customsearch_flo_unused");
-    	streamOut.println("name: " + "Strongpoint Unused Search");
-    	streamOut.println("scriptid: " + "customscript123");
-    	streamOut.println("name: " + "Test Script");
-    	streamOut.println("scriptid: " + "customsearch1122");
-    	streamOut.println("name: " + "Test Search");
-    	streamOut.println("]");    	
-    	
-    	streamOut.println("notSafe: [");
-    	
-    	streamOut.println("scriptid: " + "customscript_flo_notsafetrigger");
-    	streamOut.println("name: " + "Strongpoint Not Safe Trigger Script");
-    	streamOut.println("warning: " + "RECENTLY USED");
-    	streamOut.println("impacted: [");
-    	streamOut.println("scriptid: " + "customrecord1");
-    	streamOut.println("name: " + "Record 1");
-    	streamOut.println("scriptid: " + "customrecord2");
-    	streamOut.println("name: " + "Record 2");
-    	streamOut.println("scriptid: " + "customrecord3");
-    	streamOut.println("name: " + "Record 3");
-    	streamOut.println("]");
-    	
-    	streamOut.println("scriptid: " + "customsearch_flo_testsearch");
-    	streamOut.println("name: " + "Strongpoint Test Search");
-    	streamOut.println("warning: " + "RECENTLY USED");
-    	streamOut.println("impacted: [");
-    	streamOut.println("scriptid: " + "customrecord1");
-    	streamOut.println("name: " + "Record 1");
-    	streamOut.println("scriptid: " + "customrecord2");
-    	streamOut.println("name: " + "Record 2");
-    	streamOut.println("scriptid: " + "customrecord3");
-    	streamOut.println("name: " + "Record 3");
-    	streamOut.println("]");
-    	streamOut.println("]");
-    	
-    	streamOut.println("notActive: [");
-    	streamOut.println("scriptid: " + "customsearch12345");
-    	streamOut.println("name: " + "Test 12345");    	
-    	streamOut.println("]");
+    	streamOut.println("Safe:");
+    	streamOut.println("    - Script ID: " + "customscript_flo_trigger");
+    	streamOut.println("    - Name: " + "Strongpoint Trigger Script");
+    	streamOut.println();
+    	streamOut.println("    - Script ID: " + "customsearch_flo_unused");
+    	streamOut.println("    - Name: " + "Strongpoint Unused Search");
+    	streamOut.println();
+    	streamOut.println("    - Script ID: " + "customscript123");
+    	streamOut.println("    - Name: " + "Test Script");
+    	streamOut.println();
+    	streamOut.println("    - Script ID: " + "customsearch1122");
+    	streamOut.println("    - Name: " + "Test Search");
+    	streamOut.println();
+    	streamOut.println("Not Safe:");    	
+    	streamOut.println("    - Script ID: " + "customscript_flo_notsafetrigger");
+    	streamOut.println("    - Name: " + "Strongpoint Not Safe Trigger Script");
+    	streamOut.println("    - Warning: " + "RECENTLY USED");
+    	streamOut.println("    - Impacted:");
+    	streamOut.println("        - Script ID: " + "customrecord1");
+    	streamOut.println("        - Name: " + "Record 1");
+    	streamOut.println();
+    	streamOut.println("        - Script ID: " + "customrecord2");
+    	streamOut.println("        - Name: " + "Record 2");
+    	streamOut.println();
+    	streamOut.println("        - Script ID: " + "customrecord3");
+    	streamOut.println("        - name: " + "Record 3");
+    	streamOut.println();    	
+    	streamOut.println("    - Script ID: " + "customsearch_flo_testsearch");
+    	streamOut.println("    - Name: " + "Strongpoint Test Search");
+    	streamOut.println("    - Warning: " + "RECENTLY USED");
+    	streamOut.println("    - Impacted:");
+    	streamOut.println("        - Script ID: " + "customrecord1");
+    	streamOut.println("        - Name: " + "Record 1");
+    	streamOut.println();
+    	streamOut.println("        - Script ID: " + "customrecord2");
+    	streamOut.println("        - Name: " + "Record 2");
+    	streamOut.println();
+    	streamOut.println("        - Script ID: " + "customrecord3");
+    	streamOut.println("        - Name: " + "Record 3");
+    	streamOut.println();    	
+    	streamOut.println("Not Active:");
+    	streamOut.println("    - Script ID: " + "customsearch12345");
+    	streamOut.println("    - name: " + "Test 12345");
     	
     }
 
