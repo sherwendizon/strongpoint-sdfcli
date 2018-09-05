@@ -47,7 +47,7 @@ public class SdfcliImpactAnalysisHandler extends AbstractHandler {
 //				"				\"	notActive: [\\n\" + \n" + 
 //				"				\"		{scriptid: 'customsearch12345', name: 'Test 12345'}\\n\" + \n" + 
 //				"				\"	]");
-		readJsonFile(out);
+		testData(out);
 		IConsole console = myConsole;
 		String id = IConsoleConstants.ID_CONSOLE_VIEW;
 		try {
@@ -75,25 +75,72 @@ public class SdfcliImpactAnalysisHandler extends AbstractHandler {
        return myConsole;
     }
     
-    private void readJsonFile(MessageConsoleStream out) {
-        JSONParser parser = new JSONParser();      
-        try {
-             Object obj = parser.parse(new FileReader("/strongpoint-sdfcli/src/org/strongpoint/sdfcli/test/sample_data.json"));
-             JSONObject jsonObject = (JSONObject) obj;
-             String name = (String) jsonObject.get("Name");
-             String author = (String) jsonObject.get("Author");
-             JSONArray companyList = (JSONArray) jsonObject.get("Company List");
-             out.println("Name: " + name);
-             out.println("Author: " + author);
-             out.println("\nCompany List:");
-             Iterator<String> iterator = companyList.iterator();
-             while (iterator.hasNext()) {
-                 out.println(iterator.next());
-             }
- 
-         } catch (Exception e) {
-             e.printStackTrace();
-         }    	
+//    private void readJsonFile(MessageConsoleStream out) {
+//        JSONParser parser = new JSONParser();      
+//        try {
+//             Object obj = parser.parse(new FileReader("/strongpoint-sdfcli/src/org/strongpoint/sdfcli/test/sample_data.json"));
+//             JSONObject jsonObject = (JSONObject) obj;
+////             String name = (String) jsonObject.get("Name");
+////             String author = (String) jsonObject.get("Author");
+////             JSONArray companyList = (JSONArray) jsonObject.get("Company List");
+////             out.println("Name: " + name);
+////             out.println("Author: " + author);
+////             out.println("\nCompany List:");
+////             Iterator<String> iterator = companyList.iterator();
+////             while (iterator.hasNext()) {
+////                 out.println(iterator.next());
+////             }
+//             out.print(jsonObject.toJSONString());
+// 
+//         } catch (Exception e) {
+//             e.printStackTrace();
+//         }    	
+//    }
+    
+    private void testData(MessageConsoleStream streamOut) {
+    	streamOut.println("safe: [");
+    	streamOut.println("scriptid: " + "customscript_flo_trigger");
+    	streamOut.println("name: " + "Strongpoint Trigger Script");
+    	streamOut.println("scriptid: " + "customsearch_flo_unused");
+    	streamOut.println("name: " + "Strongpoint Unused Search");
+    	streamOut.println("scriptid: " + "customscript123");
+    	streamOut.println("name: " + "Test Script");
+    	streamOut.println("scriptid: " + "customsearch1122");
+    	streamOut.println("name: " + "Test Search");
+    	streamOut.println("]");    	
+    	
+    	streamOut.println("notSafe: [");
+    	
+    	streamOut.println("scriptid: " + "customscript_flo_notsafetrigger");
+    	streamOut.println("name: " + "Strongpoint Not Safe Trigger Script");
+    	streamOut.println("warning: " + "RECENTLY USED");
+    	streamOut.println("impacted: [");
+    	streamOut.println("scriptid: " + "customrecord1");
+    	streamOut.println("name: " + "Record 1");
+    	streamOut.println("scriptid: " + "customrecord2");
+    	streamOut.println("name: " + "Record 2");
+    	streamOut.println("scriptid: " + "customrecord3");
+    	streamOut.println("name: " + "Record 3");
+    	streamOut.println("]");
+    	
+    	streamOut.println("scriptid: " + "customsearch_flo_testsearch");
+    	streamOut.println("name: " + "Strongpoint Test Search");
+    	streamOut.println("warning: " + "RECENTLY USED");
+    	streamOut.println("impacted: [");
+    	streamOut.println("scriptid: " + "customrecord1");
+    	streamOut.println("name: " + "Record 1");
+    	streamOut.println("scriptid: " + "customrecord2");
+    	streamOut.println("name: " + "Record 2");
+    	streamOut.println("scriptid: " + "customrecord3");
+    	streamOut.println("name: " + "Record 3");
+    	streamOut.println("]");
+    	streamOut.println("]");
+    	
+    	streamOut.println("notActive: [");
+    	streamOut.println("scriptid: " + "customsearch12345");
+    	streamOut.println("name: " + "Test 12345");    	
+    	streamOut.println("]");
+    	
     }
 
 }
