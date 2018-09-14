@@ -15,7 +15,7 @@
       </command>
       <command
             categoryId="strongpoint-sdfcli.commands.category"
-            name="Create Change Request"
+            name="Request Deployment"
             id="strongpoint-sdfcli.commands.createCrCommand">
       </command>      
       <command

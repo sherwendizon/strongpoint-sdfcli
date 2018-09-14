@@ -26,6 +26,7 @@ import org.eclipse.ui.handlers.HandlerUtil;
 //import org.json.simple.JSONObject;
 //import org.json.simple.parser.JSONParser;
 import org.eclipse.ui.internal.console.ConsoleView;
+import org.strongpoint.sdfcli.plugin.dialogs.DeployDialog;
 
 public class SdfcliImpactAnalysisHandler extends AbstractHandler {
 
@@ -36,19 +37,6 @@ public class SdfcliImpactAnalysisHandler extends AbstractHandler {
 		MessageConsole myConsole = findConsole("Impact Analysis");
 		myConsole.clearConsole();
 		MessageConsoleStream out = myConsole.newMessageStream();
-//		out.println("safe: [\\n\" + \n" + 
-//				"				\"		{scriptid: 'customscript_flo_trigger', name: 'Strongpoint Trigger Script'},\\n\" + \n" + 
-//				"				\"		{scriptid: 'customsearch_flo_unused', name: 'Strongpoint Unused Search'},\\n\" + \n" + 
-//				"				\"		{scriptid: 'customscript123', name: 'Test Script'},\\n\" + \n" + 
-//				"				\"		{scriptid: 'customsearch1122', name: 'Test Search'}\\n\" + \n" + 
-//				"				\"	],\\n\" + \n" + 
-//				"				\"	notSafe: [\\n\" + \n" + 
-//				"				\"		{scriptid: 'customscript_flo_notsafetrigger', name: 'Strongpoint Not Safe Trigger Script', warning: 'RECENTLY USED', impacted: [{scriptid: 'customrecord1', name: 'Record 1'}, {scriptid: 'customrecord2', name: 'Record 2'}, {scriptid: 'customrecord3', name: 'Record 3'}]},\\n\" + \n" + 
-//				"				\"		{scriptid: 'customsearch_flo_testsearch', name: 'Strongpoint Test Search', warning: 'RECENTLY USED', impacted: [{scriptid: 'customrecord1', name: 'Record 1'}, {scriptid: 'customrecord2', name: 'Record 2'}, {scriptid: 'customrecord3', name: 'Record 3'}]}\\n\" + \n" + 
-//				"				\"	],\\n\" + \n" + 
-//				"				\"	notActive: [\\n\" + \n" + 
-//				"				\"		{scriptid: 'customsearch12345', name: 'Test 12345'}\\n\" + \n" + 
-//				"				\"	]");
 		testData(out);
 		IConsole console = myConsole;
 		String id = IConsoleConstants.ID_CONSOLE_VIEW;

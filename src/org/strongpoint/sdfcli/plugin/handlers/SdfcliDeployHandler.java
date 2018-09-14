@@ -6,16 +6,15 @@ import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.handlers.HandlerUtil;
+import org.strongpoint.sdfcli.plugin.dialogs.DeployDialog;
 
 public class SdfcliDeployHandler extends AbstractHandler {
 
 	@Override
 	public Object execute(ExecutionEvent event) throws ExecutionException {
 		IWorkbenchWindow window = HandlerUtil.getActiveWorkbenchWindowChecked(event);
-		MessageDialog.openInformation(
-				window.getShell(),
-				"Strongpoint Deploy",
-				"Deploying Script IDs!");
+		DeployDialog deployDialog = new DeployDialog(window.getShell());
+		deployDialog.open();
 		return null;
 	}
 

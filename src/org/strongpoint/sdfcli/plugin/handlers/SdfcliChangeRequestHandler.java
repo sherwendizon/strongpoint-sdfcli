@@ -15,6 +15,7 @@ import org.eclipse.ui.console.IConsoleView;
 import org.eclipse.ui.console.MessageConsole;
 import org.eclipse.ui.console.MessageConsoleStream;
 import org.eclipse.ui.handlers.HandlerUtil;
+import org.strongpoint.sdfcli.plugin.dialogs.RequestDeploymentDialog;
 
 public class SdfcliChangeRequestHandler extends AbstractHandler{
 
@@ -25,19 +26,8 @@ public class SdfcliChangeRequestHandler extends AbstractHandler{
 		MessageConsole myConsole = findConsole("Change Request Created");
 		myConsole.clearConsole();
 		MessageConsoleStream out = myConsole.newMessageStream();
-//		out.println("safe: [\\n\" + \n" + 
-//				"				\"		{scriptid: 'customscript_flo_trigger', name: 'Strongpoint Trigger Script'},\\n\" + \n" + 
-//				"				\"		{scriptid: 'customsearch_flo_unused', name: 'Strongpoint Unused Search'},\\n\" + \n" + 
-//				"				\"		{scriptid: 'customscript123', name: 'Test Script'},\\n\" + \n" + 
-//				"				\"		{scriptid: 'customsearch1122', name: 'Test Search'}\\n\" + \n" + 
-//				"				\"	],\\n\" + \n" + 
-//				"				\"	notSafe: [\\n\" + \n" + 
-//				"				\"		{scriptid: 'customscript_flo_notsafetrigger', name: 'Strongpoint Not Safe Trigger Script', warning: 'RECENTLY USED', impacted: [{scriptid: 'customrecord1', name: 'Record 1'}, {scriptid: 'customrecord2', name: 'Record 2'}, {scriptid: 'customrecord3', name: 'Record 3'}]},\\n\" + \n" + 
-//				"				\"		{scriptid: 'customsearch_flo_testsearch', name: 'Strongpoint Test Search', warning: 'RECENTLY USED', impacted: [{scriptid: 'customrecord1', name: 'Record 1'}, {scriptid: 'customrecord2', name: 'Record 2'}, {scriptid: 'customrecord3', name: 'Record 3'}]}\\n\" + \n" + 
-//				"				\"	],\\n\" + \n" + 
-//				"				\"	notActive: [\\n\" + \n" + 
-//				"				\"		{scriptid: 'customsearch12345', name: 'Test 12345'}\\n\" + \n" + 
-//				"				\"	]");
+		RequestDeploymentDialog requestDeploymentDialog = new RequestDeploymentDialog(window.getShell());
+		requestDeploymentDialog.open();
 		testData(out);
 		IConsole console = myConsole;
 		String id = IConsoleConstants.ID_CONSOLE_VIEW;
@@ -47,10 +37,7 @@ public class SdfcliChangeRequestHandler extends AbstractHandler{
 		} catch (PartInitException e) {
 			e.printStackTrace();
 		}
-//		MessageDialog.openInformation(
-//				window.getShell(),
-//				"Strongpoint Impact Analysis",
-//				"No significant impact to show!");
+		
 		return null;
 	}
 	
