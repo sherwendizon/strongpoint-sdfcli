@@ -15,6 +15,7 @@ import org.eclipse.ui.console.IConsoleView;
 import org.eclipse.ui.console.MessageConsole;
 import org.eclipse.ui.console.MessageConsoleStream;
 import org.eclipse.ui.handlers.HandlerUtil;
+import org.json.simple.JSONObject;
 import org.strongpoint.sdfcli.plugin.dialogs.RequestDeploymentDialog;
 
 public class SdfcliChangeRequestHandler extends AbstractHandler{
@@ -28,7 +29,7 @@ public class SdfcliChangeRequestHandler extends AbstractHandler{
 		MessageConsoleStream out = myConsole.newMessageStream();
 		RequestDeploymentDialog requestDeploymentDialog = new RequestDeploymentDialog(window.getShell());
 		requestDeploymentDialog.open();
-		testData(out);
+		testData(out, requestDeploymentDialog.getResults());
 		IConsole console = myConsole;
 		String id = IConsoleConstants.ID_CONSOLE_VIEW;
 		try {
@@ -53,7 +54,10 @@ public class SdfcliChangeRequestHandler extends AbstractHandler{
         return myConsole;
      }	
 	
-    private void testData(MessageConsoleStream streamOut) {
+    private void testData(MessageConsoleStream streamOut, JSONObject obj) {
+    	if(obj != null) {
+    		streamOut.print(obj.toJSONString());
+    	}
     	streamOut.println("ID: " + "1912");
     	streamOut.println("Name: " + "Test Create CR from Plugin");
     	streamOut.println("Change Overview: " + "created from eclipse");
@@ -62,7 +66,7 @@ public class SdfcliChangeRequestHandler extends AbstractHandler{
     	streamOut.println("    - Name: " + "Strongpoint Trigger Script");
     	streamOut.println();
     	streamOut.println("    - Scriptid: " + "customsearch_flo_unused");
-    	streamOut.println("    - Name: " + "Strongpoint Unused Search"); 	
+    	streamOut.println("    - Name: " + "Strongpoint Unused Search");
     }	
 
 }

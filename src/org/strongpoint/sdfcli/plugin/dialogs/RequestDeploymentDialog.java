@@ -12,6 +12,8 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
+import org.json.simple.JSONObject;
+import org.strongpoint.sdfcli.plugin.services.HttpRequestDeployment;
 
 public class RequestDeploymentDialog extends TitleAreaDialog {
 	
@@ -19,9 +21,15 @@ public class RequestDeploymentDialog extends TitleAreaDialog {
 	private Text changeTypeText;
 	private Text changeOverviewText;
 	private Combo requestedByCombo;
+	
+	private JSONObject results;
 
 	public RequestDeploymentDialog(Shell parentShell) {
 		super(parentShell);
+	}
+	
+	public JSONObject getResults() {
+		return this.results;
 	}
 
 	@Override
@@ -60,7 +68,9 @@ public class RequestDeploymentDialog extends TitleAreaDialog {
 	
 	@Override
 	protected void okPressed() {
-		System.out.println("OK button is pressed");
+		System.out.println("[Logger]: OK button is pressed");
+		JSONObject obj = new JSONObject();
+		results = HttpRequestDeployment.newInstance().requestDeployment(obj);
 		super.okPressed();
 	}
 	
