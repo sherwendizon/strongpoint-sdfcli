@@ -66,7 +66,7 @@ public class SdfcliChangeRequestHandler extends AbstractHandler{
     	streamOut.println("    - Name: " + "Strongpoint Trigger Script");
     	streamOut.println();
     	streamOut.println("    - Scriptid: " + "customsearch_flo_unused");
-    	streamOut.println("    - Name: " + "Strongpoint Unused Search");
+    	streamOut.println("    - Name: " + "Strongpoint Unused Search");    	
     }	
 
 }

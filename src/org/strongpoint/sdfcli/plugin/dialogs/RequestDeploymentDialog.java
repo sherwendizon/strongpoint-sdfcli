@@ -13,7 +13,7 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 import org.json.simple.JSONObject;
-import org.strongpoint.sdfcli.plugin.services.HttpRequestDeployment;
+import org.strongpoint.sdfcli.plugin.services.HttpRequestDeploymentService;
 
 public class RequestDeploymentDialog extends TitleAreaDialog {
 	
@@ -68,9 +68,9 @@ public class RequestDeploymentDialog extends TitleAreaDialog {
 	
 	@Override
 	protected void okPressed() {
-		System.out.println("[Logger]: OK button is pressed");
+		System.out.println("[Logger] --- Request Deployment OK button is pressed");
 		JSONObject obj = new JSONObject();
-		results = HttpRequestDeployment.newInstance().requestDeployment(obj);
+		results = HttpRequestDeploymentService.newInstance().requestDeployment(obj);
 		super.okPressed();
 	}
 	

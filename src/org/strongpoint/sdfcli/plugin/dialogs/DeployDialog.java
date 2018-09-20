@@ -11,13 +11,21 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
+import org.json.simple.JSONObject;
+import org.strongpoint.sdfcli.plugin.services.DeployCliService;
 
 public class DeployDialog extends TitleAreaDialog{
 	
 	private Text accountIDText;
+	
+	private JSONObject results;
 
 	public DeployDialog(Shell parentShell) {
 		super(parentShell);
+	}
+	
+	public JSONObject getResults() {
+		return this.results;
 	}
 	
 	@Override
@@ -53,7 +61,8 @@ public class DeployDialog extends TitleAreaDialog{
 	
 	@Override
 	protected void okPressed() {
-		System.out.println("OK button is pressed");
+		System.out.println("[Logger] --- Deploy Dialog OK button is pressed");
+		results = DeployCliService.newInstance().deployCliResult(accountIDText.getText());
 		super.okPressed();
 	}
 	

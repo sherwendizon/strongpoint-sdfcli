@@ -11,10 +11,10 @@ import org.apache.http.util.EntityUtils;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
 
-public class HttpRequestDeployment {
+public class HttpRequestDeploymentService {
 	
-	public static HttpRequestDeployment newInstance() {
-		return new HttpRequestDeployment();
+	public static HttpRequestDeploymentService newInstance() {
+		return new HttpRequestDeploymentService();
 	}
 	
 	public JSONObject requestDeployment(JSONObject parameters) {
