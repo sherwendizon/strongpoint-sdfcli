@@ -19,9 +19,15 @@ public class DeployDialog extends TitleAreaDialog{
 	private Text accountIDText;
 	
 	private JSONObject results;
+	
+	private String projectPath;
 
 	public DeployDialog(Shell parentShell) {
 		super(parentShell);
+	}
+	
+	public void setProjectPath(String projectPath) {
+		this.projectPath = projectPath;
 	}
 	
 	public JSONObject getResults() {
@@ -62,7 +68,7 @@ public class DeployDialog extends TitleAreaDialog{
 	@Override
 	protected void okPressed() {
 		System.out.println("[Logger] --- Deploy Dialog OK button is pressed");
-		results = DeployCliService.newInstance().deployCliResult(accountIDText.getText());
+		results = DeployCliService.newInstance().deployCliResult(accountIDText.getText(), this.projectPath);
 		super.okPressed();
 	}
 	

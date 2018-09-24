@@ -13,15 +13,16 @@ public class DeployCliService {
 		return new DeployCliService();
 	}
 	
-	public JSONObject deployCliResult(String accountID) {
+	public JSONObject deployCliResult(String accountID, String projectPath) {
 		JSONObject results = new JSONObject();
 		JSONArray jsonArray = new JSONArray();
 		StringBuffer cmdOutput = new StringBuffer();
-		Runtime runtime = Runtime.getRuntime();
+		String[] commands = { "/bin/bash", "-c", "cd ~ && cd " + projectPath + "/Objects && ls -l" };
+		Runtime changeRootDirectory = Runtime.getRuntime();
 		try {
-			Process process = runtime.exec("ls -l");
-			process.waitFor();
-			BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+			Process changeRootDirectoryProcess = changeRootDirectory.exec(commands);
+			changeRootDirectoryProcess.waitFor();
+			BufferedReader reader = new BufferedReader(new InputStreamReader(changeRootDirectoryProcess.getInputStream()));
 
 			String line = "";			
 			while ((line = reader.readLine())!= null) {
@@ -40,6 +41,6 @@ public class DeployCliService {
 		results.put("results", jsonArray);
 
 		return results;
-	}
+	}	
 
 }

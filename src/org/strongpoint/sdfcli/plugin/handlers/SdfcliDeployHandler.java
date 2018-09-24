@@ -1,10 +1,23 @@
 package org.strongpoint.sdfcli.plugin.handlers;
 
+import java.io.FileNotFoundException;
+
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
+import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IResource;
+import org.eclipse.core.runtime.IPath;
+import org.eclipse.jdt.core.IJavaElement;
+import org.eclipse.jdt.core.IJavaProject;
+import org.eclipse.jdt.internal.core.PackageFragmentRoot;
 import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.jface.viewers.ISelection;
+import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.ui.ISelectionService;
 import org.eclipse.ui.IWorkbenchPage;
+import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.console.ConsolePlugin;
@@ -28,6 +41,8 @@ public class SdfcliDeployHandler extends AbstractHandler {
 		myConsole.clearConsole();
 		MessageConsoleStream out = myConsole.newMessageStream();
 		DeployDialog deployDialog = new DeployDialog(window.getShell());
+		IPath path = getCurrentProject(window).getLocation();
+		deployDialog.setProjectPath(path.toPortableString());
 		deployDialog.open();
 		testData(out, deployDialog.getResults());
 		IConsole console = myConsole;
@@ -57,7 +72,26 @@ public class SdfcliDeployHandler extends AbstractHandler {
     	if(obj != null) {
     		streamOut.print(obj.toJSONString());
     	}
-    }	
+    }
+    
+    public static IProject getCurrentProject(IWorkbenchWindow window){
+        ISelectionService selectionService = window.getSelectionService();    
+        ISelection selection = selectionService.getSelection();    
+        IProject project = null;    
+        if(selection instanceof IStructuredSelection) {    
+            Object element = ((IStructuredSelection)selection).getFirstElement();    
+            if (element instanceof IResource) {    
+                project= ((IResource)element).getProject();    
+            } else if (element instanceof PackageFragmentRoot) {    
+                IJavaProject jProject = ((PackageFragmentRoot)element).getJavaProject();    
+                project = jProject.getProject();    
+            } else if (element instanceof IJavaElement) {    
+                IJavaProject jProject= ((IJavaElement)element).getJavaProject();    
+                project = jProject.getProject();    
+            }    
+        }     
+        return project;    
+    }    
 
 
 }
