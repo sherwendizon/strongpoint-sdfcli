@@ -20,8 +20,7 @@ public class HttpRequestDeploymentService {
 	public JSONObject requestDeployment(JSONObject parameters) {
 		JSONObject results = new JSONObject();
 		
-		// This is a test URL, replace this when Stronpoint URL is provided.
-		String strongpointURL = "http://echo.jsontest.com/key/value/one/two";
+		String strongpointURL = "https://rest.netsuite.com/app/site/hosting/restlet.nl?script=3754&deploy=1";
 		
 		HttpPost httpPost = null;
 		int statusCode;
@@ -30,7 +29,8 @@ public class HttpRequestDeploymentService {
 		try {
 			CloseableHttpClient client = HttpClients.createDefault();
 			httpPost = new HttpPost(strongpointURL);
-//			httpPost.addHeader("Authorization", "authorization_here");
+			httpPost.addHeader("Authorization", "NLAuth nlauth_account=TSTDRV1267181, nlauth_email=joanna.paclibar@strongpoint.io, nlauth_signature=FLODocs1234!, nlauth_role=3");
+			System.out.println(parameters.toJSONString());
 			httpPost.addHeader("Content-type", "application/json");
 			StringEntity stringEntity = new StringEntity(parameters.toJSONString(), ContentType.APPLICATION_JSON);
 			httpPost.setEntity(stringEntity);
@@ -42,7 +42,6 @@ public class HttpRequestDeploymentService {
 			if(statusCode >= 400) {
 				throw new RuntimeException("HTTP Request returns a " +statusCode);
 			}
-			
 			results = (JSONObject) JSONValue.parse(responseBodyStr);
 		} catch (Exception exception) {
 			System.out.println("Request Deployment call error: " +exception.getMessage());

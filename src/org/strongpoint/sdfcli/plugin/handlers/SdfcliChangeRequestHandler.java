@@ -28,6 +28,7 @@ public class SdfcliChangeRequestHandler extends AbstractHandler{
 		myConsole.clearConsole();
 		MessageConsoleStream out = myConsole.newMessageStream();
 		RequestDeploymentDialog requestDeploymentDialog = new RequestDeploymentDialog(window.getShell());
+		requestDeploymentDialog.setWorkbenchWindow(window);
 		requestDeploymentDialog.open();
 		testData(out, requestDeploymentDialog.getResults());
 		IConsole console = myConsole;
