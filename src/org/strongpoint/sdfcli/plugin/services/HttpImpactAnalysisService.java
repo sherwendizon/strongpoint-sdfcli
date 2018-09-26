@@ -22,7 +22,7 @@ public class HttpImpactAnalysisService {
 	public JSONObject getImpactAnalysis(String changeRequestId) {
 		JSONObject results = new JSONObject();
 		
-		String strongpointURL = "https://rest.netsuite.com/app/site/hosting/restlet.nl?script=3755&deploy=1&crId=" + changeRequestId;
+		String strongpointURL = "https://rest.netsuite.com/app/site/hosting/restlet.nl?script=customscript_flo_impact_analysis_restlet&deploy=customdeploy_flo_impact_analysis_restlet&crId=" + changeRequestId;
 		System.out.println(strongpointURL);
 		HttpGet httpGet = null;
 		int statusCode;

@@ -24,7 +24,7 @@ public class HttpRequestDeploymentService {
 	public JSONObject requestDeployment(JSONObject parameters) {
 		JSONObject results = new JSONObject();
 		
-		String strongpointURL = "https://rest.netsuite.com/app/site/hosting/restlet.nl?script=3754&deploy=1";
+		String strongpointURL = "https://rest.netsuite.com/app/site/hosting/restlet.nl?script=customscript_flo_create_cr_restlet&deploy=customdeploy_flo_create_cr_restlet";
 		
 		HttpPost httpPost = null;
 		int statusCode;
