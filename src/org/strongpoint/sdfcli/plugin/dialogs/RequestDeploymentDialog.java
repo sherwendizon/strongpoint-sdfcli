@@ -1,7 +1,9 @@
 package org.strongpoint.sdfcli.plugin.dialogs;
 
 import java.util.List;
+import java.util.Set;
 import java.util.ArrayList;
+import java.util.Iterator;
 
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFolder;
@@ -32,16 +34,20 @@ import org.eclipse.ui.ISelectionService;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
 import org.strongpoint.sdfcli.plugin.services.HttpRequestDeploymentService;
 
 public class RequestDeploymentDialog extends TitleAreaDialog {
 	
 	private Text nameText;
-	private Text changeTypeText;
+	private Combo changeTypeCombo;
 	private Text changeOverviewText;
 	private Combo requestedByCombo;
 	private IWorkbenchWindow window;
 	private String requestedBy;
+	private String changeType;
+	private JSONArray arr;
+    private JSONArray employeeArray;	
 	
 	private JSONObject results;
 
@@ -95,10 +101,24 @@ public class RequestDeploymentDialog extends TitleAreaDialog {
 	protected void okPressed() {
 		System.out.println("[Logger] --- Request Deployment OK button is pressed");
 		JSONObject obj = new JSONObject();
+		int changeTypeInt = 0;
+		int employeeId = 0;
 		obj.put("name", nameText.getText());
-		obj.put("changeType", 8);
+		for (int i = 0; i < arr.size(); i++) {
+        	JSONObject object = (JSONObject) arr.get(i);
+        	if(object.get("text").toString().equalsIgnoreCase(this.changeType)) {
+        		changeTypeInt = (int) object.get("value");
+        	}
+		}
+		obj.put("changeType", changeTypeInt);
 		obj.put("changeOverview", changeOverviewText.getText());
-		obj.put("requestedBy", this.requestedBy);
+		for (int i = 0; i < employeeArray.size(); i++) {
+        	JSONObject object = (JSONObject) employeeArray.get(i);
+        	if(object.get("name").toString().equalsIgnoreCase(this.requestedBy)) {
+        		employeeId = (int) object.get("id");
+        	}
+		}		
+		obj.put("requestedBy", employeeId);
 		obj.put("scriptIds", getScripIds(this.window));
 		results = HttpRequestDeploymentService.newInstance().requestDeployment(obj);
 		super.okPressed();
@@ -119,15 +139,26 @@ public class RequestDeploymentDialog extends TitleAreaDialog {
 	private void createChangeTypeElement(Composite container) {
         Label changeTypeLabel = new Label(container, SWT.NONE);
         changeTypeLabel.setText("Change Type: ");
-
+        
         GridData changeTypeGridData = new GridData();
         changeTypeGridData.grabExcessHorizontalSpace = true;
-        changeTypeGridData.horizontalAlignment = GridData.FILL;
-
-        changeTypeText = new Text(container, SWT.BORDER);
-        changeTypeText.setLayoutData(changeTypeGridData);
-        changeTypeText.setEditable(false);
-        changeTypeText.setEnabled(false);
+        changeTypeGridData.horizontalAlignment = GridData.FILL;        
+        
+        changeTypeCombo = new Combo(container, SWT.DROP_DOWN);
+        changeTypeCombo.setLayoutData(changeTypeGridData);
+        arr = HttpRequestDeploymentService.newInstance().changeTypeTest();
+		ArrayList<String> itemsToDisplay = new ArrayList<String>();
+        for (int i = 0; i < arr.size(); i++) {
+        	JSONObject object = (JSONObject) arr.get(i);
+        	itemsToDisplay.add(object.get("text").toString());
+		}
+        changeTypeCombo.setItems(itemsToDisplay.toArray(new String[arr.size()]));
+        changeTypeCombo.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				changeType = changeTypeCombo.getItem(changeTypeCombo.getSelectionIndex());
+			}
+		});        
 	}
 	
 	private void createChangeOverviewElement(Composite container) {
@@ -150,11 +181,16 @@ public class RequestDeploymentDialog extends TitleAreaDialog {
 
         requestedByCombo = new Combo(container, SWT.DROP_DOWN);
         requestedByCombo.setLayoutData(requestedByGridData);
-        requestedByCombo.setItems(new String [] {"Developer 1", "Developer 2", "Developer 3"});
+        employeeArray = HttpRequestDeploymentService.newInstance().employeeTest();
+		ArrayList<String> itemsToDisplay = new ArrayList<String>();
+        for (int i = 0; i < employeeArray.size(); i++) {
+        	JSONObject object = (JSONObject) employeeArray.get(i);
+        	itemsToDisplay.add(object.get("name").toString());
+		}
+        requestedByCombo.setItems(itemsToDisplay.toArray(new String[employeeArray.size()]));
 		requestedByCombo.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
-				System.out.println(requestedByCombo.getItem(requestedByCombo.getSelectionIndex()));
 				requestedBy = requestedByCombo.getItem(requestedByCombo.getSelectionIndex());
 			}
 		});

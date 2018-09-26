@@ -30,7 +30,7 @@ public class SdfcliChangeRequestHandler extends AbstractHandler{
 		RequestDeploymentDialog requestDeploymentDialog = new RequestDeploymentDialog(window.getShell());
 		requestDeploymentDialog.setWorkbenchWindow(window);
 		requestDeploymentDialog.open();
-		testData(out, requestDeploymentDialog.getResults());
+		data(out, requestDeploymentDialog.getResults());
 		IConsole console = myConsole;
 		String id = IConsoleConstants.ID_CONSOLE_VIEW;
 		try {
@@ -55,19 +55,10 @@ public class SdfcliChangeRequestHandler extends AbstractHandler{
         return myConsole;
      }	
 	
-    private void testData(MessageConsoleStream streamOut, JSONObject obj) {
+    private void data(MessageConsoleStream streamOut, JSONObject obj) {
     	if(obj != null) {
-    		streamOut.print(obj.toJSONString());
-    	}
-    	streamOut.println("ID: " + "1912");
-    	streamOut.println("Name: " + "Test Create CR from Plugin");
-    	streamOut.println("Change Overview: " + "created from eclipse");
-    	streamOut.println("Customizations: ");
-    	streamOut.println("    - Script ID: " + "customscript_flo_trigger");
-    	streamOut.println("    - Name: " + "Strongpoint Trigger Script");
-    	streamOut.println();
-    	streamOut.println("    - Scriptid: " + "customsearch_flo_unused");
-    	streamOut.println("    - Name: " + "Strongpoint Unused Search");    	
+    		streamOut.println("Change Request ID: " + obj.get("id").toString());
+    	}  	
     }	
 
 }
