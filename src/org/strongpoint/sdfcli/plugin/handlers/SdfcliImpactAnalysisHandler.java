@@ -1,16 +1,8 @@
 package org.strongpoint.sdfcli.plugin.handlers;
 
-import java.io.FileReader;
-import java.util.Iterator;
-
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
-import org.eclipse.jface.dialogs.MessageDialog;
-import org.eclipse.jface.resource.ImageDescriptor;
-import org.eclipse.ui.IEditorInput;
-import org.eclipse.ui.IEditorLauncher;
-import org.eclipse.ui.IPersistableElement;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PartInitException;
@@ -22,11 +14,8 @@ import org.eclipse.ui.console.IConsoleView;
 import org.eclipse.ui.console.MessageConsole;
 import org.eclipse.ui.console.MessageConsoleStream;
 import org.eclipse.ui.handlers.HandlerUtil;
-//import org.json.simple.JSONArray;
-//import org.json.simple.JSONObject;
-//import org.json.simple.parser.JSONParser;
-import org.eclipse.ui.internal.console.ConsoleView;
-import org.strongpoint.sdfcli.plugin.dialogs.DeployDialog;
+import org.json.simple.JSONObject;
+import org.strongpoint.sdfcli.plugin.dialogs.ImpactAnalysisDialog;
 
 public class SdfcliImpactAnalysisHandler extends AbstractHandler {
 
@@ -37,7 +26,9 @@ public class SdfcliImpactAnalysisHandler extends AbstractHandler {
 		MessageConsole myConsole = findConsole("Impact Analysis");
 		myConsole.clearConsole();
 		MessageConsoleStream out = myConsole.newMessageStream();
-		testData(out);
+		ImpactAnalysisDialog impactAnalysisDialog = new ImpactAnalysisDialog(window.getShell());
+		impactAnalysisDialog.open();		
+		testData(out, impactAnalysisDialog.getResults());
 		IConsole console = myConsole;
 		String id = IConsoleConstants.ID_CONSOLE_VIEW;
 		try {
@@ -46,10 +37,6 @@ public class SdfcliImpactAnalysisHandler extends AbstractHandler {
 		} catch (PartInitException e) {
 			e.printStackTrace();
 		}
-//		MessageDialog.openInformation(
-//				window.getShell(),
-//				"Strongpoint Impact Analysis",
-//				"No significant impact to show!");
 		return null;
 	}
 	
@@ -87,50 +74,51 @@ public class SdfcliImpactAnalysisHandler extends AbstractHandler {
 //         }    	
 //    }
     
-    private void testData(MessageConsoleStream streamOut) {
-    	streamOut.println("Safe:");
-    	streamOut.println("    - Script ID: " + "customscript_flo_trigger");
-    	streamOut.println("    - Name: " + "Strongpoint Trigger Script");
-    	streamOut.println();
-    	streamOut.println("    - Script ID: " + "customsearch_flo_unused");
-    	streamOut.println("    - Name: " + "Strongpoint Unused Search");
-    	streamOut.println();
-    	streamOut.println("    - Script ID: " + "customscript123");
-    	streamOut.println("    - Name: " + "Test Script");
-    	streamOut.println();
-    	streamOut.println("    - Script ID: " + "customsearch1122");
-    	streamOut.println("    - Name: " + "Test Search");
-    	streamOut.println();
-    	streamOut.println("Not Safe:");    	
-    	streamOut.println("    - Script ID: " + "customscript_flo_notsafetrigger");
-    	streamOut.println("    - Name: " + "Strongpoint Not Safe Trigger Script");
-    	streamOut.println("    - Warning: " + "Dependent record not include in the project");
-    	streamOut.println("    - Impacted:");
-    	streamOut.println("        - Script ID: " + "customrecord1");
-    	streamOut.println("        - Name: " + "Record 1");
-    	streamOut.println();
-    	streamOut.println("        - Script ID: " + "customrecord2");
-    	streamOut.println("        - Name: " + "Record 2");
-    	streamOut.println();
-    	streamOut.println("        - Script ID: " + "customrecord3");
-    	streamOut.println("        - name: " + "Record 3");
-    	streamOut.println();    	
-    	streamOut.println("    - Script ID: " + "customsearch_flo_testsearch");
-    	streamOut.println("    - Name: " + "Strongpoint Test Search");
-    	streamOut.println("    - Warning: " + "Dependent record not include in the project");
-    	streamOut.println("    - Impacted:");
-    	streamOut.println("        - Script ID: " + "customrecord1");
-    	streamOut.println("        - Name: " + "Record 1");
-    	streamOut.println();
-    	streamOut.println("        - Script ID: " + "customrecord2");
-    	streamOut.println("        - Name: " + "Record 2");
-    	streamOut.println();
-    	streamOut.println("        - Script ID: " + "customrecord3");
-    	streamOut.println("        - Name: " + "Record 3");
-    	streamOut.println();    	
-    	streamOut.println("Not Active:");
-    	streamOut.println("    - Script ID: " + "customsearch12345");
-    	streamOut.println("    - name: " + "Test 12345");
+    private void testData(MessageConsoleStream streamOut, JSONObject obj) {
+    	streamOut.print(obj.toJSONString());
+//    	streamOut.println("Safe:");
+//    	streamOut.println("    - Script ID: " + "customscript_flo_trigger");
+//    	streamOut.println("    - Name: " + "Strongpoint Trigger Script");
+//    	streamOut.println();
+//    	streamOut.println("    - Script ID: " + "customsearch_flo_unused");
+//    	streamOut.println("    - Name: " + "Strongpoint Unused Search");
+//    	streamOut.println();
+//    	streamOut.println("    - Script ID: " + "customscript123");
+//    	streamOut.println("    - Name: " + "Test Script");
+//    	streamOut.println();
+//    	streamOut.println("    - Script ID: " + "customsearch1122");
+//    	streamOut.println("    - Name: " + "Test Search");
+//    	streamOut.println();
+//    	streamOut.println("Not Safe:");    	
+//    	streamOut.println("    - Script ID: " + "customscript_flo_notsafetrigger");
+//    	streamOut.println("    - Name: " + "Strongpoint Not Safe Trigger Script");
+//    	streamOut.println("    - Warning: " + "Dependent record not include in the project");
+//    	streamOut.println("    - Impacted:");
+//    	streamOut.println("        - Script ID: " + "customrecord1");
+//    	streamOut.println("        - Name: " + "Record 1");
+//    	streamOut.println();
+//    	streamOut.println("        - Script ID: " + "customrecord2");
+//    	streamOut.println("        - Name: " + "Record 2");
+//    	streamOut.println();
+//    	streamOut.println("        - Script ID: " + "customrecord3");
+//    	streamOut.println("        - name: " + "Record 3");
+//    	streamOut.println();    	
+//    	streamOut.println("    - Script ID: " + "customsearch_flo_testsearch");
+//    	streamOut.println("    - Name: " + "Strongpoint Test Search");
+//    	streamOut.println("    - Warning: " + "Dependent record not include in the project");
+//    	streamOut.println("    - Impacted:");
+//    	streamOut.println("        - Script ID: " + "customrecord1");
+//    	streamOut.println("        - Name: " + "Record 1");
+//    	streamOut.println();
+//    	streamOut.println("        - Script ID: " + "customrecord2");
+//    	streamOut.println("        - Name: " + "Record 2");
+//    	streamOut.println();
+//    	streamOut.println("        - Script ID: " + "customrecord3");
+//    	streamOut.println("        - Name: " + "Record 3");
+//    	streamOut.println();    	
+//    	streamOut.println("Not Active:");
+//    	streamOut.println("    - Script ID: " + "customsearch12345");
+//    	streamOut.println("    - name: " + "Test 12345");
     	
     }
 
