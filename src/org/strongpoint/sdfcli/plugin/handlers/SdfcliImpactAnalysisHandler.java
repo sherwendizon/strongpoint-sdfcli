@@ -14,6 +14,7 @@ import org.eclipse.ui.console.IConsoleView;
 import org.eclipse.ui.console.MessageConsole;
 import org.eclipse.ui.console.MessageConsoleStream;
 import org.eclipse.ui.handlers.HandlerUtil;
+import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.strongpoint.sdfcli.plugin.dialogs.ImpactAnalysisDialog;
 
@@ -28,7 +29,7 @@ public class SdfcliImpactAnalysisHandler extends AbstractHandler {
 		MessageConsoleStream out = myConsole.newMessageStream();
 		ImpactAnalysisDialog impactAnalysisDialog = new ImpactAnalysisDialog(window.getShell());
 		impactAnalysisDialog.open();		
-		testData(out, impactAnalysisDialog.getResults());
+		data(out, impactAnalysisDialog.getResults());
 		IConsole console = myConsole;
 		String id = IConsoleConstants.ID_CONSOLE_VIEW;
 		try {
@@ -52,73 +53,57 @@ public class SdfcliImpactAnalysisHandler extends AbstractHandler {
        return myConsole;
     }
     
-//    private void readJsonFile(MessageConsoleStream out) {
-//        JSONParser parser = new JSONParser();      
-//        try {
-//             Object obj = parser.parse(new FileReader("/strongpoint-sdfcli/src/org/strongpoint/sdfcli/test/sample_data.json"));
-//             JSONObject jsonObject = (JSONObject) obj;
-////             String name = (String) jsonObject.get("Name");
-////             String author = (String) jsonObject.get("Author");
-////             JSONArray companyList = (JSONArray) jsonObject.get("Company List");
-////             out.println("Name: " + name);
-////             out.println("Author: " + author);
-////             out.println("\nCompany List:");
-////             Iterator<String> iterator = companyList.iterator();
-////             while (iterator.hasNext()) {
-////                 out.println(iterator.next());
-////             }
-//             out.print(jsonObject.toJSONString());
-// 
-//         } catch (Exception e) {
-//             e.printStackTrace();
-//         }    	
-//    }
-    
-    private void testData(MessageConsoleStream streamOut, JSONObject obj) {
-    	streamOut.print(obj.toJSONString());
-//    	streamOut.println("Safe:");
-//    	streamOut.println("    - Script ID: " + "customscript_flo_trigger");
-//    	streamOut.println("    - Name: " + "Strongpoint Trigger Script");
-//    	streamOut.println();
-//    	streamOut.println("    - Script ID: " + "customsearch_flo_unused");
-//    	streamOut.println("    - Name: " + "Strongpoint Unused Search");
-//    	streamOut.println();
-//    	streamOut.println("    - Script ID: " + "customscript123");
-//    	streamOut.println("    - Name: " + "Test Script");
-//    	streamOut.println();
-//    	streamOut.println("    - Script ID: " + "customsearch1122");
-//    	streamOut.println("    - Name: " + "Test Search");
-//    	streamOut.println();
-//    	streamOut.println("Not Safe:");    	
-//    	streamOut.println("    - Script ID: " + "customscript_flo_notsafetrigger");
-//    	streamOut.println("    - Name: " + "Strongpoint Not Safe Trigger Script");
-//    	streamOut.println("    - Warning: " + "Dependent record not include in the project");
-//    	streamOut.println("    - Impacted:");
-//    	streamOut.println("        - Script ID: " + "customrecord1");
-//    	streamOut.println("        - Name: " + "Record 1");
-//    	streamOut.println();
-//    	streamOut.println("        - Script ID: " + "customrecord2");
-//    	streamOut.println("        - Name: " + "Record 2");
-//    	streamOut.println();
-//    	streamOut.println("        - Script ID: " + "customrecord3");
-//    	streamOut.println("        - name: " + "Record 3");
-//    	streamOut.println();    	
-//    	streamOut.println("    - Script ID: " + "customsearch_flo_testsearch");
-//    	streamOut.println("    - Name: " + "Strongpoint Test Search");
-//    	streamOut.println("    - Warning: " + "Dependent record not include in the project");
-//    	streamOut.println("    - Impacted:");
-//    	streamOut.println("        - Script ID: " + "customrecord1");
-//    	streamOut.println("        - Name: " + "Record 1");
-//    	streamOut.println();
-//    	streamOut.println("        - Script ID: " + "customrecord2");
-//    	streamOut.println("        - Name: " + "Record 2");
-//    	streamOut.println();
-//    	streamOut.println("        - Script ID: " + "customrecord3");
-//    	streamOut.println("        - Name: " + "Record 3");
-//    	streamOut.println();    	
-//    	streamOut.println("Not Active:");
-//    	streamOut.println("    - Script ID: " + "customsearch12345");
-//    	streamOut.println("    - name: " + "Test 12345");
+    private void data(MessageConsoleStream streamOut, JSONObject obj) {
+    	JSONObject dataObj = (JSONObject) obj.get("data");
+    	// Start NOT SAFE data display
+    	JSONArray notSafeArray = (JSONArray) dataObj.get("notSafe");
+    	streamOut.println("===============================================");
+    	streamOut.println("|    CANNOT BE SAFELY DELETED OR MODIFIED     | ");
+    	streamOut.println("===============================================");
+    	for (int i = 0; i < notSafeArray.size(); i++) {
+			JSONObject impactedObject = (JSONObject) notSafeArray.get(i);
+			JSONArray impactedArray = (JSONArray) impactedObject.get("impacted");
+			JSONObject objectObject = (JSONObject) notSafeArray.get(i);
+			streamOut.println("Object: " + objectObject.get("object").toString());			
+			JSONObject warningObject = (JSONObject) notSafeArray.get(i);			
+			streamOut.println("Warning: " + warningObject.get("warning").toString());
+			streamOut.println("Impacted:");
+			for (int j = 0; j < impactedArray.size(); j++) {
+				JSONObject object = (JSONObject) impactedArray.get(j);
+				streamOut.println("    - Name: " + object.get("name").toString());
+				streamOut.println("    - ID: " + object.get("id").toString());
+			}
+	    	streamOut.println("===============================================");
+		}
+    	// End NOT SAFE data display
+    	// Start SAFE data display
+    	JSONArray safeArray = (JSONArray) dataObj.get("safe");
+    	streamOut.println("===============================================");
+    	streamOut.println("|      CAN BE SAFELY DELETED OR MODIFIED      | ");
+    	streamOut.println("===============================================");
+    	for (int i = 0; i < safeArray.size(); i++) {
+			JSONObject safeObject = (JSONObject) safeArray.get(i);
+			streamOut.println("Name: " + safeObject.get("name").toString());
+			streamOut.println("ID: " + safeObject.get("id").toString());
+		}
+    	streamOut.println("===============================================");
+    	// End SAFE data display
+    	// Start NOT ACTIVE data display
+    	JSONArray notActiveArray = (JSONArray) dataObj.get("notActive");
+    	streamOut.println("===============================================");
+    	streamOut.println("|  INACTIVE CUSTOMIZATIONS (ALREADY DELETED)  | ");
+    	streamOut.println("===============================================");
+    	for (int i = 0; i < notActiveArray.size(); i++) {
+			JSONObject notActiveObject = (JSONObject) notActiveArray.get(i);
+			streamOut.println("Name: " + notActiveObject.get("name").toString());
+			String scriptId = "";
+			if(notActiveObject.get("scriptId") != null) {
+				scriptId = notActiveObject.get("scriptid").toString();
+			}
+			streamOut.println("Script ID: " +  scriptId);
+		}
+    	streamOut.println("===============================================");
+    	// End NOT ACTIVE data display    	
     	
     }
 
