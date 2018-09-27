@@ -16,6 +16,7 @@ import org.eclipse.ui.console.MessageConsoleStream;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
+import org.strongpoint.sdfcli.plugin.dialogs.AuthenticationDialog;
 import org.strongpoint.sdfcli.plugin.dialogs.ImpactAnalysisDialog;
 
 public class SdfcliImpactAnalysisHandler extends AbstractHandler {
@@ -28,6 +29,7 @@ public class SdfcliImpactAnalysisHandler extends AbstractHandler {
 		myConsole.clearConsole();
 		MessageConsoleStream out = myConsole.newMessageStream();
 		ImpactAnalysisDialog impactAnalysisDialog = new ImpactAnalysisDialog(window.getShell());
+		impactAnalysisDialog.setWorkbenchWindow(window);
 		impactAnalysisDialog.open();		
 		data(out, impactAnalysisDialog.getResults());
 		IConsole console = myConsole;
@@ -54,56 +56,60 @@ public class SdfcliImpactAnalysisHandler extends AbstractHandler {
     }
     
     private void data(MessageConsoleStream streamOut, JSONObject obj) {
-    	JSONObject dataObj = (JSONObject) obj.get("data");
-    	// Start NOT SAFE data display
-    	JSONArray notSafeArray = (JSONArray) dataObj.get("notSafe");
-    	streamOut.println("===============================================");
-    	streamOut.println("|    CANNOT BE SAFELY DELETED OR MODIFIED     | ");
-    	streamOut.println("===============================================");
-    	for (int i = 0; i < notSafeArray.size(); i++) {
-			JSONObject impactedObject = (JSONObject) notSafeArray.get(i);
-			JSONArray impactedArray = (JSONArray) impactedObject.get("impacted");
-			JSONObject objectObject = (JSONObject) notSafeArray.get(i);
-			streamOut.println("Object: " + objectObject.get("object").toString());			
-			JSONObject warningObject = (JSONObject) notSafeArray.get(i);			
-			streamOut.println("Warning: " + warningObject.get("warning").toString());
-			streamOut.println("Impacted:");
-			for (int j = 0; j < impactedArray.size(); j++) {
-				JSONObject object = (JSONObject) impactedArray.get(j);
-				streamOut.println("    - Name: " + object.get("name").toString());
-				streamOut.println("    - ID: " + object.get("id").toString());
+    	if(obj.get("data") == null) {
+    		streamOut.println("Error: " + obj.get("error").toString());
+    	} else {
+	    	JSONObject dataObj = (JSONObject) obj.get("data");
+	    	// Start NOT SAFE data display
+	    	JSONArray notSafeArray = (JSONArray) dataObj.get("notSafe");
+	    	streamOut.println("===============================================");
+	    	streamOut.println("|    CANNOT BE SAFELY DELETED OR MODIFIED     | ");
+	    	streamOut.println("===============================================");
+	    	for (int i = 0; i < notSafeArray.size(); i++) {
+				JSONObject impactedObject = (JSONObject) notSafeArray.get(i);
+				JSONArray impactedArray = (JSONArray) impactedObject.get("impacted");
+				JSONObject objectObject = (JSONObject) notSafeArray.get(i);
+				streamOut.println("Object: " + objectObject.get("object").toString());			
+				JSONObject warningObject = (JSONObject) notSafeArray.get(i);			
+				streamOut.println("Warning: " + warningObject.get("warning").toString());
+				streamOut.println("Impacted:");
+				for (int j = 0; j < impactedArray.size(); j++) {
+					JSONObject object = (JSONObject) impactedArray.get(j);
+					streamOut.println("    - Name: " + object.get("name").toString());
+					streamOut.println("    - ID: " + object.get("id").toString());
+				}
+		    	streamOut.println("===============================================");
+			}
+	    	// End NOT SAFE data display
+	    	// Start SAFE data display
+	    	JSONArray safeArray = (JSONArray) dataObj.get("safe");
+	    	streamOut.println("===============================================");
+	    	streamOut.println("|      CAN BE SAFELY DELETED OR MODIFIED      | ");
+	    	streamOut.println("===============================================");
+	    	for (int i = 0; i < safeArray.size(); i++) {
+				JSONObject safeObject = (JSONObject) safeArray.get(i);
+				streamOut.println("Name: " + safeObject.get("name").toString());
+				streamOut.println("ID: " + safeObject.get("id").toString());
 			}
 	    	streamOut.println("===============================================");
-		}
-    	// End NOT SAFE data display
-    	// Start SAFE data display
-    	JSONArray safeArray = (JSONArray) dataObj.get("safe");
-    	streamOut.println("===============================================");
-    	streamOut.println("|      CAN BE SAFELY DELETED OR MODIFIED      | ");
-    	streamOut.println("===============================================");
-    	for (int i = 0; i < safeArray.size(); i++) {
-			JSONObject safeObject = (JSONObject) safeArray.get(i);
-			streamOut.println("Name: " + safeObject.get("name").toString());
-			streamOut.println("ID: " + safeObject.get("id").toString());
-		}
-    	streamOut.println("===============================================");
-    	// End SAFE data display
-    	// Start NOT ACTIVE data display
-    	JSONArray notActiveArray = (JSONArray) dataObj.get("notActive");
-    	streamOut.println("===============================================");
-    	streamOut.println("|  INACTIVE CUSTOMIZATIONS (ALREADY DELETED)  | ");
-    	streamOut.println("===============================================");
-    	for (int i = 0; i < notActiveArray.size(); i++) {
-			JSONObject notActiveObject = (JSONObject) notActiveArray.get(i);
-			streamOut.println("Name: " + notActiveObject.get("name").toString());
-			String scriptId = "";
-			if(notActiveObject.get("scriptId") != null) {
-				scriptId = notActiveObject.get("scriptid").toString();
+	    	// End SAFE data display
+	    	// Start NOT ACTIVE data display
+	    	JSONArray notActiveArray = (JSONArray) dataObj.get("notActive");
+	    	streamOut.println("===============================================");
+	    	streamOut.println("|  INACTIVE CUSTOMIZATIONS (ALREADY DELETED)  | ");
+	    	streamOut.println("===============================================");
+	    	for (int i = 0; i < notActiveArray.size(); i++) {
+				JSONObject notActiveObject = (JSONObject) notActiveArray.get(i);
+				streamOut.println("Name: " + notActiveObject.get("name").toString());
+				String scriptId = "";
+				if(notActiveObject.get("scriptId") != null) {
+					scriptId = notActiveObject.get("scriptid").toString();
+				}
+				streamOut.println("Script ID: " +  scriptId);
 			}
-			streamOut.println("Script ID: " +  scriptId);
-		}
-    	streamOut.println("===============================================");
-    	// End NOT ACTIVE data display    	
+	    	streamOut.println("===============================================");
+	    	// End NOT ACTIVE data display
+    	}
     	
     }
 

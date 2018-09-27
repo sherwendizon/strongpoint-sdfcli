@@ -1,7 +1,20 @@
 package org.strongpoint.sdfcli.plugin.dialogs;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import org.eclipse.core.resources.IContainer;
+import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IResource;
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IPath;
+import org.eclipse.jdt.core.IJavaElement;
+import org.eclipse.jdt.core.IJavaProject;
+import org.eclipse.jdt.internal.core.PackageFragmentRoot;
 import org.eclipse.jface.dialogs.IMessageProvider;
 import org.eclipse.jface.dialogs.TitleAreaDialog;
+import org.eclipse.jface.viewers.ISelection;
+import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridData;
@@ -11,6 +24,8 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
+import org.eclipse.ui.ISelectionService;
+import org.eclipse.ui.IWorkbenchWindow;
 import org.json.simple.JSONObject;
 import org.strongpoint.sdfcli.plugin.services.DeployCliService;
 import org.strongpoint.sdfcli.plugin.services.HttpImpactAnalysisService;
@@ -18,17 +33,24 @@ import org.strongpoint.sdfcli.plugin.services.HttpRequestDeploymentService;
 
 public class ImpactAnalysisDialog extends TitleAreaDialog{
 	
-	private Text changeRequestIDText;
-	
+	private Text changeRequestIDText;	
 	private JSONObject results;
+	private IWorkbenchWindow window;
+	
+	private Shell parentShell;
 
 	public ImpactAnalysisDialog(Shell parentShell) {
 		super(parentShell);
+		this.parentShell = parentShell;
 	}
 	
 	public JSONObject getResults() {
 		return this.results;
 	}
+	
+	public void setWorkbenchWindow(IWorkbenchWindow window) {
+		this.window = window;
+	}	
 	
 	@Override
 	public void create() {
@@ -64,7 +86,7 @@ public class ImpactAnalysisDialog extends TitleAreaDialog{
 	@Override
 	protected void okPressed() {
 		System.out.println("[Logger] --- Impact Analysis Dialog OK button is pressed");
-		results = HttpImpactAnalysisService.newInstance().getImpactAnalysis(changeRequestIDText.getText());
+		results = HttpImpactAnalysisService.newInstance().getImpactAnalysis(changeRequestIDText.getText(), this.parentShell, getScripIds(this.window));
 		super.okPressed();
 	}
 	
@@ -78,6 +100,40 @@ public class ImpactAnalysisDialog extends TitleAreaDialog{
 
         changeRequestIDText = new Text(container, SWT.BORDER);
         changeRequestIDText.setLayoutData(changeRequestIDGridData);
-	}	
+	}
+	
+    public List<String> getScripIds(IWorkbenchWindow window){
+    	List<String> scriptIds = new ArrayList<String>();
+        ISelectionService selectionService = window.getSelectionService();    
+        ISelection selection = selectionService.getSelection();    
+        IProject project = null;    
+        if(selection instanceof IStructuredSelection) {    
+            Object element = ((IStructuredSelection)selection).getFirstElement();    
+            if (element instanceof IResource) {    
+                project= ((IResource)element).getProject();    
+            } else if (element instanceof PackageFragmentRoot) {    
+                IJavaProject jProject = ((PackageFragmentRoot)element).getJavaProject();    
+                project = jProject.getProject();    
+            } else if (element instanceof IJavaElement) {    
+                IJavaProject jProject= ((IJavaElement)element).getJavaProject();    
+                project = jProject.getProject();    
+            }    
+        } 
+        IPath path = project.getRawLocation();
+        IContainer container = project.getWorkspace().getRoot().getContainerForLocation(path);
+        try {
+			IContainer con = (IContainer) container.findMember("Objects");
+			for (IResource res : con.members()) {
+				if (res.getFileExtension().equalsIgnoreCase("xml")) {
+					String id = res.getName().substring(0, res.getName().indexOf("."));
+					scriptIds.add(id);
+				}
+			}
+		} catch (CoreException e) {
+			e.printStackTrace();
+		}
+        
+        return scriptIds;    
+    } 
 
 }
