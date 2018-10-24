@@ -3,6 +3,8 @@ package org.strongpoint.sdfcli.plugin.services;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.util.Map;
 
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -13,23 +15,30 @@ public class DeployCliService {
 		return new DeployCliService();
 	}
 	
-	public JSONObject deployCliResult(String accountID, String projectPath) {
+	public JSONObject deployCliResult(String accountID, String email, String password, String sdfcliPath, String projectPath) {
 		JSONObject results = new JSONObject();
 		JSONArray jsonArray = new JSONArray();
-		StringBuffer cmdOutput = new StringBuffer();
-		String[] commands = { "/bin/bash", "-c", "cd ~ && cd " + projectPath + "/Objects && ls -l" };
+		StringBuffer cmdOutput = new StringBuffer(); 
+		System.out.println("Project Path: " +projectPath);
+		String deployCommand = "printf '" + password +"\n\n' | " +sdfcliPath +"sdfcli deploy -account "+accountID+" -email " + email +" -p "+projectPath+" -role 3 -url system.netsuite.com -l /home/sherwend/sdfcli/test.log";
+//		String deployCommand = sdfcliPath +"sdfcli deploy";
+		String[] commands = { "/bin/bash", "-c", "cd ~ && cd " + projectPath +"/ && " +deployCommand};
 		Runtime changeRootDirectory = Runtime.getRuntime();
 		try {
 			Process changeRootDirectoryProcess = changeRootDirectory.exec(commands);
 			changeRootDirectoryProcess.waitFor();
 			BufferedReader reader = new BufferedReader(new InputStreamReader(changeRootDirectoryProcess.getInputStream()));
-
 			String line = "";			
 			while ((line = reader.readLine())!= null) {
-				cmdOutput.append(line + "\n");
-				JSONObject obj = new JSONObject();
-				obj.put(accountID, cmdOutput.toString());
-				jsonArray.add(obj);			
+				if(!line.contains("[INFO]") && !line.contains("SuiteCloud Development Framework CLI") 
+						&& !line.contains("Using user credentials") && !line.contains("Enter password:Preview")) {
+					JSONObject obj = new JSONObject();
+					obj.put("accountId", accountID);
+					System.out.println(line);
+					cmdOutput.append(line);
+					obj.put("message", line);
+					jsonArray.add(obj);						
+				}		
 			}
 			
 		} catch (IOException e) {

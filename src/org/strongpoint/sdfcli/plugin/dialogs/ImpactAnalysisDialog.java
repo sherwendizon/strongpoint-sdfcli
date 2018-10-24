@@ -56,7 +56,7 @@ public class ImpactAnalysisDialog extends TitleAreaDialog{
 	public void create() {
 		super.create();
 		setTitle("Impact Analysis");
-		setMessage("Impact Analysis on Change Request", IMessageProvider.INFORMATION);
+		setMessage("Get the Impact Analysis by Change Request ID.", IMessageProvider.INFORMATION);
 	}
 	
 	@Override
@@ -86,13 +86,17 @@ public class ImpactAnalysisDialog extends TitleAreaDialog{
 	@Override
 	protected void okPressed() {
 		System.out.println("[Logger] --- Impact Analysis Dialog OK button is pressed");
-		results = HttpImpactAnalysisService.newInstance().getImpactAnalysis(changeRequestIDText.getText(), this.parentShell, getScripIds(this.window));
+		String crID = "13103";
+		if(changeRequestIDText.getText() != null && changeRequestIDText.getText() != "") {
+			crID = changeRequestIDText.getText();
+		}
+		results = HttpImpactAnalysisService.newInstance().getImpactAnalysis(crID, this.parentShell, getScripIds(this.window));
 		super.okPressed();
 	}
 	
 	private void createAccountIDElement(Composite container) {
         Label changeRequestIDLabel = new Label(container, SWT.NONE);
-        changeRequestIDLabel.setText("Change Request ID: ");
+        changeRequestIDLabel.setText("Change Request ID (optional): ");
 
         GridData changeRequestIDGridData = new GridData();
         changeRequestIDGridData.grabExcessHorizontalSpace = true;

@@ -5,6 +5,7 @@ import java.util.Set;
 import java.util.ArrayList;
 import java.util.Iterator;
 
+import org.eclipse.core.internal.runtime.Activator;
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
@@ -67,7 +68,7 @@ public class RequestDeploymentDialog extends TitleAreaDialog {
 	public void create() {
 		super.create();
 		setTitle("Request Deployment");
-		setMessage("Change Request for objects", IMessageProvider.INFORMATION);
+		setMessage("Enter details of your Change Request.", IMessageProvider.INFORMATION);
 	}
 	
 	@Override
@@ -82,7 +83,7 @@ public class RequestDeploymentDialog extends TitleAreaDialog {
         createNameElement(container);
         createChangeTypeElement(container);
         createChangeOverviewElement(container);
-        createRequestedByElement(container);
+//        createRequestedByElement(container);
         
 		return area;
 	}
@@ -112,13 +113,13 @@ public class RequestDeploymentDialog extends TitleAreaDialog {
 		}
 		obj.put("changeType", changeTypeInt);
 		obj.put("changeOverview", changeOverviewText.getText());
-		for (int i = 0; i < employeeArray.size(); i++) {
-        	JSONObject object = (JSONObject) employeeArray.get(i);
-        	if(object.get("name").toString().equalsIgnoreCase(this.requestedBy)) {
-        		employeeId = (int) object.get("id");
-        	}
-		}		
-		obj.put("requestedBy", employeeId);
+//		for (int i = 0; i < employeeArray.size(); i++) {
+//        	JSONObject object = (JSONObject) employeeArray.get(i);
+//        	if(object.get("name").toString().equalsIgnoreCase(this.requestedBy)) {
+//        		employeeId = (int) object.get("id");
+//        	}
+//		}		
+//		obj.put("requestedBy", employeeId);
 		obj.put("scriptIds", getScripIds(this.window));
 		results = HttpRequestDeploymentService.newInstance().requestDeployment(obj);
 		super.okPressed();

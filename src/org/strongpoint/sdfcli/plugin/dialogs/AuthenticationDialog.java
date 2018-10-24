@@ -44,8 +44,8 @@ public class AuthenticationDialog extends TitleAreaDialog{
 	@Override
 	public void create() {
 		super.create();
-		setTitle("Action Authentication");
-		setMessage("This is authenticates the user for every action.", IMessageProvider.INFORMATION);
+		setTitle("Authentication");
+		setMessage("Enter your Netsuite access details.", IMessageProvider.INFORMATION);
 	}
 	
 	@Override

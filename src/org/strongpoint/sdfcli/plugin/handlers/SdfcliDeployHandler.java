@@ -5,6 +5,7 @@ import java.io.FileNotFoundException;
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
+import org.eclipse.core.internal.runtime.Activator;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
@@ -28,8 +29,10 @@ import org.eclipse.ui.console.IConsoleView;
 import org.eclipse.ui.console.MessageConsole;
 import org.eclipse.ui.console.MessageConsoleStream;
 import org.eclipse.ui.handlers.HandlerUtil;
+import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.strongpoint.sdfcli.plugin.dialogs.DeployDialog;
+import org.strongpoint.sdfcli.plugin.services.session.AuthorizationSessionData;
 
 public class SdfcliDeployHandler extends AbstractHandler {
 
@@ -44,7 +47,7 @@ public class SdfcliDeployHandler extends AbstractHandler {
 		IPath path = getCurrentProject(window).getLocation();
 		deployDialog.setProjectPath(path.toPortableString());
 		deployDialog.open();
-		testData(out, deployDialog.getResults());
+		data(out, deployDialog.getResults());
 		IConsole console = myConsole;
 		String id = IConsoleConstants.ID_CONSOLE_VIEW;
 		try {
@@ -68,9 +71,16 @@ public class SdfcliDeployHandler extends AbstractHandler {
         return myConsole;
      }	
 	
-    private void testData(MessageConsoleStream streamOut, JSONObject obj) {
+    private void data(MessageConsoleStream streamOut, JSONObject obj) {
     	if(obj != null) {
-    		streamOut.print(obj.toJSONString());
+    		JSONArray results = (JSONArray) obj.get("results");
+			JSONObject accountIdResults = (JSONObject) results.get(0);
+    		streamOut.println("Account ID: " +accountIdResults.get("accountId"));
+    		streamOut.println("Status: ");
+    		for (int i = 0; i < results.size(); i++) {      		
+        		JSONObject messageResults = (JSONObject) results.get(i);
+        		streamOut.println("    " +messageResults.get("message").toString());	
+			}
     	}
     }
     

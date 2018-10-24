@@ -60,6 +60,7 @@ public class SdfcliImpactAnalysisHandler extends AbstractHandler {
     		streamOut.println("Error: " + obj.get("error").toString());
     	} else {
 	    	JSONObject dataObj = (JSONObject) obj.get("data");
+	    	streamOut.println("Change Request Status: Approved");
 	    	// Start NOT SAFE data display
 	    	JSONArray notSafeArray = (JSONArray) dataObj.get("notSafe");
 	    	streamOut.println("===============================================");

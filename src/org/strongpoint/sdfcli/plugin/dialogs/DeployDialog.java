@@ -18,6 +18,12 @@ public class DeployDialog extends TitleAreaDialog{
 	
 	private Text accountIDText;
 	
+	private Text emailText;
+	
+	private Text passwordText;
+	
+	private Text sdfcliPath;
+	
 	private JSONObject results;
 	
 	private String projectPath;
@@ -51,6 +57,9 @@ public class DeployDialog extends TitleAreaDialog{
         container.setLayout(layout);
         
         createAccountIDElement(container);
+        emailElement(container);
+        passwordElement(container);
+        sdfcliPathElement(container);
         
 		return area;
 	}
@@ -62,13 +71,13 @@ public class DeployDialog extends TitleAreaDialog{
 	
 	@Override
 	protected Point getInitialSize() {
-		return new Point(450, 200);
+		return new Point(450, 400);
 	}
 	
 	@Override
 	protected void okPressed() {
 		System.out.println("[Logger] --- Deploy Dialog OK button is pressed");
-		results = DeployCliService.newInstance().deployCliResult(accountIDText.getText(), this.projectPath);
+		results = DeployCliService.newInstance().deployCliResult(accountIDText.getText(), emailText.getText(), passwordText.getText(), sdfcliPath.getText(), this.projectPath);
 		super.okPressed();
 	}
 	
@@ -82,6 +91,46 @@ public class DeployDialog extends TitleAreaDialog{
 
         accountIDText = new Text(container, SWT.BORDER);
         accountIDText.setLayoutData(accountIDGridData);
+	}
+	
+	private void emailElement(Composite container) {
+        Label emailLabel = new Label(container, SWT.NONE);
+        emailLabel.setText("Email: ");
+
+        GridData emailGridData = new GridData();
+        emailGridData.grabExcessHorizontalSpace = true;
+        emailGridData.horizontalAlignment = GridData.FILL;
+
+        emailText = new Text(container, SWT.BORDER);
+        emailText.setLayoutData(emailGridData);
+	}
+	
+	private void passwordElement(Composite container) {
+        Label passwordLabel = new Label(container, SWT.NONE);
+        passwordLabel.setText("Password: ");
+
+        GridData passwordGridData = new GridData();
+        passwordGridData.grabExcessHorizontalSpace = true;
+        passwordGridData.horizontalAlignment = GridData.FILL;
+
+        passwordText = new Text(container, SWT.BORDER);
+        passwordText.setLayoutData(passwordGridData);
+        passwordText.setEchoChar('*');
+	}
+	
+	private void sdfcliPathElement(Composite container) {
+        Label sdfcliPathLabel = new Label(container, SWT.NONE);
+        sdfcliPathLabel.setText("SDFCLI Path: ");
+
+        GridData sdfcliPathGridData = new GridData();
+        sdfcliPathGridData.grabExcessHorizontalSpace = true;
+        sdfcliPathGridData.horizontalAlignment = GridData.FILL;
+
+        sdfcliPath = new Text(container, SWT.BORDER);
+        sdfcliPath.setLayoutData(sdfcliPathGridData);
+        sdfcliPath.setToolTipText("Path to your SDFCLI executable(i.e /path/to/sdfcli/)");
+        
 	}	
+
 
 }
