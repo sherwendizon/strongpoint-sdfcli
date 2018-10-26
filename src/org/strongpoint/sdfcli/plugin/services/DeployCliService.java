@@ -22,6 +22,7 @@ public class DeployCliService {
 		System.out.println("Project Path: " +projectPath);
 		String deployCommand = "printf '" + password +"\n\n' | " +sdfcliPath +"sdfcli deploy -account "+accountID+" -email " + email +" -p "+projectPath+" -role 3 -url system.netsuite.com -l /home/sherwend/sdfcli/test.log";
 //		String deployCommand = sdfcliPath +"sdfcli deploy";
+		System.out.println(deployCommand);
 		String[] commands = { "/bin/bash", "-c", "cd ~ && cd " + projectPath +"/ && " +deployCommand};
 		Runtime changeRootDirectory = Runtime.getRuntime();
 		try {
@@ -50,6 +51,16 @@ public class DeployCliService {
 		results.put("results", jsonArray);
 
 		return results;
-	}	
+	}
+	
+	public boolean isApprovedDeployment(String accountID, String email, String password, String sdfcliPath, String projectPath) {
+		boolean isApproved = false;
+		return isApproved;
+	}
+	
+	public boolean isApprovedDRDeployment(String accountID, String email, String password, String sdfcliPath, String projectPath) {
+		boolean isApproved = false;
+		return isApproved;
+	}
 
 }

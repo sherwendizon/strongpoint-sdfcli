@@ -40,7 +40,7 @@ public class SdfcliDeployHandler extends AbstractHandler {
 	public Object execute(ExecutionEvent event) throws ExecutionException {
 		IWorkbenchWindow window = HandlerUtil.getActiveWorkbenchWindowChecked(event);
 		IWorkbenchPage page = window.getActivePage();
-		MessageConsole myConsole = findConsole("Objects Deployed");
+		MessageConsole myConsole = findConsole("Deployment");
 		myConsole.clearConsole();
 		MessageConsoleStream out = myConsole.newMessageStream();
 		DeployDialog deployDialog = new DeployDialog(window.getShell());
@@ -74,13 +74,19 @@ public class SdfcliDeployHandler extends AbstractHandler {
     private void data(MessageConsoleStream streamOut, JSONObject obj) {
     	if(obj != null) {
     		JSONArray results = (JSONArray) obj.get("results");
-			JSONObject accountIdResults = (JSONObject) results.get(0);
-    		streamOut.println("Account ID: " +accountIdResults.get("accountId"));
-    		streamOut.println("Status: ");
-    		for (int i = 0; i < results.size(); i++) {      		
-        		JSONObject messageResults = (JSONObject) results.get(i);
-        		streamOut.println("    " +messageResults.get("message").toString());	
-			}
+    		String messageResult = (String) obj.get("message");
+    		if(messageResult != null) {
+    			streamOut.println("Error Message: " +messageResult);
+    		} else {
+    			System.out.println(results);
+    			JSONObject accountIdResults = (JSONObject) results.get(0);
+        		streamOut.println("Account ID: " +accountIdResults.get("accountId"));
+        		streamOut.println("Status: ");
+        		for (int i = 0; i < results.size(); i++) {      		
+            		JSONObject messageResults = (JSONObject) results.get(i);
+            		streamOut.println("    " +messageResults.get("message").toString());	
+    			}    			
+    		}
     	}
     }
     

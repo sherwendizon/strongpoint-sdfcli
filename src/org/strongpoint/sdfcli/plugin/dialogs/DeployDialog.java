@@ -77,7 +77,15 @@ public class DeployDialog extends TitleAreaDialog{
 	@Override
 	protected void okPressed() {
 		System.out.println("[Logger] --- Deploy Dialog OK button is pressed");
-		results = DeployCliService.newInstance().deployCliResult(accountIDText.getText(), emailText.getText(), passwordText.getText(), sdfcliPath.getText(), this.projectPath);
+		boolean isApproved = DeployCliService.newInstance().isApprovedDeployment(accountIDText.getText(), emailText.getText(), passwordText.getText(), sdfcliPath.getText(), this.projectPath);
+		if(!isApproved) {
+			JSONObject messageObject = new JSONObject();
+			//messageObject.put("message", "No approved deployment of the current project.");
+			messageObject.put("message", "Objects in the project changed after approval date, request a new deployment approval.");
+			results = messageObject;
+		} else {
+			results = DeployCliService.newInstance().deployCliResult(accountIDText.getText(), emailText.getText(), passwordText.getText(), sdfcliPath.getText(), this.projectPath);	
+		}	
 		super.okPressed();
 	}
 	
