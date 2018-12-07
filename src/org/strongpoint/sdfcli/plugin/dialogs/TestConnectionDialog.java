@@ -30,17 +30,17 @@ import org.json.simple.JSONObject;
 import org.strongpoint.sdfcli.plugin.services.DeployCliService;
 import org.strongpoint.sdfcli.plugin.services.HttpImpactAnalysisService;
 import org.strongpoint.sdfcli.plugin.services.HttpRequestDeploymentService;
+import org.strongpoint.sdfcli.plugin.services.HttpTestConnectionService;
 
-public class ImpactAnalysisDialog extends TitleAreaDialog{
+public class TestConnectionDialog extends TitleAreaDialog{
 	
-	private Text changeRequestIDText;
 	private Text accountIDText;
 	private JSONObject results;
 	private IWorkbenchWindow window;
 	
 	private Shell parentShell;
 
-	public ImpactAnalysisDialog(Shell parentShell) {
+	public TestConnectionDialog(Shell parentShell) {
 		super(parentShell);
 		this.parentShell = parentShell;
 	}
@@ -56,8 +56,8 @@ public class ImpactAnalysisDialog extends TitleAreaDialog{
 	@Override
 	public void create() {
 		super.create();
-		setTitle("Impact Analysis");
-		setMessage("Get the Impact Analysis of the project.", IMessageProvider.INFORMATION);
+		setTitle("Test Connection");
+		setMessage("Test the connection to a Netsuite account.", IMessageProvider.INFORMATION);
 	}
 	
 	@Override
@@ -70,7 +70,6 @@ public class ImpactAnalysisDialog extends TitleAreaDialog{
         container.setLayout(layout);
         
         createAccountIDElement(container);
-        createChangeRequestIDElement(container);
         
 		return area;
 	}
@@ -82,21 +81,17 @@ public class ImpactAnalysisDialog extends TitleAreaDialog{
 	
 	@Override
 	protected Point getInitialSize() {
-		return new Point(450, 250);
+		return new Point(450, 200);
 	}
 	
 	@Override
 	protected void okPressed() {
-		System.out.println("[Logger] --- Impact Analysis Dialog OK button is pressed");
-		String crID = "";
+		System.out.println("[Logger] --- Test Connection Dialog OK button is pressed");
 		String accountID = "";
-		if(changeRequestIDText.getText() != null && changeRequestIDText.getText() != "") {
-			crID = changeRequestIDText.getText();
-		}
 		if(accountIDText.getText() != null && accountIDText.getText() != "") {
 			accountID = accountIDText.getText();
 		}		
-		results = HttpImpactAnalysisService.newInstance().getImpactAnalysis(crID, this.parentShell, getScripIds(this.window), accountID);
+		results = HttpTestConnectionService.newInstance().getConnectionResults(accountID);
 		super.okPressed();
 	}
 	
@@ -110,52 +105,6 @@ public class ImpactAnalysisDialog extends TitleAreaDialog{
 
         accountIDText = new Text(container, SWT.BORDER);
         accountIDText.setLayoutData(accountIDGridData);
-	}
-	
-	private void createChangeRequestIDElement(Composite container) {
-        Label changeRequestIDLabel = new Label(container, SWT.NONE);
-        changeRequestIDLabel.setText("Change Request ID (optional): ");
-
-        GridData changeRequestIDGridData = new GridData();
-        changeRequestIDGridData.grabExcessHorizontalSpace = true;
-        changeRequestIDGridData.horizontalAlignment = GridData.FILL;
-
-        changeRequestIDText = new Text(container, SWT.BORDER);
-        changeRequestIDText.setLayoutData(changeRequestIDGridData);
-	}
-	
-    public List<String> getScripIds(IWorkbenchWindow window){
-    	List<String> scriptIds = new ArrayList<String>();
-        ISelectionService selectionService = window.getSelectionService();    
-        ISelection selection = selectionService.getSelection();    
-        IProject project = null;    
-        if(selection instanceof IStructuredSelection) {    
-            Object element = ((IStructuredSelection)selection).getFirstElement();    
-            if (element instanceof IResource) {    
-                project= ((IResource)element).getProject();    
-            } else if (element instanceof PackageFragmentRoot) {    
-                IJavaProject jProject = ((PackageFragmentRoot)element).getJavaProject();    
-                project = jProject.getProject();    
-            } else if (element instanceof IJavaElement) {    
-                IJavaProject jProject= ((IJavaElement)element).getJavaProject();    
-                project = jProject.getProject();    
-            }    
-        } 
-        IPath path = project.getRawLocation();
-        IContainer container = project.getWorkspace().getRoot().getContainerForLocation(path);
-        try {
-			IContainer con = (IContainer) container.findMember("Objects");
-			for (IResource res : con.members()) {
-				if (res.getFileExtension().equalsIgnoreCase("xml")) {
-					String id = res.getName().substring(0, res.getName().indexOf("."));
-					scriptIds.add(id);
-				}
-			}
-		} catch (CoreException e) {
-			e.printStackTrace();
-		}
-        
-        return scriptIds;    
-    } 
+	} 
 
 }

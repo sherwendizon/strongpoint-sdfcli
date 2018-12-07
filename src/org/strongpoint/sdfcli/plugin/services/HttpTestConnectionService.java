@@ -1,25 +1,22 @@
 package org.strongpoint.sdfcli.plugin.services;
 
-import java.util.List;
-
 import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
-import org.eclipse.swt.widgets.Shell;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
 import org.strongpoint.sdfcli.plugin.utils.Credentials;
 
-public class HttpImpactAnalysisService {
+public class HttpTestConnectionService {
 	
-	public static HttpImpactAnalysisService newInstance() {
-		return new HttpImpactAnalysisService();
+	public static HttpTestConnectionService newInstance() {
+		return new HttpTestConnectionService();
 	}
 	
-	public JSONObject getImpactAnalysis(String changeRequestId, Shell shell, List<String> getScripIds, String accountID) {
+	public JSONObject getConnectionResults(String accountID) {
 		String email = "joanna.paclibar@strongpoint.io";
 		String password = "FLODocs1234!";
 		JSONObject creds = Credentials.getCredentialsFromFile();
@@ -28,17 +25,7 @@ public class HttpImpactAnalysisService {
 			password = creds.get("password").toString();
 		}
 		JSONObject results = new JSONObject();
-//		ArrayList<String> list = new ArrayList<String>(getScripIds);
-//		String removeWhitespaces = list.toString().substring(1,list.toString().length()-1).replace(" ", "");
-		String removeWhitespaces = String.join(",",getScripIds);
-//		String strongpointURL = "https://rest.netsuite.com/app/site/hosting/restlet.nl?script=customscript_flo_impact_analysis_ext_res&deploy=customdeploy_flo_impact_analysis_ext_res&crId=" + changeRequestId/* + "&scriptIds=" + removeWhitespaces*/;
-		String strongpointURL = "";
-		if(changeRequestId != null && !changeRequestId.isEmpty()) {
-			strongpointURL = "https://rest.netsuite.com/app/site/hosting/restlet.nl?script=customscript_flo_impact_analysis_ext_res&deploy=customdeploy_flo_impact_analysis_ext_res&crId=" + changeRequestId;
-		} else {
-			strongpointURL = "https://rest.netsuite.com/app/site/hosting/restlet.nl?script=customscript_flo_impact_analysis_ext_res&deploy=customdeploy_flo_impact_analysis_ext_res&scriptIds=" + removeWhitespaces;
-			System.out.println("IMPACT ANALYSIS SCRIPT ID URL: " +strongpointURL);		
-		}
+		String strongpointURL = "https://rest.netsuite.com/app/site/hosting/restlet.nl?script=customscript_flo_check_connection&deploy=customdeploy_flo_check_connection";
  		System.out.println(strongpointURL);
 		HttpGet httpGet = null;
 		int statusCode;

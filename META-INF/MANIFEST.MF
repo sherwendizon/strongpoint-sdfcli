@@ -26,3 +26,5 @@ Import-Package: org.apache.commons.io;version="2.2.0",
  org.apache.http.impl.client;version="4.5.2",
  org.apache.http.util;version="4.4.6",
  org.json.simple
+Bundle-ClassPath: lib/json-simple-1.1.1.jar,
+ .

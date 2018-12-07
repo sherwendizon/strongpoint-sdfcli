@@ -1,13 +1,9 @@
 package org.strongpoint.sdfcli.plugin.dialogs;
 
-import java.util.List;
-import java.util.Set;
 import java.util.ArrayList;
-import java.util.Iterator;
+import java.util.List;
 
-import org.eclipse.core.internal.runtime.Activator;
 import org.eclipse.core.resources.IContainer;
-import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
@@ -35,7 +31,6 @@ import org.eclipse.ui.ISelectionService;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
 import org.strongpoint.sdfcli.plugin.services.HttpRequestDeploymentService;
 
 public class RequestDeploymentDialog extends TitleAreaDialog {

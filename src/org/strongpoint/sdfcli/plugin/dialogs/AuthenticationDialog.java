@@ -29,12 +29,25 @@ public class AuthenticationDialog extends TitleAreaDialog{
 		super(parentShell);
 	}
 	
+	public void setAccountIdStr(String accountId) {
+		this.accountIdStr = accountId;
+	}
+	
+	
 	public String getAccountIdStr() {
 		return accountIdStr;
 	}
 	
+	public void setEmailStr(String emailStr) {
+		this.emailStr = emailStr;
+	}
+	
 	public String getEmailStr() {
 		return emailStr;
+	}
+	
+	public void setPasswordStr(String passwordStr) {
+		this.passwordStr = passwordStr;
 	}
 	
 	public String getPasswordStr() {
