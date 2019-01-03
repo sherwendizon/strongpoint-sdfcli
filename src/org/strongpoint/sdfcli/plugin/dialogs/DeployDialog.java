@@ -206,62 +206,28 @@ public class DeployDialog extends TitleAreaDialog{
     
     private boolean hasUnsupportedObjects(List<String> scriptIds, JSONObject supportedObjects) {
     	boolean hasUnsupportedObj = false;
+    	
     	JSONArray data = (JSONArray) supportedObjects.get("data");
     	List<String> supportedList = new ArrayList<String>();
 		if (data != null) { 
 			int size = data.size();
-			for (int i = 0 ; i < size ; i++){ 
+			for (int i = 0 ; i < size ; i++){
+				System.out.println("SUPPORTED OBJECT: " +data.get(i).toString());
 				supportedList.add(data.get(i).toString());
 			} 
 		}
 		for (String scriptId : scriptIds) {
-			if(!supportedList.contains(scriptId)) {
-				hasUnsupportedObj = true;
-				break;
+			System.out.println("SCRIPT ID: " +scriptId);
+			for(String supportedObj : supportedList) {
+				System.out.println("HAS : " +supportedObj.contains(scriptId));
+				if(supportedObj.contains(scriptId)) {
+					hasUnsupportedObj = true;
+					break;
+				}				
 			}
 		}
     	
     	return hasUnsupportedObj;
     }
-	
-//	private void emailElement(Composite container) {
-//        Label emailLabel = new Label(container, SWT.NONE);
-//        emailLabel.setText("Email: ");
-//
-//        GridData emailGridData = new GridData();
-//        emailGridData.grabExcessHorizontalSpace = true;
-//        emailGridData.horizontalAlignment = GridData.FILL;
-//
-//        emailText = new Text(container, SWT.BORDER);
-//        emailText.setLayoutData(emailGridData);
-//	}
-//	
-//	private void passwordElement(Composite container) {
-//        Label passwordLabel = new Label(container, SWT.NONE);
-//        passwordLabel.setText("Password: ");
-//
-//        GridData passwordGridData = new GridData();
-//        passwordGridData.grabExcessHorizontalSpace = true;
-//        passwordGridData.horizontalAlignment = GridData.FILL;
-//
-//        passwordText = new Text(container, SWT.BORDER);
-//        passwordText.setLayoutData(passwordGridData);
-//        passwordText.setEchoChar('*');
-//	}
-//	
-//	private void sdfcliPathElement(Composite container) {
-//        Label sdfcliPathLabel = new Label(container, SWT.NONE);
-//        sdfcliPathLabel.setText("SDFCLI Path: ");
-//
-//        GridData sdfcliPathGridData = new GridData();
-//        sdfcliPathGridData.grabExcessHorizontalSpace = true;
-//        sdfcliPathGridData.horizontalAlignment = GridData.FILL;
-//
-//        sdfcliPath = new Text(container, SWT.BORDER);
-//        sdfcliPath.setLayoutData(sdfcliPathGridData);
-//        sdfcliPath.setToolTipText("Path to your SDFCLI executable(i.e /path/to/sdfcli/)");
-//        
-//	}	
-
 
 }
