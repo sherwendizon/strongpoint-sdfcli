@@ -12,11 +12,13 @@ import org.json.simple.parser.ParseException;
 
 public class Credentials {
 	
+	private static final String userHomePath = System.getProperty("user.home");
+	
 	public static final JSONObject getCredentialsFromFile() {
 //		JSONParser parser = new JSONParser();
 		StringBuilder contents = new StringBuilder();
 		String str;
-		File file = new File("/home/sherwend/sdfcli/credentials.json");
+		File file = new File(userHomePath + "/sdfcli/credentials.json");
 		JSONObject credentials = null;
 		try {
 			BufferedReader reader = new BufferedReader(new FileReader(file));

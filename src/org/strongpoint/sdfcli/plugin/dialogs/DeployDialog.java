@@ -17,9 +17,12 @@ import org.eclipse.jface.dialogs.TitleAreaDialog;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
@@ -30,17 +33,12 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.strongpoint.sdfcli.plugin.services.DeployCliService;
+import org.strongpoint.sdfcli.plugin.utils.Accounts;
 import org.strongpoint.sdfcli.plugin.utils.Credentials;
 
 public class DeployDialog extends TitleAreaDialog{
 	
-	private Text accountIDText;
-	
-//	private Text emailText;
-//	
-//	private Text passwordText;
-//	
-//	private Text sdfcliPath;
+	private Combo accountIDText;
 	
 	private JSONObject results;
 	
@@ -49,6 +47,8 @@ public class DeployDialog extends TitleAreaDialog{
 	private IWorkbenchWindow window;
 	
 	private Shell parentShell;
+	
+	private String selectedValue = "";
 
 	public DeployDialog(Shell parentShell) {
 		super(parentShell);
@@ -84,9 +84,6 @@ public class DeployDialog extends TitleAreaDialog{
         container.setLayout(layout);
         
         createAccountIDElement(container);
-//        emailElement(container);
-//        passwordElement(container);
-//        sdfcliPathElement(container);
         
 		return area;
 	}
@@ -121,10 +118,11 @@ public class DeployDialog extends TitleAreaDialog{
 			params = String.join(",",getScripIds(window));
 			System.out.println("DEPLOY SCRIPT IDS: " +params);
 		}
-		JSONObject approveResult = DeployCliService.newInstance().isApprovedDeployment(parentShell, accountIDText.getText(), emailCred, passwordCred, params);
+		String accountId = selectedValue.substring(selectedValue.indexOf("(") + 1, selectedValue.indexOf(")"));
+		JSONObject approveResult = DeployCliService.newInstance().isApprovedDeployment(parentShell, accountId, emailCred, passwordCred, params);
 		System.out.println("Deploy Dialog results: " +approveResult.toJSONString());
 		JSONObject data = (JSONObject) approveResult.get("data");
-		JSONObject supportedObjs = DeployCliService.newInstance().getSupportedObjects(accountIDText.getText(), emailCred, passwordCred);
+		JSONObject supportedObjs = DeployCliService.newInstance().getSupportedObjects(accountId, emailCred, passwordCred);
 		if(hasUnsupportedObjects(getScripIds(this.window), supportedObjs)) {
 			MessageDialog.openWarning(this.parentShell, "Unsupported Objects Detected", "Please manually complete and validate using Environment Compare.");
 		} else {
@@ -133,7 +131,7 @@ public class DeployDialog extends TitleAreaDialog{
 				messageObject.put("message", approveResult.get("message").toString());
 				results = messageObject;
 			} else {
-				results = DeployCliService.newInstance().deployCliResult(accountIDText.getText(), emailCred, passwordCred, pathCred, this.projectPath);	
+				results = DeployCliService.newInstance().deployCliResult(accountId, emailCred, passwordCred, pathCred, this.projectPath);	
 			}			
 		}	
 		super.okPressed();
@@ -147,7 +145,21 @@ public class DeployDialog extends TitleAreaDialog{
         accountIDGridData.grabExcessHorizontalSpace = true;
         accountIDGridData.horizontalAlignment = GridData.FILL;
 
-        accountIDText = new Text(container, SWT.BORDER);
+        accountIDText = new Combo(container, SWT.BORDER);
+        accountIDText.setItems(Accounts.getAccountsStrFromFile());
+        accountIDText.addSelectionListener(new SelectionListener() {
+			
+			@Override
+			public void widgetSelected(SelectionEvent arg0) {
+				selectedValue = accountIDText.getText();
+			}
+			
+			@Override
+			public void widgetDefaultSelected(SelectionEvent arg0) {
+				// TODO Auto-generated method stub
+				
+			}
+		});        
         accountIDText.setLayoutData(accountIDGridData);
 	}
 	

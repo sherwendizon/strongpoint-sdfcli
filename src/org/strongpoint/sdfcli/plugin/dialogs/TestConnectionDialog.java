@@ -16,9 +16,12 @@ import org.eclipse.jface.dialogs.TitleAreaDialog;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
@@ -31,12 +34,14 @@ import org.strongpoint.sdfcli.plugin.services.DeployCliService;
 import org.strongpoint.sdfcli.plugin.services.HttpImpactAnalysisService;
 import org.strongpoint.sdfcli.plugin.services.HttpRequestDeploymentService;
 import org.strongpoint.sdfcli.plugin.services.HttpTestConnectionService;
+import org.strongpoint.sdfcli.plugin.utils.Accounts;
 
 public class TestConnectionDialog extends TitleAreaDialog{
 	
-	private Text accountIDText;
+	private Combo accountIDText;
 	private JSONObject results;
 	private IWorkbenchWindow window;
+	private String selectedValue = "";
 	
 	private Shell parentShell;
 
@@ -88,8 +93,8 @@ public class TestConnectionDialog extends TitleAreaDialog{
 	protected void okPressed() {
 		System.out.println("[Logger] --- Test Connection Dialog OK button is pressed");
 		String accountID = "";
-		if(accountIDText.getText() != null && accountIDText.getText() != "") {
-			accountID = accountIDText.getText();
+		if(selectedValue != null && selectedValue != "") {
+			accountID = selectedValue.substring(selectedValue.indexOf("(") + 1, selectedValue.indexOf(")"));
 		}		
 		results = HttpTestConnectionService.newInstance().getConnectionResults(accountID);
 		super.okPressed();
@@ -103,7 +108,21 @@ public class TestConnectionDialog extends TitleAreaDialog{
         accountIDGridData.grabExcessHorizontalSpace = true;
         accountIDGridData.horizontalAlignment = GridData.FILL;
 
-        accountIDText = new Text(container, SWT.BORDER);
+        accountIDText = new Combo(container, SWT.BORDER);
+        accountIDText.setItems(Accounts.getAccountsStrFromFile());
+        accountIDText.addSelectionListener(new SelectionListener() {
+			
+			@Override
+			public void widgetSelected(SelectionEvent arg0) {
+				selectedValue = accountIDText.getText();
+			}
+			
+			@Override
+			public void widgetDefaultSelected(SelectionEvent arg0) {
+				// TODO Auto-generated method stub
+				
+			}
+		});          
         accountIDText.setLayoutData(accountIDGridData);
 	} 
 

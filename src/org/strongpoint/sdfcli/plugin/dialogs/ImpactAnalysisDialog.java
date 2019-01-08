@@ -16,9 +16,12 @@ import org.eclipse.jface.dialogs.TitleAreaDialog;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
@@ -30,14 +33,15 @@ import org.json.simple.JSONObject;
 import org.strongpoint.sdfcli.plugin.services.DeployCliService;
 import org.strongpoint.sdfcli.plugin.services.HttpImpactAnalysisService;
 import org.strongpoint.sdfcli.plugin.services.HttpRequestDeploymentService;
+import org.strongpoint.sdfcli.plugin.utils.Accounts;
 
 public class ImpactAnalysisDialog extends TitleAreaDialog{
 	
 	private Text changeRequestIDText;
-	private Text accountIDText;
+	private Combo accountIDText;
 	private JSONObject results;
 	private IWorkbenchWindow window;
-	
+	private String selectedValue = "";
 	private Shell parentShell;
 
 	public ImpactAnalysisDialog(Shell parentShell) {
@@ -93,8 +97,8 @@ public class ImpactAnalysisDialog extends TitleAreaDialog{
 		if(changeRequestIDText.getText() != null && changeRequestIDText.getText() != "") {
 			crID = changeRequestIDText.getText();
 		}
-		if(accountIDText.getText() != null && accountIDText.getText() != "") {
-			accountID = accountIDText.getText();
+		if(selectedValue != null && selectedValue != "") {
+			accountID = selectedValue.substring(selectedValue.indexOf("(") + 1, selectedValue.indexOf(")"));
 		}		
 		results = HttpImpactAnalysisService.newInstance().getImpactAnalysis(crID, this.parentShell, getScripIds(this.window), accountID);
 		super.okPressed();
@@ -108,7 +112,21 @@ public class ImpactAnalysisDialog extends TitleAreaDialog{
         accountIDGridData.grabExcessHorizontalSpace = true;
         accountIDGridData.horizontalAlignment = GridData.FILL;
 
-        accountIDText = new Text(container, SWT.BORDER);
+        accountIDText = new Combo(container, SWT.BORDER);
+        accountIDText.setItems(Accounts.getAccountsStrFromFile());
+        accountIDText.addSelectionListener(new SelectionListener() {
+			
+			@Override
+			public void widgetSelected(SelectionEvent arg0) {
+				selectedValue = accountIDText.getText();
+			}
+			
+			@Override
+			public void widgetDefaultSelected(SelectionEvent arg0) {
+				// TODO Auto-generated method stub
+				
+			}
+		});         
         accountIDText.setLayoutData(accountIDGridData);
 	}
 	
