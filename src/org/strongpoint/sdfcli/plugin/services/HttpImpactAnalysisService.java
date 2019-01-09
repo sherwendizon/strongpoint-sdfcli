@@ -20,8 +20,8 @@ public class HttpImpactAnalysisService {
 	}
 	
 	public JSONObject getImpactAnalysis(String changeRequestId, Shell shell, List<String> getScripIds, String accountID) {
-		String email = "joanna.paclibar@strongpoint.io";
-		String password = "FLODocs1234!";
+		String email = "";
+		String password = "";
 		JSONObject creds = Credentials.getCredentialsFromFile();
 		if(creds != null) {
 			email = creds.get("email").toString();

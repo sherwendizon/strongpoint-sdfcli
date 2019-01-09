@@ -95,7 +95,7 @@ public class DeployDialog extends TitleAreaDialog{
 	
 	@Override
 	protected Point getInitialSize() {
-		return new Point(450, 200);
+		return new Point(450, 210);
 	}
 	
 	@Override
@@ -110,6 +110,10 @@ public class DeployDialog extends TitleAreaDialog{
 			emailCred = creds.get("email").toString();
 			passwordCred = creds.get("password").toString();
 			pathCred = creds.get("path").toString();
+		} else {
+			if(!Credentials.isCredentialsFileExists()) {
+				MessageDialog.openError(this.parentShell, "No user credentials found", "Please set user credentials in Strongpoint > Credentials Settings menu");
+			}
 		}
 		String crId = getCurrentProject(window).getName().substring(0, getCurrentProject(window).getName().indexOf("_"));
 		if(crId != null && !crId.isEmpty()) {

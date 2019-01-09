@@ -15,18 +15,19 @@ public class Credentials {
 	private static final String userHomePath = System.getProperty("user.home");
 	
 	public static final JSONObject getCredentialsFromFile() {
-//		JSONParser parser = new JSONParser();
 		StringBuilder contents = new StringBuilder();
 		String str;
 		File file = new File(userHomePath + "/sdfcli/credentials.json");
 		JSONObject credentials = null;
 		try {
-			BufferedReader reader = new BufferedReader(new FileReader(file));
-			while((str = reader.readLine())  != null) {
-				contents.append(str);
+			if(file.exists() && !file.isDirectory()) {
+				BufferedReader reader = new BufferedReader(new FileReader(file));
+				while((str = reader.readLine())  != null) {
+					contents.append(str);
+				}
+				System.out.println("FILE Contents: " +contents.toString());
+				credentials = (JSONObject) new JSONParser().parse(contents.toString());	
 			}
-			System.out.println("FILE Contents: " +contents.toString());
-			credentials = (JSONObject) new JSONParser().parse(contents.toString());
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 		} catch (IOException e) {
@@ -34,16 +35,16 @@ public class Credentials {
 		} catch (ParseException e) {
 			e.printStackTrace();
 		}
-		//		try {
-//			credentials = (JSONObject) parser.parse(new FileReader("/home/sherwend/sdfcli/credentials.json")); // this needs to be updated, not hardcoded
-//		} catch (FileNotFoundException e) {
-//			e.printStackTrace();
-//		} catch (IOException e) {
-//			e.printStackTrace();
-//		} catch (ParseException e) {
-//			e.printStackTrace();
-//		}
 		return credentials;
+	}
+	
+	public static final boolean isCredentialsFileExists() {
+		File file = new File(userHomePath + "/sdfcli/credentials.json");
+		if(file.exists() && !file.isDirectory()) {
+			return true;
+		} else {
+			return false;
+		}
 	}
 
 }

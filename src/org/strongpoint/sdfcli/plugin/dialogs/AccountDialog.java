@@ -61,7 +61,7 @@ public class AccountDialog extends TitleAreaDialog{
 	public void create() {
 		super.create();
 		setTitle("Account Settings");
-		setMessage("Add/Edit Account", IMessageProvider.INFORMATION);
+		setMessage("Add/Edit Netsuite Accounts", IMessageProvider.INFORMATION);
 	}
 	
 	@Override

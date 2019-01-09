@@ -7,16 +7,17 @@ import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.strongpoint.sdfcli.plugin.dialogs.AccountDialog;
+import org.strongpoint.sdfcli.plugin.dialogs.CredentialsDialog;
 
-public class SdfcliAddAccountHandler extends AbstractHandler {
+public class SdfcliCredentialsHandler extends AbstractHandler {
 
 	@Override
 	public Object execute(ExecutionEvent event) throws ExecutionException {
 		IWorkbenchWindow window = HandlerUtil.getActiveWorkbenchWindowChecked(event);
 		IWorkbenchPage page = window.getActivePage();
-		AccountDialog accountDialog = new AccountDialog(window.getShell());
-		accountDialog.setWorkbenchWindow(window);
-		accountDialog.open();
+		CredentialsDialog credentialsDialog = new CredentialsDialog(window.getShell());
+		credentialsDialog.setWorkbenchWindow(window);
+		credentialsDialog.open();
 		return null;
 	}
 }

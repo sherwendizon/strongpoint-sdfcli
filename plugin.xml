@@ -37,7 +37,12 @@
             categoryId="strongpoint-sdfcli.commands.category"
             name="Account Settings"
             id="strongpoint-sdfcli.commands.addAccountCommand">
-      </command>                          
+      </command>
+      <command
+            categoryId="strongpoint-sdfcli.commands.category"
+            name="Credentials Settings"
+            id="strongpoint-sdfcli.commands.credentialsCommand">
+      </command>                                
    </extension>
    <extension
          point="org.eclipse.ui.handlers">
@@ -64,7 +69,11 @@
       <handler
             class="org.strongpoint.sdfcli.plugin.handlers.SdfcliAddAccountHandler"
             commandId="strongpoint-sdfcli.commands.addAccountCommand">
-      </handler>                         
+      </handler>
+      <handler
+            class="org.strongpoint.sdfcli.plugin.handlers.SdfcliCredentialsHandler"
+            commandId="strongpoint-sdfcli.commands.credentialsCommand">
+      </handler>                               
    </extension>
    <extension
          point="org.eclipse.ui.bindings">
@@ -103,7 +112,13 @@
             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
             contextId="org.eclipse.ui.contexts.window"
             sequence="M1+6">
-      </key>                        
+      </key>
+      <key
+            commandId="strongpoint-sdfcli.commands.credentialsCommand"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            contextId="org.eclipse.ui.contexts.window"
+            sequence="M1+6">
+      </key>                              
    </extension>
    <extension
          point="org.eclipse.ui.menus">
@@ -136,13 +151,18 @@
             <command
                   commandId="strongpoint-sdfcli.commands.testConnectionCommand"
                   id="strongpoint-sdfcli.menus.testConnectionCommand"
-                  mnemonic="I">
+                  mnemonic="T">
             </command>
             <command
                   commandId="strongpoint-sdfcli.commands.addAccountCommand"
                   id="strongpoint-sdfcli.menus.addAccountCommand"
-                  mnemonic="I">
-            </command>                                                 
+                  mnemonic="A">
+            </command>
+            <command
+                  commandId="strongpoint-sdfcli.commands.credentialsCommand"
+                  id="strongpoint-sdfcli.menus.credentialsCommand"
+                  mnemonic="C">
+            </command>                                                             
          </menu>
       </menuContribution>
       <!--<menuContribution

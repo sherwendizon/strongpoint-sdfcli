@@ -30,41 +30,39 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.ISelectionService;
 import org.eclipse.ui.IWorkbenchWindow;
+import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
+import org.strongpoint.sdfcli.plugin.services.AddEditCredentialsService;
 import org.strongpoint.sdfcli.plugin.services.DeployCliService;
-import org.strongpoint.sdfcli.plugin.services.HttpImpactAnalysisService;
-import org.strongpoint.sdfcli.plugin.services.HttpRequestDeploymentService;
-import org.strongpoint.sdfcli.plugin.services.HttpTestConnectionService;
 import org.strongpoint.sdfcli.plugin.utils.Accounts;
 import org.strongpoint.sdfcli.plugin.utils.Credentials;
 
-public class TestConnectionDialog extends TitleAreaDialog{
+public class CredentialsDialog extends TitleAreaDialog{
 	
-	private Combo accountIDText;
-	private JSONObject results;
+	private Text emailText;
+	
+	private Text passwordText;
+	
+	private JSONObject results = null;
+	
 	private IWorkbenchWindow window;
-	private String selectedValue = "";
 	
 	private Shell parentShell;
 
-	public TestConnectionDialog(Shell parentShell) {
+	public CredentialsDialog(Shell parentShell) {
 		super(parentShell);
 		this.parentShell = parentShell;
 	}
 	
-	public JSONObject getResults() {
-		return this.results;
-	}
-	
 	public void setWorkbenchWindow(IWorkbenchWindow window) {
 		this.window = window;
-	}	
+	}		
 	
 	@Override
 	public void create() {
 		super.create();
-		setTitle("Test Connection");
-		setMessage("Test the connection to a Netsuite account.", IMessageProvider.INFORMATION);
+		setTitle("User Credentials");
+		setMessage("Create/Edit User Credentials", IMessageProvider.INFORMATION);
 	}
 	
 	@Override
@@ -76,7 +74,13 @@ public class TestConnectionDialog extends TitleAreaDialog{
         GridLayout layout = new GridLayout(2, false);
         container.setLayout(layout);
         
-        createAccountIDElement(container);
+        JSONObject object = Credentials.getCredentialsFromFile();        
+        if( object != null) {
+        	results = object;
+        }
+        
+        createEmailElement(container);
+        createPasswordElement(container);
         
 		return area;
 	}
@@ -88,47 +92,47 @@ public class TestConnectionDialog extends TitleAreaDialog{
 	
 	@Override
 	protected Point getInitialSize() {
-		return new Point(450, 210);
+		return new Point(450, 300);
 	}
 	
 	@Override
 	protected void okPressed() {
-		System.out.println("[Logger] --- Test Connection Dialog OK button is pressed");
-		String accountID = "";
-		if(selectedValue != null && selectedValue != "") {
-			accountID = selectedValue.substring(selectedValue.indexOf("(") + 1, selectedValue.indexOf(")"));
-		}
-		if(!Credentials.isCredentialsFileExists()) {
-			MessageDialog.openError(this.parentShell, "No user credentials found", "Please set user credentials in Strongpoint > Credentials Settings menu");
-		}		
-		results = HttpTestConnectionService.newInstance().getConnectionResults(accountID);
+		System.out.println("[Logger] --- Credentials Dialog OK button is pressed");
+		AddEditCredentialsService addEditCredentialsService = new AddEditCredentialsService();
+		addEditCredentialsService.setEmailStr(emailText.getText());
+		addEditCredentialsService.setPasswordStr(passwordText.getText());
+		addEditCredentialsService.writeToJSONFile();
 		super.okPressed();
 	}
 	
-	private void createAccountIDElement(Composite container) {
-        Label accountIDLabel = new Label(container, SWT.NONE);
-        accountIDLabel.setText("Account ID: ");
+	private void createEmailElement(Composite container) {
+        Label emailLabel = new Label(container, SWT.NONE);
+        emailLabel.setText("Email: ");
 
-        GridData accountIDGridData = new GridData();
-        accountIDGridData.grabExcessHorizontalSpace = true;
-        accountIDGridData.horizontalAlignment = GridData.FILL;
+        GridData emailGridData = new GridData();
+        emailGridData.grabExcessHorizontalSpace = true;
+        emailGridData.horizontalAlignment = GridData.FILL;
 
-        accountIDText = new Combo(container, SWT.BORDER);
-        accountIDText.setItems(Accounts.getAccountsStrFromFile());
-        accountIDText.addSelectionListener(new SelectionListener() {
-			
-			@Override
-			public void widgetSelected(SelectionEvent arg0) {
-				selectedValue = accountIDText.getText();
-			}
-			
-			@Override
-			public void widgetDefaultSelected(SelectionEvent arg0) {
-				// TODO Auto-generated method stub
-				
-			}
-		});          
-        accountIDText.setLayoutData(accountIDGridData);
-	} 
+        emailText = new Text(container, SWT.BORDER);
+        if(results != null) {
+        	emailText.setText(results.get("email").toString());
+        }
+        emailText.setLayoutData(emailGridData);
+	}
+	
+	private void createPasswordElement(Composite container) {
+        Label passwordLabel = new Label(container, SWT.NONE);
+        passwordLabel.setText("Password: ");
+
+        GridData passwordGridData = new GridData();
+        passwordGridData.grabExcessHorizontalSpace = true;
+        passwordGridData.horizontalAlignment = GridData.FILL;
+
+        passwordText = new Text(container, SWT.BORDER);
+        if(results != null) {
+        	passwordText.setText(results.get("password").toString());
+        }        
+        passwordText.setLayoutData(passwordGridData);
+	}
 
 }

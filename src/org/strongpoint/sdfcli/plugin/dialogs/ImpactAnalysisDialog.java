@@ -12,6 +12,7 @@ import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.internal.core.PackageFragmentRoot;
 import org.eclipse.jface.dialogs.IMessageProvider;
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.dialogs.TitleAreaDialog;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
@@ -34,6 +35,7 @@ import org.strongpoint.sdfcli.plugin.services.DeployCliService;
 import org.strongpoint.sdfcli.plugin.services.HttpImpactAnalysisService;
 import org.strongpoint.sdfcli.plugin.services.HttpRequestDeploymentService;
 import org.strongpoint.sdfcli.plugin.utils.Accounts;
+import org.strongpoint.sdfcli.plugin.utils.Credentials;
 
 public class ImpactAnalysisDialog extends TitleAreaDialog{
 	
@@ -99,6 +101,9 @@ public class ImpactAnalysisDialog extends TitleAreaDialog{
 		}
 		if(selectedValue != null && selectedValue != "") {
 			accountID = selectedValue.substring(selectedValue.indexOf("(") + 1, selectedValue.indexOf(")"));
+		}
+		if(!Credentials.isCredentialsFileExists()) {
+			MessageDialog.openError(this.parentShell, "No user credentials found", "Please set user credentials in Strongpoint > Credentials Settings menu");
 		}		
 		results = HttpImpactAnalysisService.newInstance().getImpactAnalysis(crID, this.parentShell, getScripIds(this.window), accountID);
 		super.okPressed();
