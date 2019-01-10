@@ -27,7 +27,7 @@ public class SdfcliTestConnectionHandler extends AbstractHandler{
 	public Object execute(ExecutionEvent event) throws ExecutionException {
 		IWorkbenchWindow window = HandlerUtil.getActiveWorkbenchWindowChecked(event);
 		IWorkbenchPage page = window.getActivePage();
-		MessageConsole myConsole = findConsole("Deployment");
+		MessageConsole myConsole = findConsole("Test Connection");
 		myConsole.clearConsole();
 		MessageConsoleStream out = myConsole.newMessageStream();
 		TestConnectionDialog testConnectionDialog = new TestConnectionDialog(window.getShell());

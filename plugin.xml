@@ -35,7 +35,7 @@
       </command>
       <command
             categoryId="strongpoint-sdfcli.commands.category"
-            name="Account Settings"
+            name="NS Account Settings"
             id="strongpoint-sdfcli.commands.addAccountCommand">
       </command>
       <command

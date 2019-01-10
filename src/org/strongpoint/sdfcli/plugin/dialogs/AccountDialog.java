@@ -60,7 +60,7 @@ public class AccountDialog extends TitleAreaDialog{
 	@Override
 	public void create() {
 		super.create();
-		setTitle("Account Settings");
+		setTitle("NS Account Settings");
 		setMessage("Add/Edit Netsuite Accounts", IMessageProvider.INFORMATION);
 	}
 	
@@ -160,7 +160,7 @@ public class AccountDialog extends TitleAreaDialog{
 			@Override
 			public void widgetSelected(SelectionEvent arg0) {
 				String acctId = selectedValue.substring(selectedValue.indexOf("(") + 1, selectedValue.indexOf(")"));
-				String acctName = selectedValue.substring(0, selectedValue.indexOf("("));
+				String acctName = selectedValue.substring(0, selectedValue.indexOf(" ("));
 				editAccountDialog.setAccountIdStr(acctId);
 				editAccountDialog.setAccountNameStr(acctName);
 				editAccountDialog.setUuid(getUUID(acctId, acctName));

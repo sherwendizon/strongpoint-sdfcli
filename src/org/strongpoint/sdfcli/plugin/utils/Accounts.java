@@ -48,7 +48,7 @@ public class Accounts {
 			for (int i = 0; i < getAccountsFromFile().size(); i++) {
 				JSONObject obj = (JSONObject) getAccountsFromFile().get(i);
 				System.out.println("Account: " +obj.toJSONString());
-				accounts[i] = obj.get("accountName") + "(" +obj.get("accountId") + ")";
+				accounts[i] = obj.get("accountName") + " (" +obj.get("accountId") + ")";
 			}	
 		}
 		return accounts;

@@ -9,6 +9,7 @@ import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Platform;
@@ -53,6 +54,11 @@ public class SdfcliImpactAnalysisHandler extends AbstractHandler {
 //			JSONObject results = new JSONObject();
 //			results = HttpImpactAnalysisService.newInstance().getImpactAnalysis("5567", window.getShell(), new ArrayList<String>());
 //			data(out, results);
+//			try {
+//				getCurrentProject(window).refreshLocal(IResource.DEPTH_INFINITE, null);
+//			} catch (CoreException e1) {
+//				e1.printStackTrace();
+//			}			
 			IConsole console = myConsole;
 			String id = IConsoleConstants.ID_CONSOLE_VIEW;
 			try {
@@ -83,8 +89,8 @@ public class SdfcliImpactAnalysisHandler extends AbstractHandler {
     }
     
     private void data(MessageConsoleStream streamOut, JSONObject obj) {
-    	if(obj.get("data") == null) {
-    		streamOut.println("An error occured while running Impact Analysis.");
+    	if(obj.get("code").toString().equals("300")) {
+    		streamOut.println("An error occured while running Impact Analysis." + obj.get("data").toString());
     	} else {
 	    	JSONObject dataObj = (JSONObject) obj.get("data");
 	    	streamOut.println("========================================================");
