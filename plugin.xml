@@ -17,7 +17,12 @@
             categoryId="strongpoint-sdfcli.commands.category"
             name="Request Deployment"
             id="strongpoint-sdfcli.commands.createCrCommand">
-      </command>      
+      </command>
+      <command
+            categoryId="strongpoint-sdfcli.commands.category"
+            name="Sync to NS"
+            id="strongpoint-sdfcli.commands.syncToNsCommand">
+      </command>            
       <command
             categoryId="strongpoint-sdfcli.commands.category"
             name="Deploy"
@@ -53,7 +58,11 @@
       <handler
             class="org.strongpoint.sdfcli.plugin.handlers.SdfcliChangeRequestHandler"
             commandId="strongpoint-sdfcli.commands.createCrCommand">
-      </handler>      
+      </handler>
+      <handler
+            class="org.strongpoint.sdfcli.plugin.handlers.SdfcliSyncToNsHandler"
+            commandId="strongpoint-sdfcli.commands.syncToNsCommand">
+      </handler>            
       <handler
             class="org.strongpoint.sdfcli.plugin.handlers.SdfcliDeployHandler"
             commandId="strongpoint-sdfcli.commands.deployCommand">
@@ -88,7 +97,13 @@
             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
             contextId="org.eclipse.ui.contexts.window"
             sequence="M1+6">
-      </key>      
+      </key>
+      <key
+            commandId="strongpoint-sdfcli.commands.syncToNsCommand"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            contextId="org.eclipse.ui.contexts.window"
+            sequence="M1+6">
+      </key>            
       <key
             commandId="strongpoint-sdfcli.commands.deployCommand"
             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
@@ -137,7 +152,12 @@
                   commandId="strongpoint-sdfcli.commands.createCrCommand"
                   id="strongpoint-sdfcli.menus.createCrCommand"
                   mnemonic="R">
-            </command>            
+            </command>
+            <command
+                  commandId="strongpoint-sdfcli.commands.syncToNsCommand"
+                  id="strongpoint-sdfcli.menus.syncToNsCommand"
+                  mnemonic="S">
+            </command>                        
             <command
                   commandId="strongpoint-sdfcli.commands.deployCommand"
                   id="strongpoint-sdfcli.menus.deployCommand"
