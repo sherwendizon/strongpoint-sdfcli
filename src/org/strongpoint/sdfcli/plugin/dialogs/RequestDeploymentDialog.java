@@ -43,7 +43,8 @@ public class RequestDeploymentDialog extends TitleAreaDialog {
 	private String requestedBy;
 	private String changeType;
 	private JSONArray arr;
-    private JSONArray employeeArray;	
+    private JSONArray employeeArray;
+	private String projectPath;
 	
 	private JSONObject results;
 
@@ -58,12 +59,16 @@ public class RequestDeploymentDialog extends TitleAreaDialog {
 	public void setWorkbenchWindow(IWorkbenchWindow window) {
 		this.window = window;
 	}
+	
+	public void setProjectPath(String projectPath) {
+		this.projectPath = projectPath;
+	}	
 
 	@Override
 	public void create() {
 		super.create();
 		setTitle("Request Deployment");
-		setMessage("Enter details of your Change Request.", IMessageProvider.INFORMATION);
+		setMessage("Enter details of your Request Deployment.", IMessageProvider.INFORMATION);
 	}
 	
 	@Override
@@ -78,7 +83,6 @@ public class RequestDeploymentDialog extends TitleAreaDialog {
         createNameElement(container);
         createChangeTypeElement(container);
         createChangeOverviewElement(container);
-//        createRequestedByElement(container);
         
 		return area;
 	}
@@ -103,20 +107,13 @@ public class RequestDeploymentDialog extends TitleAreaDialog {
 		for (int i = 0; i < arr.size(); i++) {
         	JSONObject object = (JSONObject) arr.get(i);
         	if(object.get("text").toString().equalsIgnoreCase(this.changeType)) {
-        		changeTypeInt = (int) object.get("value");
+        		changeTypeInt = Integer.valueOf(object.get("value").toString());
         	}
 		}
 		obj.put("changeType", changeTypeInt);
 		obj.put("changeOverview", changeOverviewText.getText());
-//		for (int i = 0; i < employeeArray.size(); i++) {
-//        	JSONObject object = (JSONObject) employeeArray.get(i);
-//        	if(object.get("name").toString().equalsIgnoreCase(this.requestedBy)) {
-//        		employeeId = (int) object.get("id");
-//        	}
-//		}		
-//		obj.put("requestedBy", employeeId);
 		obj.put("scriptIds", getScripIds(this.window));
-		results = HttpRequestDeploymentService.newInstance().requestDeployment(obj);
+		results = HttpRequestDeploymentService.newInstance().requestDeployment(obj, this.projectPath);
 		super.okPressed();
 	}
 	
@@ -142,7 +139,9 @@ public class RequestDeploymentDialog extends TitleAreaDialog {
         
         changeTypeCombo = new Combo(container, SWT.DROP_DOWN);
         changeTypeCombo.setLayoutData(changeTypeGridData);
-        arr = HttpRequestDeploymentService.newInstance().changeTypeTest();
+        JSONObject changeTypeObj = HttpRequestDeploymentService.newInstance().getChangeTypes(this.projectPath);
+        JSONObject data = (JSONObject) changeTypeObj.get("data");
+        arr = (JSONArray) data.get("changeTypes");
 		ArrayList<String> itemsToDisplay = new ArrayList<String>();
         for (int i = 0; i < arr.size(); i++) {
         	JSONObject object = (JSONObject) arr.get(i);
@@ -165,31 +164,6 @@ public class RequestDeploymentDialog extends TitleAreaDialog {
 
         changeOverviewText = new Text(container, SWT.MULTI | SWT.BORDER | SWT.WRAP | SWT.V_SCROLL);
         changeOverviewText.setLayoutData(changeOverviewGridData);
-	}
-	
-	private void createRequestedByElement(Composite container) {
-        Label requestedByLabel = new Label(container, SWT.NONE);
-        requestedByLabel.setText("Requested By: ");
-
-        GridData requestedByGridData = new GridData();
-        requestedByGridData.grabExcessHorizontalSpace = true;
-        requestedByGridData.horizontalAlignment = GridData.FILL;
-
-        requestedByCombo = new Combo(container, SWT.DROP_DOWN);
-        requestedByCombo.setLayoutData(requestedByGridData);
-        employeeArray = HttpRequestDeploymentService.newInstance().employeeTest();
-		ArrayList<String> itemsToDisplay = new ArrayList<String>();
-        for (int i = 0; i < employeeArray.size(); i++) {
-        	JSONObject object = (JSONObject) employeeArray.get(i);
-        	itemsToDisplay.add(object.get("name").toString());
-		}
-        requestedByCombo.setItems(itemsToDisplay.toArray(new String[employeeArray.size()]));
-		requestedByCombo.addSelectionListener(new SelectionAdapter() {
-			@Override
-			public void widgetSelected(SelectionEvent e) {
-				requestedBy = requestedByCombo.getItem(requestedByCombo.getSelectionIndex());
-			}
-		});
 	}
 	
     public List<String> getScripIds(IWorkbenchWindow window){

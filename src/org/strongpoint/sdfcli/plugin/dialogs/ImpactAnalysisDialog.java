@@ -1,5 +1,10 @@
 package org.strongpoint.sdfcli.plugin.dialogs;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -31,6 +36,8 @@ import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.ISelectionService;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
 import org.strongpoint.sdfcli.plugin.services.DeployCliService;
 import org.strongpoint.sdfcli.plugin.services.HttpImpactAnalysisService;
 import org.strongpoint.sdfcli.plugin.services.HttpRequestDeploymentService;
@@ -40,11 +47,14 @@ import org.strongpoint.sdfcli.plugin.utils.Credentials;
 public class ImpactAnalysisDialog extends TitleAreaDialog{
 	
 	private Text changeRequestIDText;
+	private Text sourceAccountIdText;
 	private Combo accountIDText;
 	private JSONObject results;
+	private JSONObject diffResults;
 	private IWorkbenchWindow window;
 	private String selectedValue = "";
 	private Shell parentShell;
+	private String projectPath;
 
 	public ImpactAnalysisDialog(Shell parentShell) {
 		super(parentShell);
@@ -55,8 +65,16 @@ public class ImpactAnalysisDialog extends TitleAreaDialog{
 		return this.results;
 	}
 	
+	public JSONObject getDiffResults() {
+		return this.diffResults;
+	}
+	
 	public void setWorkbenchWindow(IWorkbenchWindow window) {
 		this.window = window;
+	}
+	
+	public void setProjectPath(String projectPath) {
+		this.projectPath = projectPath;
 	}	
 	
 	@Override
@@ -75,6 +93,7 @@ public class ImpactAnalysisDialog extends TitleAreaDialog{
         GridLayout layout = new GridLayout(2, false);
         container.setLayout(layout);
         
+        createSourceAccountIdElement(container);
         createAccountIDElement(container);
         createChangeRequestIDElement(container);
         
@@ -88,7 +107,7 @@ public class ImpactAnalysisDialog extends TitleAreaDialog{
 	
 	@Override
 	protected Point getInitialSize() {
-		return new Point(450, 250);
+		return new Point(450, 300);
 	}
 	
 	@Override
@@ -106,12 +125,13 @@ public class ImpactAnalysisDialog extends TitleAreaDialog{
 			MessageDialog.openError(this.parentShell, "No user credentials found", "Please set user credentials in Strongpoint > Credentials Settings menu");
 		}		
 		results = HttpImpactAnalysisService.newInstance().getImpactAnalysis(crID, this.parentShell, getScripIds(this.window), accountID);
+		diffResults = HttpImpactAnalysisService.newInstance().getDiff(this.parentShell, getScripIds(this.window), sourceAccountIdText.getText(), accountID);
 		super.okPressed();
 	}
 	
 	private void createAccountIDElement(Composite container) {
         Label accountIDLabel = new Label(container, SWT.NONE);
-        accountIDLabel.setText("Account ID: ");
+        accountIDLabel.setText("Target Account ID: ");
 
         GridData accountIDGridData = new GridData();
         accountIDGridData.grabExcessHorizontalSpace = true;
@@ -133,6 +153,23 @@ public class ImpactAnalysisDialog extends TitleAreaDialog{
 			}
 		});         
         accountIDText.setLayoutData(accountIDGridData);
+	}
+	
+	private void createSourceAccountIdElement(Composite container) {
+        Label sourceAccountIDLabel = new Label(container, SWT.NONE);
+        sourceAccountIDLabel.setText("Source Account ID: ");
+
+        GridData sourceAccountIDGridData = new GridData();
+        sourceAccountIDGridData.grabExcessHorizontalSpace = true;
+        sourceAccountIDGridData.horizontalAlignment = GridData.FILL;
+
+        sourceAccountIdText = new Text(container, SWT.BORDER);
+        JSONObject importObj = readImportJsonFile(projectPath);
+        if(importObj != null) {
+        	sourceAccountIdText.setText(importObj.get("accountId").toString());
+        }
+        sourceAccountIdText.setEnabled(false);
+        sourceAccountIdText.setLayoutData(sourceAccountIDGridData);
 	}
 	
 	private void createChangeRequestIDElement(Composite container) {
@@ -180,5 +217,30 @@ public class ImpactAnalysisDialog extends TitleAreaDialog{
         
         return scriptIds;    
     } 
+    
+	private JSONObject readImportJsonFile(String projectPath) {
+		StringBuilder contents = new StringBuilder();
+		String str;
+		File file = new File(projectPath + "/import.json");
+		System.out.println("SYNC PROJECT PATH: " + projectPath + "/import.json");
+		JSONObject scriptObjects = null;
+		try {
+			if(file.exists() && !file.isDirectory()) {
+				BufferedReader reader = new BufferedReader(new FileReader(file));
+				while((str = reader.readLine())  != null) {
+					contents.append(str);
+				}
+				System.out.println("FILE Contents: " +contents.toString());
+				scriptObjects = (JSONObject) new JSONParser().parse(contents.toString());	
+			}
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		} catch (ParseException e) {
+			e.printStackTrace();
+		}
+		return scriptObjects;		
+	}    
 
 }

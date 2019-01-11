@@ -73,4 +73,49 @@ public class HttpImpactAnalysisService {
 		return results;
 	}
 	
+	public JSONObject getDiff(Shell shell, List<String> getScripIds, String sourceAccountID, String targetAccountID) {
+		String email = "";
+		String password = "";
+		JSONObject creds = Credentials.getCredentialsFromFile();
+		if(creds != null) {
+			email = creds.get("email").toString();
+			password = creds.get("password").toString();
+		}
+		JSONObject results = new JSONObject();
+		String removeWhitespaces = String.join(",",getScripIds);
+		String strongpointURL = "";
+		strongpointURL = "https://rest.netsuite.com/app/site/hosting/restlet.nl?script=customscript_flo_get_diff_restlet&deploy=customdeploy_flo_get_diff_restlet&scriptIds=" + removeWhitespaces + "&source=" +sourceAccountID;
+		System.out.println("DIFF SCRIPT ID URL: " +strongpointURL);		
+ 		System.out.println(strongpointURL);
+		HttpGet httpGet = null;
+		int statusCode;
+		String responseBodyStr;
+		CloseableHttpResponse response = null;
+		try {
+        	CloseableHttpClient client = HttpClients.createDefault();
+            httpGet = new HttpGet(strongpointURL);
+            httpGet.addHeader("Authorization", "NLAuth nlauth_account=" + targetAccountID + ", nlauth_email=" + email + ", nlauth_signature=" + password + ", nlauth_role=3");
+            response = client.execute(httpGet);
+            HttpEntity entity = response.getEntity();
+            statusCode = response.getStatusLine().getStatusCode();
+            responseBodyStr = EntityUtils.toString(entity);
+			
+			if(statusCode >= 400) {
+				results = new JSONObject();
+				results.put("error", statusCode);
+				throw new RuntimeException("HTTP Request returns a " +statusCode);
+			}
+			results = (JSONObject) JSONValue.parse(responseBodyStr);
+		} catch (Exception exception) {
+			results = new JSONObject();
+			results.put("error", exception.getMessage());
+		} finally {
+			if (httpGet != null) {
+				httpGet.reset();
+			}
+		}
+		
+		return results;
+	}
+	
 }

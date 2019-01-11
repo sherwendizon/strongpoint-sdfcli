@@ -123,13 +123,25 @@ public class DeployDialog extends TitleAreaDialog{
 			System.out.println("DEPLOY SCRIPT IDS: " +params);
 		}
 		String accountId = selectedValue.substring(selectedValue.indexOf("(") + 1, selectedValue.indexOf(")"));
-		JSONObject approveResult = DeployCliService.newInstance().isApprovedDeployment(parentShell, accountId, emailCred, passwordCred, params);
-		System.out.println("Deploy Dialog results: " +approveResult.toJSONString());
+		JSONObject approveResult = DeployCliService.newInstance().isApprovedDeployment(parentShell, accountId, emailCred, passwordCred, String.join(",",getScripIds(window)));
+		System.out.println("Deploy Approve results: " +approveResult.toJSONString());
 		JSONObject data = (JSONObject) approveResult.get("data");
 		JSONObject supportedObjs = DeployCliService.newInstance().getSupportedObjects(accountId, emailCred, passwordCred);
 		if(hasUnsupportedObjects(getScripIds(this.window), supportedObjs)) {
 			MessageDialog.openWarning(this.parentShell, "Unsupported Objects Detected", "Please manually complete and validate using Environment Compare.");
 		} else {
+//			JSONObject policyObj = DeployCliService.newInstance().getPolicy();
+//			if(policyObj != null && (boolean)policyObj.get("results")) {
+//				if(!(boolean)data.get("result")) {
+//					JSONObject messageObject = new JSONObject();
+//					messageObject.put("message", approveResult.get("message").toString());
+//					results = messageObject;
+//				}  else {
+//					results = DeployCliService.newInstance().deployCliResult(accountId, emailCred, passwordCred, pathCred, this.projectPath);	
+//				}				
+//			} else {
+//				results = DeployCliService.newInstance().deployCliResult(accountId, emailCred, passwordCred, pathCred, this.projectPath);
+//			}
 			if(!(boolean)data.get("result")) {
 				JSONObject messageObject = new JSONObject();
 				messageObject.put("message", approveResult.get("message").toString());
@@ -235,7 +247,6 @@ public class DeployDialog extends TitleAreaDialog{
 		for (String scriptId : scriptIds) {
 			System.out.println("SCRIPT ID: " +scriptId);
 			for(String supportedObj : supportedList) {
-				System.out.println("HAS : " +supportedObj.contains(scriptId));
 				if(supportedObj.contains(scriptId)) {
 					hasUnsupportedObj = true;
 					break;

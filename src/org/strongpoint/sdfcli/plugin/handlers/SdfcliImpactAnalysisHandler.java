@@ -11,6 +11,7 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.FileLocator;
+import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.jdt.core.IJavaElement;
@@ -47,18 +48,12 @@ public class SdfcliImpactAnalysisHandler extends AbstractHandler {
 		myConsole.clearConsole();
 		MessageConsoleStream out = myConsole.newMessageStream();
 		if(getCurrentProject(window) != null) {
+			IPath path = getCurrentProject(window).getLocation();
 			ImpactAnalysisDialog impactAnalysisDialog = new ImpactAnalysisDialog(window.getShell());
 			impactAnalysisDialog.setWorkbenchWindow(window);
+			impactAnalysisDialog.setProjectPath(path.toPortableString());
 			impactAnalysisDialog.open();
-			data(out, impactAnalysisDialog.getResults());
-//			JSONObject results = new JSONObject();
-//			results = HttpImpactAnalysisService.newInstance().getImpactAnalysis("5567", window.getShell(), new ArrayList<String>());
-//			data(out, results);
-//			try {
-//				getCurrentProject(window).refreshLocal(IResource.DEPTH_INFINITE, null);
-//			} catch (CoreException e1) {
-//				e1.printStackTrace();
-//			}			
+			data(out, impactAnalysisDialog.getResults(), impactAnalysisDialog.getDiffResults());			
 			IConsole console = myConsole;
 			String id = IConsoleConstants.ID_CONSOLE_VIEW;
 			try {
@@ -88,7 +83,7 @@ public class SdfcliImpactAnalysisHandler extends AbstractHandler {
        return myConsole;
     }
     
-    private void data(MessageConsoleStream streamOut, JSONObject obj) {
+    private void data(MessageConsoleStream streamOut, JSONObject obj, JSONObject diffObj) {
     	if(obj.get("code").toString().equals("300")) {
     		streamOut.println("An error occured while running Impact Analysis." + obj.get("data").toString());
     	} else {
@@ -146,6 +141,21 @@ public class SdfcliImpactAnalysisHandler extends AbstractHandler {
 			}
 	    	streamOut.println("===============================================");
 	    	// End NOT ACTIVE data display
+	    	if(diffObj != null) {
+	    		JSONObject diffDataObj = (JSONObject) diffObj.get("data");
+	    		JSONArray diffs = (JSONArray) diffDataObj.get("diffs");
+		    	streamOut.println("===============================================");
+		    	streamOut.println("|                   DIFF                      | ");
+		    	streamOut.println("===============================================");
+		    	for (int i = 0; i < diffs.size(); i++) {
+					JSONObject diff = (JSONObject) diffs.get(i);
+					streamOut.println("CUSTRECORD_FLO_CUST_ID: " +diff.get("custrecord_flo_cust_id").toString());
+					streamOut.println("NAME: " +diff.get("name").toString());
+					streamOut.println("DIFF_OVERVIEW: " +diff.get("diff_overview").toString());
+					streamOut.println();
+				}
+		    	streamOut.println("===============================================");
+	    	}
     	}	
     }
     

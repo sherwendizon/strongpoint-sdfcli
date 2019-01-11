@@ -1,5 +1,10 @@
 package org.strongpoint.sdfcli.plugin.services;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
 import java.io.ObjectOutputStream.PutField;
 
 import org.apache.http.HttpEntity;
@@ -14,6 +19,9 @@ import org.apache.http.util.EntityUtils;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
+import org.strongpoint.sdfcli.plugin.utils.Credentials;
 
 public class HttpRequestDeploymentService {
 	
@@ -21,9 +29,22 @@ public class HttpRequestDeploymentService {
 		return new HttpRequestDeploymentService();
 	}
 	
-	public JSONObject requestDeployment(JSONObject parameters) {
+	public JSONObject requestDeployment(JSONObject parameters, String projectPath) {
 		JSONObject results = new JSONObject();
-		
+		JSONObject creds = Credentials.getCredentialsFromFile();
+		String emailCred = "";
+		String passwordCred = "";
+		String pathCred = "";
+		String accountId = "";
+		if(creds != null) {
+			emailCred = creds.get("email").toString();
+			passwordCred = creds.get("password").toString();
+			pathCred = creds.get("path").toString();
+		}
+        JSONObject importObj = readImportJsonFile(projectPath);
+        if(importObj != null) {
+        	accountId = importObj.get("accountId").toString();
+        }
 		String strongpointURL = "https://rest.netsuite.com/app/site/hosting/restlet.nl?script=customscript_flo_create_cr_restlet&deploy=customdeploy_flo_create_cr_restlet";
 		
 		HttpPost httpPost = null;
@@ -33,8 +54,8 @@ public class HttpRequestDeploymentService {
 		try {
 			CloseableHttpClient client = HttpClients.createDefault();
 			httpPost = new HttpPost(strongpointURL);
-			httpPost.addHeader("Authorization", "NLAuth nlauth_account=TSTDRV1267181, nlauth_email=joanna.paclibar@strongpoint.io, nlauth_signature=FLODocs1234!, nlauth_role=3");
-			System.out.println(parameters.toJSONString());
+			httpPost.addHeader("Authorization", "NLAuth nlauth_account="+accountId+", nlauth_email="+emailCred+", nlauth_signature="+passwordCred+", nlauth_role=3");
+			System.out.println("PARAMETERS: " +parameters.toJSONString());
 			httpPost.addHeader("Content-type", "application/json");
 			StringEntity stringEntity = new StringEntity(parameters.toJSONString(), ContentType.APPLICATION_JSON);
 			httpPost.setEntity(stringEntity);
@@ -59,9 +80,23 @@ public class HttpRequestDeploymentService {
 		return results;
 	}
 	
-	public JSONArray getEmployees() {
-		JSONArray results;
-        String urlString = "Strongpoint getEmployees URL here";
+	public JSONObject getChangeTypes(String projectPath) {
+		JSONObject results;
+		JSONObject creds = Credentials.getCredentialsFromFile();
+		String emailCred = "";
+		String passwordCred = "";
+		String pathCred = "";
+		String accountId = "";
+		if(creds != null) {
+			emailCred = creds.get("email").toString();
+			passwordCred = creds.get("password").toString();
+			pathCred = creds.get("path").toString();
+		}
+        JSONObject importObj = readImportJsonFile(projectPath);
+        if(importObj != null) {
+        	accountId = importObj.get("accountId").toString();
+        }		
+		String urlString = "https://rest.netsuite.com/app/site/hosting/restlet.nl?script=customscript_flo_create_cr_restlet&deploy=customdeploy_flo_create_cr_restlet";
         int statusCode;
         String strRespBody;
         HttpGet httpGet = null;
@@ -69,6 +104,7 @@ public class HttpRequestDeploymentService {
         try {
         	CloseableHttpClient client = HttpClients.createDefault();
             httpGet = new HttpGet(urlString);
+            httpGet.addHeader("Authorization", "NLAuth nlauth_account="+accountId+", nlauth_email="+emailCred+", nlauth_signature="+passwordCred+", nlauth_role=3");
             response = client.execute(httpGet);
             HttpEntity entity = response.getEntity();
             statusCode = response.getStatusLine().getStatusCode();
@@ -76,7 +112,7 @@ public class HttpRequestDeploymentService {
             if (statusCode >= 400) {
             	throw new RuntimeException("HTTP Request returns a " +statusCode);
             } else {
-                results = (JSONArray) JSONValue.parse(strRespBody);
+                results = (JSONObject) JSONValue.parse(strRespBody);
             }
         } catch (Exception exception) {
 			System.out.println("Request for all Requestors call error: " + exception.getMessage());
@@ -89,85 +125,28 @@ public class HttpRequestDeploymentService {
         return results;
 	}
 	
-	public JSONArray getChangeTypes() {
-		JSONArray results;
-        String urlString = "Strongpoint getChangeTypes URL here";
-        int statusCode;
-        String strRespBody;
-        HttpGet httpGet = null;
-        CloseableHttpResponse response = null;
-        try {
-        	CloseableHttpClient client = HttpClients.createDefault();
-            httpGet = new HttpGet(urlString);
-            response = client.execute(httpGet);
-            HttpEntity entity = response.getEntity();
-            statusCode = response.getStatusLine().getStatusCode();
-            strRespBody = EntityUtils.toString(entity);
-            if (statusCode >= 400) {
-            	throw new RuntimeException("HTTP Request returns a " +statusCode);
-            } else {
-                results = (JSONArray) JSONValue.parse(strRespBody);
-            }
-        } catch (Exception exception) {
-			System.out.println("Request for all Requestors call error: " + exception.getMessage());
-			throw new RuntimeException("Request for all Requestors call error: " + exception.getMessage());
-        } finally {
-			if (httpGet != null) {
-				httpGet.reset();
+	private JSONObject readImportJsonFile(String projectPath) {
+		StringBuilder contents = new StringBuilder();
+		String str;
+		File file = new File(projectPath + "/import.json");
+		System.out.println("SYNC PROJECT PATH: " + projectPath + "/import.json");
+		JSONObject scriptObjects = null;
+		try {
+			if(file.exists() && !file.isDirectory()) {
+				BufferedReader reader = new BufferedReader(new FileReader(file));
+				while((str = reader.readLine())  != null) {
+					contents.append(str);
+				}
+				System.out.println("FILE Contents: " +contents.toString());
+				scriptObjects = (JSONObject) new JSONParser().parse(contents.toString());	
 			}
-        }
-        return results;
-	}
-	
-	public JSONArray changeTypeTest() {
-		JSONArray jsonArray = new JSONArray();
-		
-		JSONObject obj1 = new JSONObject();
-		obj1.put("text", "Minor");
-		obj1.put("value", 1);
-		jsonArray.add(obj1);
-		
-		JSONObject obj2 = new JSONObject();
-		obj2.put("text", "Major");
-		obj2.put("value", 2);
-		jsonArray.add(obj2);
-		
-		JSONObject obj3 = new JSONObject();
-		obj3.put("text", "New Process");
-		obj3.put("value", 3);
-		jsonArray.add(obj3);
-		
-		JSONObject obj4 = new JSONObject();
-		obj4.put("text", "New Feature");
-		obj4.put("value", 4);
-		jsonArray.add(obj4);
-		
-		JSONObject obj5 = new JSONObject();
-		obj5.put("text", "Clean-up");
-		obj5.put("value", 5);
-		jsonArray.add(obj5);
-		
-		return jsonArray;
-	}
-	
-	public JSONArray employeeTest() {
-		JSONArray jsonArray = new JSONArray();
-		
-		JSONObject obj1 = new JSONObject();
-		obj1.put("id", 123);
-		obj1.put("name", "Joanna Paclibar");
-		jsonArray.add(obj1);
-		
-		JSONObject obj2 = new JSONObject();
-		obj2.put("id", 456);
-		obj2.put("name", "Beverlyn Ucab");
-		jsonArray.add(obj2);
-		
-		JSONObject obj3 = new JSONObject();
-		obj3.put("id", 789);
-		obj3.put("name", "John Albura");
-		jsonArray.add(obj3);
-		
-		return jsonArray;
-	}
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		} catch (ParseException e) {
+			e.printStackTrace();
+		}
+		return scriptObjects;		
+	}	
 }

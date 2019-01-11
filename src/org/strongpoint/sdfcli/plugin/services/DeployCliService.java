@@ -67,12 +67,12 @@ public class DeployCliService {
 	public JSONObject isApprovedDeployment(Shell shell, String accountID, String email, String password, String params) {
 		JSONObject results = new JSONObject();
 		String strongpointURL = ""; 
-		if(params.contains(",")) {
+//		if(params.contains(",")) {
 			strongpointURL = "https://rest.netsuite.com/app/site/hosting/restlet.nl?script=customscript_flo_get_approval_status&deploy=customdeploy_flo_get_approval_status&scriptIds=" + params;
-		} else {
-			strongpointURL = "https://rest.netsuite.com/app/site/hosting/restlet.nl?script=customscript_flo_get_approval_status&deploy=customdeploy_flo_get_approval_status&crId=" + params/* + "&scriptIds=" + removeWhitespaces*/;
-		}
-		System.out.println(strongpointURL);
+//		} /*else {
+//			strongpointURL = "https://rest.netsuite.com/app/site/hosting/restlet.nl?script=customscript_flo_get_approval_status&deploy=customdeploy_flo_get_approval_status&crId=" + params + "&scriptIds=" + removeWhitespaces;
+//		}*/
+		System.out.println("IS DEPLOYMENT REQUEST URL: "+strongpointURL);
 		HttpGet httpGet = null;
 		int statusCode;
 		String responseBodyStr;
@@ -88,12 +88,13 @@ public class DeployCliService {
             HttpEntity entity = response.getEntity();
             statusCode = response.getStatusLine().getStatusCode();
             responseBodyStr = EntityUtils.toString(entity);
-			
+            System.out.println("IS APPROVE RESPONSE: " +responseBodyStr);
 			if(statusCode >= 400) {
 				results = new JSONObject();
 				results.put("error", statusCode);
 				throw new RuntimeException("HTTP Request returns a " +statusCode);
 			}
+			
 			results = (JSONObject) JSONValue.parse(responseBodyStr);
 		} catch (Exception exception) {
 //			System.out.println("Request Deployment call error: " +exception.getMessage());
@@ -145,5 +146,9 @@ public class DeployCliService {
 		
 		return results;		
 	}
+	
+//	public JSONObject getPolicy() {
+//		return new JSONObject();
+//	}
 
 }
