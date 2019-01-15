@@ -128,7 +128,7 @@ public class CredentialsDialog extends TitleAreaDialog{
         passwordGridData.grabExcessHorizontalSpace = true;
         passwordGridData.horizontalAlignment = GridData.FILL;
 
-        passwordText = new Text(container, SWT.BORDER);
+        passwordText = new Text(container, SWT.BORDER | SWT.PASSWORD);
         if(results != null) {
         	passwordText.setText(results.get("password").toString());
         }        

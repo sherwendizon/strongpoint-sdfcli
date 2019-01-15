@@ -44,6 +44,7 @@ public class HttpRequestDeploymentService {
         JSONObject importObj = readImportJsonFile(projectPath);
         if(importObj != null) {
         	accountId = importObj.get("accountId").toString();
+        	parameters.put("parentCrId", importObj.get("parentCrId").toString());
         }
 		String strongpointURL = "https://rest.netsuite.com/app/site/hosting/restlet.nl?script=customscript_flo_create_cr_restlet&deploy=customdeploy_flo_create_cr_restlet";
 		

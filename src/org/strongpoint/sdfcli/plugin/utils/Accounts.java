@@ -27,7 +27,7 @@ public class Accounts {
 			while((str = reader.readLine())  != null) {
 				contents.append(str);
 			}
-			System.out.println("FILE Contents: " +contents.toString());
+//			System.out.println("FILE Contents: " +contents.toString());
 			accounts = (JSONArray) new JSONParser().parse(contents.toString());
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();

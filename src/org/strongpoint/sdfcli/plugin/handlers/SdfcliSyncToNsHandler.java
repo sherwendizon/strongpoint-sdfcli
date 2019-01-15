@@ -27,7 +27,7 @@ import org.eclipse.ui.console.MessageConsoleStream;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
-import org.strongpoint.sdfcli.plugin.dialogs.DeployDialog;
+import org.strongpoint.sdfcli.plugin.dialogs.ProcessMessageDialog;
 import org.strongpoint.sdfcli.plugin.services.SyncToNsCliService;
 
 public class SdfcliSyncToNsHandler extends AbstractHandler {
@@ -42,29 +42,42 @@ public class SdfcliSyncToNsHandler extends AbstractHandler {
 		if (getCurrentProject(window) != null) {
 			IPath path = getCurrentProject(window).getLocation();
 			SyncToNsCliService syncToNsCliService = new SyncToNsCliService();
+			ProcessMessageDialog importObjMessageDialog = new ProcessMessageDialog(window.getShell(), "Import Objects", null, "Importing Objects from Netsuite. This may take a while. Please press 'OK' to continue.", MessageDialog.INFORMATION, new String[] {"OK"}, 0);
+			importObjMessageDialog.open();
 			JSONObject resultsOut = syncToNsCliService.importObjectsCliResult(path.toPortableString());
 			try {
 				getCurrentProject(window).refreshLocal(IResource.DEPTH_INFINITE, null);
 			} catch (CoreException e1) {
 				e1.printStackTrace();
-			}			
+			}
+//			MessageDialog importObjMessageDialog = processMessageDialog(window.getShell(), "Import Objects", "Importing Objects from Netsuite. It may take a while");
+//			importObjMessageDialog.open();
 			data(out, resultsOut);
-			
+//			importObjMessageDialog.close();
+			ProcessMessageDialog importFilesMessageDialog = new ProcessMessageDialog(window.getShell(), "Import Files", null, "Importing Files from Netsuite. This may take a while.. Please press 'OK' to continue.", MessageDialog.INFORMATION, new String[] {"OK"}, 0);
+			importFilesMessageDialog.open();			
 			JSONObject importFilesResults = syncToNsCliService.importFilesCliResult(path.toPortableString());
 			try {
 				getCurrentProject(window).refreshLocal(IResource.DEPTH_INFINITE, null);
 			} catch (CoreException e1) {
 				e1.printStackTrace();
-			}			
+			}
+//			MessageDialog importFilesMessageDialog = processMessageDialog(window.getShell(), "Import Files", "Importing Files from Netsuite. It may take a while.");
+//			importFilesMessageDialog.open();			
 			data(out, importFilesResults);
-			
+//			importFilesMessageDialog.close();
+			ProcessMessageDialog addDependenciesMessageDialog = new ProcessMessageDialog(window.getShell(), "Add Dependencies", null, "Adding Dependencies from Netsuite. This may take a while. Please press 'OK' to continue.", MessageDialog.INFORMATION, new String[] {"OK"}, 0);
+			addDependenciesMessageDialog.open();			
 			JSONObject addDependenciesResults = syncToNsCliService.addDependenciesCliResult(path.toPortableString());
 			try {
 				getCurrentProject(window).refreshLocal(IResource.DEPTH_INFINITE, null);
 			} catch (CoreException e1) {
 				e1.printStackTrace();
 			}			
+//			MessageDialog addDependenciesMessageDialog = processMessageDialog(window.getShell(), "Add Dependencies", "Adding Dependencies from Netsuite. It may take a while.");
+//			addDependenciesMessageDialog.open();			
 			data(out, addDependenciesResults);
+//			addDependenciesMessageDialog.close();
 		} else {
 			MessageDialog.openWarning(window.getShell(), "Warning", "Please select a project you would like to sync.");
 		}
@@ -78,6 +91,12 @@ public class SdfcliSyncToNsHandler extends AbstractHandler {
 		}
 		return null;
 	}
+	
+//	private MessageDialog processMessageDialog(Shell shell, String processTitle, String processMessage) {
+//		MessageDialog messageDialog = new MessageDialog(shell, processTitle, null,
+//				processMessage, MessageDialog.INFORMATION, new String[] {"Close"}, 0);
+//		return messageDialog;
+//	}
 
 	private MessageConsole findConsole(String name) {
 		ConsolePlugin plugin = ConsolePlugin.getDefault();

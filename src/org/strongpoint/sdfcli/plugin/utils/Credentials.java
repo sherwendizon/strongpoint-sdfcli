@@ -25,7 +25,7 @@ public class Credentials {
 				while((str = reader.readLine())  != null) {
 					contents.append(str);
 				}
-				System.out.println("FILE Contents: " +contents.toString());
+//				System.out.println("FILE Contents: " +contents.toString());
 				credentials = (JSONObject) new JSONParser().parse(contents.toString());	
 			}
 		} catch (FileNotFoundException e) {
