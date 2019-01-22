@@ -1,5 +1,10 @@
 package org.strongpoint.sdfcli.plugin.dialogs;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -32,6 +37,8 @@ import org.eclipse.ui.ISelectionService;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
 import org.strongpoint.sdfcli.plugin.services.DeployCliService;
 import org.strongpoint.sdfcli.plugin.utils.Accounts;
 import org.strongpoint.sdfcli.plugin.utils.Credentials;
@@ -127,27 +134,46 @@ public class DeployDialog extends TitleAreaDialog{
 		System.out.println("Deploy Approve results: " +approveResult.toJSONString());
 		JSONObject data = (JSONObject) approveResult.get("data");
 		JSONObject supportedObjs = DeployCliService.newInstance().getSupportedObjects(accountId, emailCred, passwordCred);
-		if(hasUnsupportedObjects(getScripIds(this.window), supportedObjs)) {
-			MessageDialog.openWarning(this.parentShell, "Unsupported Objects Detected", "Please manually complete and validate using Environment Compare.");
+		JSONObject importObjects = readImportJsonFile(this.projectPath);
+		JSONArray objects = (JSONArray) importObjects.get("objects");
+		List<String> listStr = new ArrayList<String>(); 
+		boolean isExcessObj = false;
+		if(objects != null) { 
+			for (int i = 0; i < objects.size(); i++){ 
+				listStr.add(objects.get(i).toString());
+			} 
+		} 		
+		for (String objStr : getScripIds(this.window)) {
+			if(!listStr.contains(objStr)) {
+				isExcessObj = true;
+				break;
+			}
+		}
+		if(isExcessObj) {
+			MessageDialog.openError(this.parentShell, "Object List Error", "Objects in the project changed after approval. Request a new Change Request.");
 		} else {
-//			JSONObject policyObj = DeployCliService.newInstance().getPolicy();
-//			if(policyObj != null && (boolean)policyObj.get("results")) {
-//				if(!(boolean)data.get("result")) {
-//					JSONObject messageObject = new JSONObject();
-//					messageObject.put("message", approveResult.get("message").toString());
-//					results = messageObject;
-//				}  else {
-//					results = DeployCliService.newInstance().deployCliResult(accountId, emailCred, passwordCred, pathCred, this.projectPath);	
-//				}				
-//			} else {
-//				results = DeployCliService.newInstance().deployCliResult(accountId, emailCred, passwordCred, pathCred, this.projectPath);
-//			}
-			if(!(boolean)data.get("result")) {
-				JSONObject messageObject = new JSONObject();
-				messageObject.put("message", approveResult.get("message").toString());
-				results = messageObject;
+			if(hasUnsupportedObjects(getScripIds(this.window), supportedObjs)) {
+				MessageDialog.openWarning(this.parentShell, "Unsupported Objects Detected", "Please manually complete and validate using Environment Compare.");
 			} else {
-				results = DeployCliService.newInstance().deployCliResult(accountId, emailCred, passwordCred, pathCred, this.projectPath);	
+//				JSONObject policyObj = DeployCliService.newInstance().getPolicy();
+//				if(policyObj != null && (boolean)policyObj.get("results")) {
+//					if(!(boolean)data.get("result")) {
+//						JSONObject messageObject = new JSONObject();
+//						messageObject.put("message", approveResult.get("message").toString());
+//						results = messageObject;
+//					}  else {
+//						results = DeployCliService.newInstance().deployCliResult(accountId, emailCred, passwordCred, pathCred, this.projectPath);	
+//					}				
+//				} else {
+//					results = DeployCliService.newInstance().deployCliResult(accountId, emailCred, passwordCred, pathCred, this.projectPath);
+//				}
+				if(!(boolean)data.get("result")) {
+					JSONObject messageObject = new JSONObject();
+					messageObject.put("message", approveResult.get("message").toString());
+					results = messageObject;
+				} else {
+					results = DeployCliService.newInstance().deployCliResult(accountId, emailCred, passwordCred, pathCred, this.projectPath);	
+				}			
 			}			
 		}	
 		super.okPressed();
@@ -256,5 +282,30 @@ public class DeployDialog extends TitleAreaDialog{
     	
     	return hasUnsupportedObj;
     }
+    
+	private JSONObject readImportJsonFile(String projectPath) {
+		StringBuilder contents = new StringBuilder();
+		String str;
+		File file = new File(projectPath + "/import.json");
+		System.out.println("SYNC PROJECT PATH: " + projectPath + "/import.json");
+		JSONObject scriptObjects = null;
+		try {
+			if(file.exists() && !file.isDirectory()) {
+				BufferedReader reader = new BufferedReader(new FileReader(file));
+				while((str = reader.readLine())  != null) {
+					contents.append(str);
+				}
+				System.out.println("FILE Contents: " +contents.toString());
+				scriptObjects = (JSONObject) new JSONParser().parse(contents.toString());	
+			}
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		} catch (ParseException e) {
+			e.printStackTrace();
+		}
+		return scriptObjects;		
+	}      
 
 }
