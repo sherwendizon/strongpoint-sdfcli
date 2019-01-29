@@ -172,7 +172,7 @@ public class DeployDialog extends TitleAreaDialog{
 					messageObject.put("message", approveResult.get("message").toString());
 					results = messageObject;
 				} else {
-					results = DeployCliService.newInstance().deployCliResult(accountId, emailCred, passwordCred, pathCred, this.projectPath);	
+					results = DeployCliService.newInstance().deployCliResult(accountId, emailCred, passwordCred, pathCred, this.projectPath, this.parentShell);	
 				}			
 			}			
 		}	

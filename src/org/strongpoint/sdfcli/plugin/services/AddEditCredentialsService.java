@@ -3,6 +3,8 @@ package org.strongpoint.sdfcli.plugin.services;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.StringReader;
+import java.util.Properties;
 import java.util.UUID;
 
 import org.json.simple.JSONArray;
@@ -12,6 +14,8 @@ import org.strongpoint.sdfcli.plugin.utils.Accounts;
 public class AddEditCredentialsService {
 	
 	private final static String userHomePath = System.getProperty("user.home");
+	
+	private final static String osName = System.getProperty("os.name").toLowerCase();
 
 	private String emailStr;
 	
@@ -37,8 +41,17 @@ public class AddEditCredentialsService {
 		JSONObject obj = new JSONObject();
 	    obj.put("email", this.emailStr);
 	    obj.put("password", this.passwordStr);
-	    String path = userHomePath.replace("\\", "") + "/sdfcli/";;
-	    obj.put("path", path.replace("\\", ""));
+//	    String path = userHomePath.replace("\\", "") + "/sdfcli/";
+	    String path = "";
+	    if(osName.indexOf("win") >= 0) {
+	    	path = userHomePath.replace("\\", "/");
+	    	obj.put("path", path + "/sdfcli/");
+	    } else {    	
+	    	System.out.println("NON-WINDOWS: " +userHomePath + "\\sdfcli\\");
+	    	path = userHomePath.replace("\\", "") + "/sdfcli/";
+	    	obj.put("path", path.replace("\\", ""));
+	    }
+//	    obj.put("path", path.replace("\\", ""));
 	
 	    try {
 	        File file = new File( userHomePath + "/sdfcli/" + "credentials.json");

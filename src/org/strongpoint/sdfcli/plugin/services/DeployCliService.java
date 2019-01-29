@@ -1,6 +1,7 @@
 package org.strongpoint.sdfcli.plugin.services;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
@@ -13,6 +14,7 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.swt.widgets.Shell;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -25,20 +27,33 @@ public class DeployCliService {
 	public static DeployCliService newInstance() {
 		return new DeployCliService();
 	}
-	
-	public JSONObject deployCliResult(String accountID, String email, String password, String sdfcliPath, String projectPath) {
+		
+	public JSONObject deployCliResult(String accountID, String email, String password, String sdfcliPath, String projectPath, Shell parentShell) {
 		JSONObject results = new JSONObject();
 		JSONArray jsonArray = new JSONArray();
-		StringBuffer cmdOutput = new StringBuffer(); 
+		StringBuffer cmdOutput = new StringBuffer();
+		String osName = System.getProperty("os.name").toLowerCase();
 		System.out.println("Project Path: " +projectPath);
+		System.out.println("SDFCLI Path: " +sdfcliPath);
 		String deployCommand = "(echo " + "\"" + password + "\"" + " ; yes | awk '{print \"YES\"}' ; yes | awk '{print \"YES\"}') | " +sdfcliPath +"sdfcli deploy -account "+accountID+" -email " + email +" -p "+projectPath+" -role 3 -url system.netsuite.com -l /webdev/sdf/sdk/test.log";
 //		String deployCommand = sdfcliPath +"sdfcli deploy";
-		System.out.println(deployCommand);
-		String[] commands = { "/bin/bash", "-c", "cd ~ && cd " + projectPath +"/ && " +deployCommand};
+		String[] commands = { "/bin/bash", "-c", "cd ~ && cd " + projectPath +"/ && " +deployCommand}; 
 		Runtime changeRootDirectory = Runtime.getRuntime();
 		try {
-			Process changeRootDirectoryProcess = changeRootDirectory.exec(commands);
-			changeRootDirectoryProcess.waitFor();
+//			Process changeRootDirectoryProcess = changeRootDirectory.exec(commands);
+			Process changeRootDirectoryProcess;
+			if(osName.indexOf("win") >= 0) {
+				String windowsDeployCommand = "(echo " +password+ " && (FOR /L %G IN (1,1,1000) DO @ECHO YES) && (FOR /L %G IN (1,1,1000) DO @ECHO YES)) | " +"sdfcli deploy -account " +accountID+ " -email " + email +" -p "+projectPath+ " -role 3 -url system.netsuite.com";
+				String[] windowsCommands = {"cmd.exe", "/c","cd " +projectPath+" && cd "+projectPath, " && "+windowsDeployCommand};
+				System.out.println("Windows: " +windowsDeployCommand);
+				ProcessBuilder processBuilderForWindows = new ProcessBuilder(windowsCommands);
+				processBuilderForWindows.redirectError(new File(projectPath+"/errorSync.log"));
+				changeRootDirectoryProcess = processBuilderForWindows.start();				
+			} else {
+				System.out.println("Linux or MacOS: " +deployCommand);
+				changeRootDirectoryProcess = changeRootDirectory.exec(commands);			
+			}
+			changeRootDirectoryProcess.waitFor();			
 			BufferedReader reader = new BufferedReader(new InputStreamReader(changeRootDirectoryProcess.getInputStream()));
 			String line = "";			
 			while ((line = reader.readLine())!= null) {

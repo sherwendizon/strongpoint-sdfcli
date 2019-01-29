@@ -44,6 +44,7 @@ public class SdfcliSyncToNsHandler extends AbstractHandler {
 			SyncToNsCliService syncToNsCliService = new SyncToNsCliService();
 			ProcessMessageDialog importObjMessageDialog = new ProcessMessageDialog(window.getShell(), "Import Objects", null, "Importing Objects from Netsuite. This may take a while. Please press 'OK' to continue.", MessageDialog.INFORMATION, new String[] {"OK"}, 0);
 			importObjMessageDialog.open();
+			syncToNsCliService.setParentShell(window.getShell());
 			JSONObject resultsOut = syncToNsCliService.importObjectsCliResult(path.toPortableString());
 			try {
 				getCurrentProject(window).refreshLocal(IResource.DEPTH_INFINITE, null);

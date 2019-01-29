@@ -7,6 +7,8 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 
+import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.swt.widgets.Shell;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -17,8 +19,16 @@ public class SyncToNsCliService {
 	
 	private static final String userHomePath = System.getProperty("user.home");
 	
+	private static final String osName = System.getProperty("os.name").toLowerCase();
+	
 	public static SyncToNsCliService newInstance() {
 		return new SyncToNsCliService();
+	}
+	
+	private Shell parentShell;
+	
+	public void setParentShell(Shell parentShell) {
+		this.parentShell = parentShell;
 	}
 	
 	private JSONObject readImportJsonFile(String projectPath) {
@@ -77,7 +87,20 @@ public class SyncToNsCliService {
 			String[] commands = { "/bin/bash", "-c", "cd ~ && cd " + projectPath +"/ && " +importobjectsCommand};
 			Runtime changeRootDirectory = Runtime.getRuntime();
 			try {
-				Process changeRootDirectoryProcess = changeRootDirectory.exec(commands);
+//				Process changeRootDirectoryProcess = changeRootDirectory.exec(commands);
+				Process changeRootDirectoryProcess;
+				if(osName.indexOf("win") >= 0) {
+					String windowsImportObjectsCommand = "(echo " +password+ " && (FOR /L %G IN (1,1,1000) DO @ECHO YES)) | " +"sdfcli importobjects -account "+accountID+" -destinationfolder /Objects/ -email " + email +" -p "+projectPath/*.replace("\\", "/")*/+" -role 3 -scriptid " + String.join(" ", objsStr).toString().replaceAll("null", "") + " -type ALL -url system.netsuite.com";
+					String[] windowsCommands = {"cmd.exe", "/c","cd " +projectPath+" && cd "+projectPath, " && "+windowsImportObjectsCommand};
+					System.out.println("Windows: " +windowsImportObjectsCommand);
+					ProcessBuilder processBuilderForWindows = new ProcessBuilder(windowsCommands);
+//					changeRootDirectoryProcess = changeRootDirectory.exec(windowsCommands);
+					processBuilderForWindows.redirectError(new File(projectPath+"/errorSync.log"));
+					changeRootDirectoryProcess = processBuilderForWindows.start();
+				} else {
+					System.out.println("Linux or MacOS: " +importobjectsCommand);
+					changeRootDirectoryProcess = changeRootDirectory.exec(commands);					
+				}				
 				changeRootDirectoryProcess.waitFor();
 				BufferedReader reader = new BufferedReader(new InputStreamReader(changeRootDirectoryProcess.getInputStream()));
 				String line = "";			
@@ -133,7 +156,20 @@ public class SyncToNsCliService {
 			String[] commands = { "/bin/bash", "-c", "cd ~ && cd " + projectPath +"/ && " +importFilesCommand};
 			Runtime changeRootDirectory = Runtime.getRuntime();
 			try {
-				Process changeRootDirectoryProcess = changeRootDirectory.exec(commands);
+//				Process changeRootDirectoryProcess = changeRootDirectory.exec(commands);
+				Process changeRootDirectoryProcess;
+				if(osName.indexOf("win") >= 0) {
+					String windowsImportFilesCommand = "(echo " +password+ " && (FOR /L %G IN (1,1,1000) DO @ECHO YES)) | " +"sdfcli importfiles -paths " + String.join(" ", objsStr).toString().replaceAll("null", "") + " -account " + accountID + " -email " + email +" -p " +projectPath+ " -role 3 -url system.netsuite.com";
+					String[] windowsCommands = {"cmd.exe", "/c","cd " +projectPath+" && cd "+projectPath, " && "+windowsImportFilesCommand};
+					System.out.println("Windows: " +windowsImportFilesCommand);
+					ProcessBuilder processBuilderForWindows = new ProcessBuilder(windowsCommands);
+					processBuilderForWindows.redirectError(new File(projectPath+"/errorSync.log"));
+					changeRootDirectoryProcess = processBuilderForWindows.start();					
+//					changeRootDirectoryProcess = changeRootDirectory.exec(windowsCommands);										
+				} else {
+					System.out.println("Linux or MacOS: " +importFilesCommand);
+					changeRootDirectoryProcess = changeRootDirectory.exec(commands);					
+				}				
 				changeRootDirectoryProcess.waitFor();
 				BufferedReader reader = new BufferedReader(new InputStreamReader(changeRootDirectoryProcess.getInputStream()));
 				String line = "";			
@@ -189,7 +225,20 @@ public class SyncToNsCliService {
 			String[] commands = { "/bin/bash", "-c", "cd ~ && cd " + projectPath +"/ && " +addDependenciesCommand};
 			Runtime changeRootDirectory = Runtime.getRuntime();
 			try {
-				Process changeRootDirectoryProcess = changeRootDirectory.exec(commands);
+//				Process changeRootDirectoryProcess = changeRootDirectory.exec(commands);
+				Process changeRootDirectoryProcess;
+				if(osName.indexOf("win") >= 0) {
+					String windowsAddDependenciesCommand = "((FOR /L %G IN (1,1,1000) DO @ECHO YES)) | " +"sdfcli adddependencies -account " + accountID + " -all -email " + email +" -p " +projectPath+ " -role 3 -url system.netsuite.com";
+					String[] windowsCommands = {"cmd.exe", "/c","cd " +projectPath+" && cd "+projectPath, " && "+windowsAddDependenciesCommand};
+					System.out.println("Windows: " +windowsAddDependenciesCommand);
+					ProcessBuilder processBuilderForWindows = new ProcessBuilder(windowsCommands);
+					processBuilderForWindows.redirectError(new File(projectPath+"/errorSync.log"));
+					changeRootDirectoryProcess = processBuilderForWindows.start();					
+//					changeRootDirectoryProcess = changeRootDirectory.exec(windowsCommands);						
+				} else {
+					System.out.println("Linux or MacOS: " +addDependenciesCommand);
+					changeRootDirectoryProcess = changeRootDirectory.exec(commands);				
+				}				
 				changeRootDirectoryProcess.waitFor();
 				BufferedReader reader = new BufferedReader(new InputStreamReader(changeRootDirectoryProcess.getInputStream()));
 				String line = "";			

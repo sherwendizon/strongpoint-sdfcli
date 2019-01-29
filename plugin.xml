@@ -102,37 +102,37 @@
             commandId="strongpoint-sdfcli.commands.syncToNsCommand"
             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
             contextId="org.eclipse.ui.contexts.window"
-            sequence="M1+6">
+            sequence="M1+7">
       </key>            
       <key
             commandId="strongpoint-sdfcli.commands.deployCommand"
             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
             contextId="org.eclipse.ui.contexts.window"
-            sequence="M1+6">
+            sequence="M1+8">
       </key>
       <key
             commandId="strongpoint-sdfcli.commands.impactAnalysisCommand"
             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
             contextId="org.eclipse.ui.contexts.window"
-            sequence="M1+6">
+            sequence="M1+9">
       </key>
       <key
             commandId="strongpoint-sdfcli.commands.testConnectionCommand"
             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
             contextId="org.eclipse.ui.contexts.window"
-            sequence="M1+6">
+            sequence="M1+0">
       </key>
       <key
             commandId="strongpoint-sdfcli.commands.addAccountCommand"
             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
             contextId="org.eclipse.ui.contexts.window"
-            sequence="M1+6">
+            sequence="M1+1">
       </key>
       <key
             commandId="strongpoint-sdfcli.commands.credentialsCommand"
             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
             contextId="org.eclipse.ui.contexts.window"
-            sequence="M1+6">
+            sequence="M1+2">
       </key>                              
    </extension>
    <extension
