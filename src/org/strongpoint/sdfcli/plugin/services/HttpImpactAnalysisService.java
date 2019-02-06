@@ -84,7 +84,7 @@ public class HttpImpactAnalysisService {
 		JSONObject results = new JSONObject();
 		String removeWhitespaces = String.join(",",getScripIds);
 		String strongpointURL = "";
-		strongpointURL = "https://rest.netsuite.com/app/site/hosting/restlet.nl?script=customscript_flo_get_diff_restlet&deploy=customdeploy_flo_get_diff_restlet&scriptIds=" + removeWhitespaces + "&source=" +sourceAccountID;
+		strongpointURL = "https://rest.netsuite.com/app/site/hosting/restlet.nl?script=customscript_flo_get_diff_restlet&deploy=customdeploy_flo_get_diff_restlet&scriptIds=" + removeWhitespaces + "&target=" +targetAccountID;
 		System.out.println("DIFF SCRIPT ID URL: " +strongpointURL);		
  		System.out.println(strongpointURL);
 		HttpGet httpGet = null;
@@ -94,7 +94,7 @@ public class HttpImpactAnalysisService {
 		try {
         	CloseableHttpClient client = HttpClients.createDefault();
             httpGet = new HttpGet(strongpointURL);
-            httpGet.addHeader("Authorization", "NLAuth nlauth_account=" + targetAccountID + ", nlauth_email=" + email + ", nlauth_signature=" + password + ", nlauth_role=3");
+            httpGet.addHeader("Authorization", "NLAuth nlauth_account=" + sourceAccountID + ", nlauth_email=" + email + ", nlauth_signature=" + password + ", nlauth_role=3");
             response = client.execute(httpGet);
             HttpEntity entity = response.getEntity();
             statusCode = response.getStatusLine().getStatusCode();
@@ -114,6 +114,8 @@ public class HttpImpactAnalysisService {
 				httpGet.reset();
 			}
 		}
+		
+		results.put("targetAccountId", targetAccountID);
 		
 		return results;
 	}

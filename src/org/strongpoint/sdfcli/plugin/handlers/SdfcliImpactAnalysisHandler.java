@@ -1,5 +1,14 @@
 package org.strongpoint.sdfcli.plugin.handlers;
 
+import java.awt.Desktop;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 
@@ -24,6 +33,8 @@ import org.eclipse.ui.ISelectionService;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PartInitException;
+import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.browser.IWebBrowser;
 import org.eclipse.ui.console.ConsolePlugin;
 import org.eclipse.ui.console.IConsole;
 import org.eclipse.ui.console.IConsoleConstants;
@@ -34,11 +45,17 @@ import org.eclipse.ui.console.MessageConsoleStream;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
 import org.strongpoint.sdfcli.plugin.dialogs.AuthenticationDialog;
 import org.strongpoint.sdfcli.plugin.dialogs.ImpactAnalysisDialog;
 import org.strongpoint.sdfcli.plugin.services.HttpImpactAnalysisService;
+import org.strongpoint.sdfcli.plugin.utils.Accounts;
+import org.strongpoint.sdfcli.plugin.utils.Credentials;
 
 public class SdfcliImpactAnalysisHandler extends AbstractHandler {
+	
+	private IPath path;
 
 	@Override
 	public Object execute(ExecutionEvent event) throws ExecutionException {
@@ -48,7 +65,7 @@ public class SdfcliImpactAnalysisHandler extends AbstractHandler {
 		myConsole.clearConsole();
 		MessageConsoleStream out = myConsole.newMessageStream();
 		if(getCurrentProject(window) != null) {
-			IPath path = getCurrentProject(window).getLocation();
+			path = getCurrentProject(window).getLocation();
 			ImpactAnalysisDialog impactAnalysisDialog = new ImpactAnalysisDialog(window.getShell());
 			impactAnalysisDialog.setWorkbenchWindow(window);
 			impactAnalysisDialog.setProjectPath(path.toPortableString());
@@ -143,18 +160,65 @@ public class SdfcliImpactAnalysisHandler extends AbstractHandler {
 	    	// End NOT ACTIVE data display
 	    	if(diffObj != null) {
 	    		JSONObject diffDataObj = (JSONObject) diffObj.get("data");
-	    		JSONArray diffs = (JSONArray) diffDataObj.get("diffs");
-		    	streamOut.println("===============================================");
-		    	streamOut.println("|                   DIFF                      | ");
-		    	streamOut.println("===============================================");
-		    	for (int i = 0; i < diffs.size(); i++) {
-					JSONObject diff = (JSONObject) diffs.get(i);
-					streamOut.println("CUSTRECORD_FLO_CUST_ID: " +diff.get("custrecord_flo_cust_id").toString());
-					streamOut.println("NAME: " +diff.get("name").toString());
-					streamOut.println("DIFF_OVERVIEW: " +diff.get("diff_overview").toString());
-					streamOut.println();
+//	    		JSONArray diffs = (JSONArray) diffDataObj.get("diffs");
+//		    	streamOut.println("===============================================");
+//		    	streamOut.println("|                   DIFF                      | ");
+//		    	streamOut.println("===============================================");
+//		    	for (int i = 0; i < diffs.size(); i++) {
+//					JSONObject diff = (JSONObject) diffs.get(i);
+//					streamOut.println("CUSTRECORD_FLO_CUST_ID: " +diff.get("custrecord_flo_cust_id").toString());
+//					streamOut.println("NAME: " +diff.get("name").toString());
+//					streamOut.println("DIFF_OVERVIEW: " +diff.get("diff_overview").toString());
+//					streamOut.println();
+//				}
+//		    	streamOut.println("===============================================");
+	    		String diffUrl = "";
+	    		if(diffDataObj != null) {
+	    			JSONObject credentials = Credentials.getCredentialsFromFile();
+	    			String email = "";
+	    			String password = "";
+	    			String sdfcliPath = "";
+	    			if(credentials != null) {
+	    				email = credentials.get("email").toString();
+	    				password = credentials.get("password").toString();
+	    				sdfcliPath = credentials.get("path").toString();			
+	    			}
+	    			JSONObject importObj = readImportJsonFile(path.toPortableString());
+	    			String sourceAccountID = "";
+	    			String sourceCrID = "";
+	    			if(importObj != null) {
+	    				sourceAccountID = importObj.get("accountId").toString();
+	    				sourceCrID = importObj.get("parentCrId").toString();
+	    			}
+	    			String targetAccountId = (String) diffObj.get("targetAccountId");
+	    			String sourceAccountName = "";
+	    			String targetAccountName = "";
+	    			JSONArray accountsArray = Accounts.getAccountsFromFile();
+	    			for (int i = 0; i < accountsArray.size(); i++) {
+						JSONObject accountObj = (JSONObject) accountsArray.get(i);
+	    				if(sourceAccountID.equals(accountObj.get("accountId").toString())) {
+							sourceAccountName = accountObj.get("accountName").toString(); 
+						}
+	    				if(targetAccountId.equals(accountObj.get("accountId").toString())) {
+							targetAccountName = accountObj.get("accountName").toString();
+						}	    				
+					}
+	    			diffUrl = (String) diffDataObj.get("url") 
+	    					+ "&custpage_changereq=" +sourceCrID
+	    					+ "&custpage_desc=" +"Difference between%20" +sourceAccountName+ "%20and%20" +targetAccountName
+	    					+ "&custpage_email=" +email
+	    					+ "&custpage_password=" +password
+	    					+ "&custpage_accountsource=" +sourceAccountID
+	    					+ "&custpage_email2=" +email
+	    					+ "&custpage_password2=" +password
+	    					+ "&custpage_accounttarget=" +targetAccountId;
+	    		}
+		    	try {
+					IWebBrowser browser = PlatformUI.getWorkbench().getBrowserSupport().createBrowser("Diff");
+					browser.openURL(new URL(diffUrl));		
+		    	} catch (PartInitException | MalformedURLException e) {
+					e.printStackTrace();
 				}
-		    	streamOut.println("===============================================");
 	    	}
     	}	
     }
@@ -176,6 +240,31 @@ public class SdfcliImpactAnalysisHandler extends AbstractHandler {
 			}
 		}
 		return project;
-	}    
+	} 
+	
+	private JSONObject readImportJsonFile(String projectPath) {
+		StringBuilder contents = new StringBuilder();
+		String str;
+		File file = new File(projectPath + "/import.json");
+		System.out.println("SYNC PROJECT PATH: " + projectPath + "/import.json");
+		JSONObject scriptObjects = null;
+		try {
+			if(file.exists() && !file.isDirectory()) {
+				BufferedReader reader = new BufferedReader(new FileReader(file));
+				while((str = reader.readLine())  != null) {
+					contents.append(str);
+				}
+				System.out.println("FILE Contents: " +contents.toString());
+				scriptObjects = (JSONObject) new JSONParser().parse(contents.toString());	
+			}
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		} catch (ParseException e) {
+			e.printStackTrace();
+		}
+		return scriptObjects;		
+	}	
 
 }
