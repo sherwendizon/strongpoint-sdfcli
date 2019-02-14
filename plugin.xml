@@ -198,5 +198,17 @@
          </toolbar>
       </menuContribution>-->
    </extension>
+   
+   <extension point="org.eclipse.ui.views">
+       <view id="strongpoint-sdfcli.views.strongpointView" 
+             name="Strongpoint"
+             class="org.strongpoint.sdfcli.plugin.views.StrongpointView"/>
+   </extension>
+   
+      <extension point="org.eclipse.ui.views">
+       <view id="strongpoint-sdfcli.views.strongpointDetailView" 
+             name="Strongpoint Details"
+             class="org.strongpoint.sdfcli.plugin.views.StrongpointDetailView"/>
+   </extension>
 
 </plugin>

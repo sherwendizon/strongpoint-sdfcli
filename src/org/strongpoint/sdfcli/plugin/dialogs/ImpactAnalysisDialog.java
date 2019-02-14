@@ -13,6 +13,10 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.internal.core.PackageFragmentRoot;
@@ -30,6 +34,7 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
@@ -43,6 +48,8 @@ import org.strongpoint.sdfcli.plugin.services.HttpImpactAnalysisService;
 import org.strongpoint.sdfcli.plugin.services.HttpRequestDeploymentService;
 import org.strongpoint.sdfcli.plugin.utils.Accounts;
 import org.strongpoint.sdfcli.plugin.utils.Credentials;
+import org.strongpoint.sdfcli.plugin.utils.enums.JobTypes;
+import org.strongpoint.sdfcli.plugin.views.StrongpointView;
 
 public class ImpactAnalysisDialog extends TitleAreaDialog{
 	
@@ -75,7 +82,11 @@ public class ImpactAnalysisDialog extends TitleAreaDialog{
 	
 	public void setProjectPath(String projectPath) {
 		this.projectPath = projectPath;
-	}	
+	}
+	
+	public String getTargetAccountId() {
+		return selectedValue;
+	}
 	
 	@Override
 	public void create() {
@@ -128,7 +139,7 @@ public class ImpactAnalysisDialog extends TitleAreaDialog{
 		diffResults = HttpImpactAnalysisService.newInstance().getDiff(this.parentShell, getScripIds(this.window), sourceAccountIdText.getText(), accountID);
 		super.okPressed();
 	}
-	
+			
 	private void createAccountIDElement(Composite container) {
         Label accountIDLabel = new Label(container, SWT.NONE);
         accountIDLabel.setText("Target Account ID: ");
