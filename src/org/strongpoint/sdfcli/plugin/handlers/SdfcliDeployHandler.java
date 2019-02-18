@@ -7,7 +7,9 @@ import java.io.PrintWriter;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
@@ -53,31 +55,53 @@ public class SdfcliDeployHandler extends AbstractHandler {
 			deployDialog.setWorkbenchWindow(window);
 			deployDialog.setProjectPath(path.toPortableString());
 			deployDialog.open();
+			IViewPart viewPart= null;
 			try {
-				IViewPart viewPart = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage()
+				viewPart = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage()
 						.showView(StrongpointView.viewId);
-				StrongpointView strongpointView = (StrongpointView) viewPart;
-				Date date = new Date();
-				Timestamp timestamp = new Timestamp(date.getTime());
-				strongpointView.setJobType(JobTypes.deployment.getJobType());
-				strongpointView.setDisplayObject(deployDialog.getResults());
-				strongpointView.setTargetAccountId(deployDialog.getTargetAccountId());
-				strongpointView.setTimestamp(timestamp.toString());
-				String statusStr = "Success";
-				strongpointView.setStatus(statusStr);
-				strongpointView.populateTable(JobTypes.deployment.getJobType());
-				writeToFile(deployDialog.getResults(), JobTypes.deployment.getJobType(),
-						deployDialog.getTargetAccountId(), timestamp.toString());
 			} catch (PartInitException e1) {
 				e1.printStackTrace();
-			}			
-			
+			}
+			StrongpointView strongpointView = (StrongpointView) viewPart;
+			Date date = new Date();
+			Timestamp timestamp = new Timestamp(date.getTime());
+			strongpointView.setJobType(JobTypes.deployment.getJobType());
+			strongpointView.setDisplayObject(deployDialog.getResults());
+			strongpointView.setTargetAccountId(deployDialog.getTargetAccountId());
+			strongpointView.setTimestamp(timestamp.toString());
+			String statusStr = "Success";
+			strongpointView.setStatus(statusStr);
+			strongpointView.populateTable(JobTypes.deployment.getJobType());
+			writeToFile(deployDialog.getResults(), JobTypes.deployment.getJobType(), deployDialog.getTargetAccountId(),
+					timestamp.toString());
+			JSONArray savedSearchesResults = deployDialog.getSavedSearchResults();
+			if(savedSearchesResults != null) {
+				for (int i = 0; i < savedSearchesResults.size(); i++) {
+					JSONObject obj = (JSONObject) savedSearchesResults.get(i);
+					Date savedSearchDate = new Date();
+					Timestamp savedSearchTimestamp = new Timestamp(savedSearchDate.getTime());
+					String savedSearchJobPerFile = JobTypes.savedSearch.getJobType() + " - " +obj.get("filename").toString();
+					strongpointView.setJobType(savedSearchJobPerFile);
+					strongpointView.setDisplayObject(deployDialog.getResults());
+					strongpointView.setTargetAccountId(deployDialog.getTargetAccountId());
+					strongpointView.setTimestamp(savedSearchTimestamp.toString());
+					String savedSearchStatusStr = "Success";
+					System.out.println("SS OBJECT: " +obj.get("code").toString());
+					if(!obj.get("code").toString().equalsIgnoreCase("200")) {
+						savedSearchStatusStr = "Failed";
+					}
+					strongpointView.setStatus(savedSearchStatusStr);
+					strongpointView.populateTable(savedSearchJobPerFile);
+					writeToFile(obj, savedSearchJobPerFile, deployDialog.getTargetAccountId(),
+							savedSearchTimestamp.toString());					
+				}
+			}
 		} else {
 			MessageDialog.openWarning(window.getShell(), "Warning", "Please select a project.");
 		}
 		return null;
 	}
-	
+
 	private void writeToFile(JSONObject obj, String jobType, String targetAccountId, String timestamp) {
 		String userHomePath = System.getProperty("user.home");
 		String fileName = jobType + "_" + targetAccountId + "_" + timestamp + ".txt";
@@ -95,7 +119,7 @@ public class SdfcliDeployHandler extends AbstractHandler {
 				e.printStackTrace();
 			}
 		}
-		
+
 		FileWriter writer;
 		try {
 			writer = new FileWriter(userHomePath + "/strongpoint_action_logs/" + fileName);
@@ -104,7 +128,7 @@ public class SdfcliDeployHandler extends AbstractHandler {
 				JSONArray results = (JSONArray) obj.get("results");
 				String messageResult = (String) obj.get("message");
 				if (messageResult != null) {
-					printWriter.println("Error Message: " + messageResult);
+					printWriter.println("Message: " + messageResult);
 				} else {
 					System.out.println("results: " + results);
 					if ((JSONObject) results.get(0) != null) {
@@ -121,7 +145,7 @@ public class SdfcliDeployHandler extends AbstractHandler {
 			}
 		} catch (IOException e) {
 			e.printStackTrace();
-		}			
+		}
 	}
 
 	public static IProject getCurrentProject(IWorkbenchWindow window) {
@@ -142,4 +166,5 @@ public class SdfcliDeployHandler extends AbstractHandler {
 		}
 		return project;
 	}
+	
 }

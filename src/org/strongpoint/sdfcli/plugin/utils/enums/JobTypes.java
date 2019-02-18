@@ -3,6 +3,7 @@ package org.strongpoint.sdfcli.plugin.utils.enums;
 public enum JobTypes {
 	impact_analysis("Impact Analysis"),
 	deployment("Deployment"),
+	savedSearch("Deploy Saved Search"),
 	pre_deployment("Pre-Deployment"),
 	request_deployment("Request Deployment"),
 	rollback("Rollback"),

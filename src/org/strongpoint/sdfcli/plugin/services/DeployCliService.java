@@ -2,15 +2,21 @@ package org.strongpoint.sdfcli.plugin.services;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.ContentType;
+import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
@@ -19,6 +25,8 @@ import org.eclipse.swt.widgets.Shell;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
 import org.strongpoint.sdfcli.plugin.dialogs.AuthenticationDialog;
 import org.strongpoint.sdfcli.plugin.utils.Credentials;
 
@@ -124,7 +132,7 @@ public class DeployCliService {
 		
 		return results;
 	}
-	
+		
 	public JSONObject getSupportedObjects(String accountID, String email, String password) {
 		JSONObject results = new JSONObject();
 		String strongpointURL = "https://rest.netsuite.com/app/site/hosting/restlet.nl?script=customscript_flo_get_supported_objects&deploy=customdeploy_flo_get_supported_objects";
@@ -149,10 +157,8 @@ public class DeployCliService {
 			}
 			results = (JSONObject) JSONValue.parse(responseBodyStr);
 		} catch (Exception exception) {
-//			System.out.println("Request Deployment call error: " +exception.getMessage());
 			results = new JSONObject();
 			results.put("error", exception.getMessage());
-//			throw new RuntimeException("Request Deployment call error: " +exception.getMessage());
 		} finally {
 			if (httpGet != null) {
 				httpGet.reset();
@@ -162,8 +168,97 @@ public class DeployCliService {
 		return results;		
 	}
 	
-//	public JSONObject getPolicy() {
-//		return new JSONObject();
-//	}
+	public JSONArray deploySavedSearches(String accountID, String email, String password, String sdfcliPath, String projectPath, Shell parentShell) {
+		JSONArray results = new JSONArray();
+		JSONObject creds = Credentials.getCredentialsFromFile();
+		String emailCred = "";
+		String passwordCred = "";
+		if(creds != null) {
+			emailCred = creds.get("email").toString();
+			passwordCred = creds.get("password").toString();
+		}
+		String strongpointURL = "https://rest.netsuite.com/app/site/hosting/restlet.nl?script=customscript_flo_post_search_restlet&deploy=customdeploy_flo_post_search_restlet";
+		
+		HttpPost httpPost = null;
+		int statusCode;
+		String responseBodyStr;
+		List<String> filenames = readSavedSearchDirectory(projectPath);
+		if(filenames != null) {
+			for (String filename : filenames) {
+				JSONObject obj = new JSONObject();
+				obj.put("search", readSavedSearchFile(projectPath +"/FileCabinet/SavedSearches/"+ filename));
+
+				try {
+					CloseableHttpClient client = HttpClients.createDefault();
+					httpPost = new HttpPost(strongpointURL);
+					httpPost.addHeader("Authorization", "NLAuth nlauth_account=" + accountID + ", nlauth_email="
+							+ emailCred + ", nlauth_signature=" + passwordCred + ", nlauth_role=3");
+					System.out.println("PARAMETERS: " + obj.toJSONString());
+					httpPost.addHeader("Content-type", "application/json");
+					StringEntity stringEntity = new StringEntity(obj.toJSONString(),
+							ContentType.APPLICATION_JSON);
+					httpPost.setEntity(stringEntity);
+					CloseableHttpResponse httpResponse = client.execute(httpPost);
+					HttpEntity entity = httpResponse.getEntity();
+					statusCode = httpResponse.getStatusLine().getStatusCode();
+					responseBodyStr = EntityUtils.toString(entity);
+
+					if (statusCode >= 400) {
+						throw new RuntimeException("HTTP Request returns a " + statusCode);
+					}
+					JSONObject resultObj = (JSONObject) JSONValue.parse(responseBodyStr);
+					resultObj.put("filename", filename);
+					results.add(resultObj);
+				} catch (Exception exception) {
+					System.out.println("Saved Search Deployment call error: " + exception.getMessage());
+					throw new RuntimeException("Saved Search Deployment call error: " + exception.getMessage());
+				} finally {
+					if (httpPost != null) {
+						httpPost.reset();
+					}
+				}				
+				
+			}
+		}		
+		return results;		
+	}
+	
+	private List<String> readSavedSearchDirectory(String projectPath) {
+		List<String> filenames = new ArrayList<>();
+		StringBuilder contents = new StringBuilder();
+		String str;
+		File savedSearchFolder = new File(projectPath + "/FileCabinet/SavedSearches");
+		File[] listOfFiles = savedSearchFolder.listFiles();
+		for (int i = 0; i < listOfFiles.length; i++) {
+		  if (listOfFiles[i].isFile()) {
+			  filenames.add(listOfFiles[i].getName());
+		  }
+		}
+		
+		return filenames;		
+	}
+		
+	private JSONObject readSavedSearchFile(String filenameStr) {
+		StringBuilder contents = new StringBuilder();
+		String str;
+		File file = new File(filenameStr);
+		JSONObject savedSearchtObject = null;
+		try {
+			if(file.exists() && !file.isDirectory()) {
+				BufferedReader reader = new BufferedReader(new FileReader(file));
+				while((str = reader.readLine())  != null) {
+					contents.append(str);
+				}
+				savedSearchtObject = (JSONObject) new JSONParser().parse(contents.toString());	
+			}
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		} catch (ParseException e) {
+			e.printStackTrace();
+		}
+		return savedSearchtObject;		
+	}
 
 }

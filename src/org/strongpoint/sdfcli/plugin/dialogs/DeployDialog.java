@@ -49,6 +49,8 @@ public class DeployDialog extends TitleAreaDialog{
 	
 	private JSONObject results;
 	
+	private JSONArray savedSearchResults;
+	
 	private String projectPath;
 	
 	private IWorkbenchWindow window;
@@ -72,6 +74,10 @@ public class DeployDialog extends TitleAreaDialog{
 	
 	public JSONObject getResults() {
 		return this.results;
+	}
+	
+	public JSONArray getSavedSearchResults() {
+		return this.savedSearchResults;
 	}
 	
 	public String getTargetAccountId() {
@@ -177,6 +183,7 @@ public class DeployDialog extends TitleAreaDialog{
 					results = messageObject;
 				} else {
 					results = DeployCliService.newInstance().deployCliResult(accountId, emailCred, passwordCred, pathCred, this.projectPath, this.parentShell);	
+					savedSearchResults = DeployCliService.newInstance().deploySavedSearches(accountId, emailCred, passwordCred, pathCred, this.projectPath, this.parentShell);
 				}			
 			}			
 		}	
@@ -310,6 +317,6 @@ public class DeployDialog extends TitleAreaDialog{
 			e.printStackTrace();
 		}
 		return scriptObjects;		
-	}      
+	}	
 
 }
