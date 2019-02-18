@@ -66,7 +66,7 @@ public class StrongpointView extends ViewPart {
 		table = new Table(parent, SWT.BORDER);
 		TableColumn taskCol = new TableColumn(table, SWT.LEFT);
 		taskCol.setText("Action");
-		taskCol.setWidth(250);		
+		taskCol.setWidth(280);		
 		TableColumn accountCol = new TableColumn(table, SWT.LEFT);
 		accountCol.setText("Target Account");
 		accountCol.setWidth(300);
@@ -75,13 +75,14 @@ public class StrongpointView extends ViewPart {
 		statusCol.setWidth(100);
 		TableColumn progressCol = new TableColumn(table, SWT.LEFT);
 		progressCol.setText("Progress");
-		progressCol.setWidth(100);
+		progressCol.setWidth(70);
 		TableColumn timestampCol = new TableColumn(table, SWT.LEFT);
 		timestampCol.setText("Timestamp");
 		timestampCol.setWidth(100);
 
 		table.setHeaderVisible(true);
 		table.setLinesVisible(true);
+		table.deselectAll();
 		addTableListener();
 	}
 	
