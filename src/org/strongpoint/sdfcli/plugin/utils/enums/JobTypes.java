@@ -7,7 +7,11 @@ public enum JobTypes {
 	request_deployment("Request Deployment"),
 	rollback("Rollback"),
 	test_connection("Test Connection"),
-	sync_to_netsuite("Sync To Netsuite");
+	account("Account"),
+	credentials("Credentials"),
+	import_objects("Sync To Netsuite - Importing Objects"),
+	import_files("Sync To Netsuite - Importing Files"),
+	add_dependencies("Sync To Netsuite - Adding Dependencies");
 	
 	private String jobType;
 	

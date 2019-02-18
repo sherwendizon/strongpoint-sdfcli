@@ -74,6 +74,10 @@ public class DeployDialog extends TitleAreaDialog{
 		return this.results;
 	}
 	
+	public String getTargetAccountId() {
+		return selectedValue;
+	}	
+	
 	@Override
 	public void create() {
 		super.create();

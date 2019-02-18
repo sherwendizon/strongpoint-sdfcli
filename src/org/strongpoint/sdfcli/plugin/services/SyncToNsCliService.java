@@ -27,6 +27,30 @@ public class SyncToNsCliService {
 	
 	private Shell parentShell;
 	
+	private String accountId;
+	
+	private boolean isImportObjectProcessDone;
+	
+	private boolean isImportFileProcessDone;
+	
+	private boolean isAddDependenciesProcessDone;
+	
+	public String getAccountId() {
+		return this.accountId;
+	}
+	
+	public boolean getIsImportObjectProcessDone() {
+		return this.isImportObjectProcessDone;
+	}
+	
+	public boolean getIsImportFileProcessDone() {
+		return this.isImportFileProcessDone;
+	}
+	
+	public boolean getIsAddDependenciesProcessDone() {
+		return this.isAddDependenciesProcessDone;
+	}
+	
 	public void setParentShell(Shell parentShell) {
 		this.parentShell = parentShell;
 	}
@@ -57,6 +81,8 @@ public class SyncToNsCliService {
 	}
 	
 	public JSONObject importObjectsCliResult(String projectPath) {
+		this.isImportObjectProcessDone = false;
+		System.out.println("Before Import Object Process: " +this.isImportObjectProcessDone);
 		JSONObject results = new JSONObject();
 		JSONObject credentials = Credentials.getCredentialsFromFile();
 		String email = "";
@@ -70,6 +96,7 @@ public class SyncToNsCliService {
 		JSONObject importObj = readImportJsonFile(projectPath);
 		if(importObj != null) {
 			String accountID = importObj.get("accountId").toString();
+			this.accountId = accountID;
 			JSONArray objs = (JSONArray) importObj.get("objects");
 			String[] objsStr = new String[objs.size()];
 			System.out.println("IMPORT OBJECTS: " +objs.toJSONString());
@@ -124,10 +151,14 @@ public class SyncToNsCliService {
 			results.put("results", jsonArray);			
 		}
 
+		this.isImportObjectProcessDone = true;
+		System.out.println("After Import Objects Process: " +this.isImportObjectProcessDone);
 		return results;
 	}
 	
 	public JSONObject importFilesCliResult(String projectPath) {
+		this.isImportFileProcessDone = false;
+		System.out.println("Before Import Files Process: " +this.isImportFileProcessDone);
 		JSONObject results = new JSONObject();
 		JSONObject credentials = Credentials.getCredentialsFromFile();
 		String email = "";
@@ -195,10 +226,14 @@ public class SyncToNsCliService {
 			results.put("results", jsonArray);			
 		}
 
+		this.isImportFileProcessDone = true;
+		System.out.println("After Import Files Process: " +this.isImportFileProcessDone);		
 		return results;
 	}
 	
 	public JSONObject addDependenciesCliResult(String projectPath) {
+		this.isAddDependenciesProcessDone = false;
+		System.out.println("Before Add Dependencies Process: " +this.isAddDependenciesProcessDone);
 		JSONObject results = new JSONObject();
 		JSONObject credentials = Credentials.getCredentialsFromFile();
 		String email = "";
@@ -263,6 +298,8 @@ public class SyncToNsCliService {
 				exception.printStackTrace();
 			}
 			
+			this.isAddDependenciesProcessDone = true;
+			System.out.println("After Add Dependencies Process: " +this.isAddDependenciesProcessDone);
 			results.put("results", jsonArray);			
 		}
 

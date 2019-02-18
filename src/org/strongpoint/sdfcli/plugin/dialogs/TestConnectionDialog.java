@@ -44,7 +44,6 @@ public class TestConnectionDialog extends TitleAreaDialog{
 	private JSONObject results;
 	private IWorkbenchWindow window;
 	private String selectedValue = "";
-	
 	private Shell parentShell;
 
 	public TestConnectionDialog(Shell parentShell) {
@@ -58,6 +57,10 @@ public class TestConnectionDialog extends TitleAreaDialog{
 	
 	public void setWorkbenchWindow(IWorkbenchWindow window) {
 		this.window = window;
+	}
+	
+	public String getTargetAccountId() {
+		return selectedValue;
 	}	
 	
 	@Override

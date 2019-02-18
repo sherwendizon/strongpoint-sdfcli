@@ -45,9 +45,8 @@ public class RequestDeploymentDialog extends TitleAreaDialog {
 	private JSONArray arr;
     private JSONArray employeeArray;
 	private String projectPath;
-	
 	private JSONObject results;
-
+	
 	public RequestDeploymentDialog(Shell parentShell) {
 		super(parentShell);
 	}
@@ -62,7 +61,8 @@ public class RequestDeploymentDialog extends TitleAreaDialog {
 	
 	public void setProjectPath(String projectPath) {
 		this.projectPath = projectPath;
-	}	
+	}
+
 
 	@Override
 	public void create() {

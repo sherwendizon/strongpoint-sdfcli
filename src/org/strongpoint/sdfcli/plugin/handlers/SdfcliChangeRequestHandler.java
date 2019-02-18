@@ -4,7 +4,13 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.sql.Timestamp;
+import java.util.Date;
 
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
@@ -19,21 +25,18 @@ import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.ISelectionService;
+import org.eclipse.ui.IViewPart;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PartInitException;
-import org.eclipse.ui.console.ConsolePlugin;
-import org.eclipse.ui.console.IConsole;
-import org.eclipse.ui.console.IConsoleConstants;
-import org.eclipse.ui.console.IConsoleManager;
-import org.eclipse.ui.console.IConsoleView;
-import org.eclipse.ui.console.MessageConsole;
-import org.eclipse.ui.console.MessageConsoleStream;
+import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 import org.strongpoint.sdfcli.plugin.dialogs.RequestDeploymentDialog;
+import org.strongpoint.sdfcli.plugin.utils.enums.JobTypes;
+import org.strongpoint.sdfcli.plugin.views.StrongpointView;
 
 public class SdfcliChangeRequestHandler extends AbstractHandler{
 
@@ -41,53 +44,82 @@ public class SdfcliChangeRequestHandler extends AbstractHandler{
 	public Object execute(ExecutionEvent event) throws ExecutionException {
 		IWorkbenchWindow window = HandlerUtil.getActiveWorkbenchWindowChecked(event);
 		IWorkbenchPage page = window.getActivePage();
-		MessageConsole myConsole = findConsole("Change Request Created");
-		myConsole.clearConsole();
-		MessageConsoleStream out = myConsole.newMessageStream();
 		if (getCurrentProject(window) != null) {
 			IPath path = getCurrentProject(window).getLocation();
 			RequestDeploymentDialog requestDeploymentDialog = new RequestDeploymentDialog(window.getShell());
 			requestDeploymentDialog.setWorkbenchWindow(window);
 			requestDeploymentDialog.setProjectPath(path.toPortableString());			
 			requestDeploymentDialog.open();
-			data(out, requestDeploymentDialog.getResults(), path.toPortableString());			
+			try {
+				IViewPart viewPart = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage()
+						.showView(StrongpointView.viewId);
+				StrongpointView strongpointView = (StrongpointView) viewPart;
+				Date date = new Date();
+				Timestamp timestamp = new Timestamp(date.getTime());
+				String accountId = accountId(path.toPortableString());
+				strongpointView.setJobType(JobTypes.request_deployment.getJobType());
+				strongpointView.setDisplayObject(requestDeploymentDialog.getResults());
+				strongpointView.setTargetAccountId(accountId);
+				strongpointView.setTimestamp(timestamp.toString());
+				String statusStr = "Success";
+				strongpointView.setStatus(statusStr);
+				strongpointView.populateTable(JobTypes.request_deployment.getJobType());
+				writeToFile(requestDeploymentDialog.getResults(), JobTypes.request_deployment.getJobType(),
+						accountId, timestamp.toString(), path.toPortableString());
+			} catch (PartInitException e1) {
+				e1.printStackTrace();
+			}					
 		} else {
 			MessageDialog.openWarning(window.getShell(), "Warning", "Please select a project.");
-		}
-		IConsole console = myConsole;
-		String id = IConsoleConstants.ID_CONSOLE_VIEW;
-		try {
-			IConsoleView consoleView = (IConsoleView) page.showView(id);
-			consoleView.display(console);
-		} catch (PartInitException e) {
-			e.printStackTrace();
 		}
 		
 		return null;
 	}
 	
-    private MessageConsole findConsole(String name) {
-        ConsolePlugin plugin = ConsolePlugin.getDefault();
-        IConsoleManager conMan = plugin.getConsoleManager();
-//        IConsole[] existing = conMan.getConsoles();
-//        for (int i = 0; i < existing.length; i++)
-//           if (name.equals(existing[i].getName()))
-//              return (MessageConsole) existing[i];
-        MessageConsole myConsole = new MessageConsole(name, null);
-        conMan.addConsoles(new IConsole[]{myConsole});
-        return myConsole;
-     }	
+	private void writeToFile(JSONObject obj, String jobType, String targetAccountId, String timestamp, String projectPath) {
+		String userHomePath = System.getProperty("user.home");
+		String fileName = jobType + "_" + targetAccountId + "_" + timestamp + ".txt";
+		boolean isDirectoryExist = Files.isDirectory(Paths.get(userHomePath + "/strongpoint_action_logs"));
+		if (!isDirectoryExist) {
+			File newDir = new File(userHomePath + "/strongpoint_action_logs");
+			newDir.mkdir();
+		}
+
+		File newFile = new File(userHomePath + "/strongpoint_action_logs/" + fileName);
+		if (!newFile.exists()) {
+			try {
+				newFile.createNewFile();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+		
+		FileWriter writer;
+		try {
+			writer = new FileWriter(userHomePath + "/strongpoint_action_logs/" + fileName);
+			PrintWriter printWriter = new PrintWriter(writer);
+			if (obj != null) {
+	            JSONObject importObj = readImportJsonFile(projectPath);
+	            if(importObj != null) {
+	            	printWriter.println("Account ID: " + importObj.get("accountId").toString());
+	            }
+	            System.out.println("REQUEST DEPLOYMENT RESULT: " +obj.toJSONString());
+	            printWriter.println("Deployment Record ID: " + obj.get("id").toString());
+				printWriter.close();
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+		}			
+	}	
 	
-    private void data(MessageConsoleStream streamOut, JSONObject obj, String projectPath) {
-    	if(obj != null) {
-            JSONObject importObj = readImportJsonFile(projectPath);
-            if(importObj != null) {
-        		streamOut.println("Account ID: " + importObj.get("accountId").toString());
-            }
-            System.out.println("REQUEST DEPLOYMENT RESULT: " +obj.toJSONString());
-    		streamOut.println("Deployment Record ID: " + obj.get("id").toString());
-    	}  	
-    }
+	private String accountId(String projectPath) {
+		String accountId = "";
+        JSONObject importObj = readImportJsonFile(projectPath);
+        if(importObj != null) {
+        	accountId = importObj.get("accountId").toString();
+        }
+        return accountId;
+	}
     
 	public static IProject getCurrentProject(IWorkbenchWindow window) {
 		ISelectionService selectionService = window.getSelectionService();

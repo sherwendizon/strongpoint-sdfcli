@@ -1,18 +1,19 @@
 package org.strongpoint.sdfcli.plugin.handlers;
 
-import java.io.FileNotFoundException;
-import java.util.ArrayList;
-import java.util.List;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.sql.Timestamp;
+import java.util.Date;
 
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
-import org.eclipse.core.internal.runtime.Activator;
-import org.eclipse.core.resources.IContainer;
-import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
-import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IJavaProject;
@@ -21,10 +22,11 @@ import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.ISelectionService;
+import org.eclipse.ui.IViewPart;
 import org.eclipse.ui.IWorkbenchPage;
-import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PartInitException;
+import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.console.ConsolePlugin;
 import org.eclipse.ui.console.IConsole;
 import org.eclipse.ui.console.IConsoleConstants;
@@ -36,9 +38,8 @@ import org.eclipse.ui.handlers.HandlerUtil;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.strongpoint.sdfcli.plugin.dialogs.DeployDialog;
-import org.strongpoint.sdfcli.plugin.services.DeployCliService;
-import org.strongpoint.sdfcli.plugin.services.session.AuthorizationSessionData;
-import org.strongpoint.sdfcli.plugin.utils.Credentials;
+import org.strongpoint.sdfcli.plugin.utils.enums.JobTypes;
+import org.strongpoint.sdfcli.plugin.views.StrongpointView;
 
 public class SdfcliDeployHandler extends AbstractHandler {
 
@@ -46,84 +47,81 @@ public class SdfcliDeployHandler extends AbstractHandler {
 	public Object execute(ExecutionEvent event) throws ExecutionException {
 		IWorkbenchWindow window = HandlerUtil.getActiveWorkbenchWindowChecked(event);
 		IWorkbenchPage page = window.getActivePage();
-		MessageConsole myConsole = findConsole("Deployment");
-		myConsole.clearConsole();
-//		IPath path = getCurrentProject(window).getLocation();
-		MessageConsoleStream out = myConsole.newMessageStream();
-//		JSONObject results = new JSONObject();
 		if (getCurrentProject(window) != null) {
 			IPath path = getCurrentProject(window).getLocation();
 			DeployDialog deployDialog = new DeployDialog(window.getShell());
 			deployDialog.setWorkbenchWindow(window);
 			deployDialog.setProjectPath(path.toPortableString());
 			deployDialog.open();
-			data(out, deployDialog.getResults());				
-//			IPath path = getCurrentProject(window).getLocation();
-//			String approvalParam = "";
-//			String crId = getCurrentProject(window).getName().substring(0, getCurrentProject(window).getName().indexOf("_"));
-//			if(crId != null && !crId.isEmpty()) {
-//				approvalParam = crId;
-//			} else {
-//				approvalParam = String.join(",",getScripIds(window));
-//			}
-//			boolean isApproved = DeployCliService.newInstance().isApprovedDeployment("TSTDRV1160887",
-//					"joanna.paclibar@strongpoint.io", "FLODocs1234!", "/webdev/sdf/sdk/", path.toPortableString());
-//			if (!isApproved) {
-//				JSONObject messageObject = new JSONObject();
-//				messageObject.put("message", "No approved deployment of the current project.");
-//				results = messageObject;
-//			} else {
-//				DeployDialog deployDialog = new DeployDialog(window.getShell());
-//				deployDialog.setProjectPath(path.toPortableString());
-//				deployDialog.open();
-//				results = deployDialog.getResults();
-//			}
+			try {
+				IViewPart viewPart = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage()
+						.showView(StrongpointView.viewId);
+				StrongpointView strongpointView = (StrongpointView) viewPart;
+				Date date = new Date();
+				Timestamp timestamp = new Timestamp(date.getTime());
+				strongpointView.setJobType(JobTypes.deployment.getJobType());
+				strongpointView.setDisplayObject(deployDialog.getResults());
+				strongpointView.setTargetAccountId(deployDialog.getTargetAccountId());
+				strongpointView.setTimestamp(timestamp.toString());
+				String statusStr = "Success";
+				strongpointView.setStatus(statusStr);
+				strongpointView.populateTable(JobTypes.deployment.getJobType());
+				writeToFile(deployDialog.getResults(), JobTypes.deployment.getJobType(),
+						deployDialog.getTargetAccountId(), timestamp.toString());
+			} catch (PartInitException e1) {
+				e1.printStackTrace();
+			}			
+			
 		} else {
 			MessageDialog.openWarning(window.getShell(), "Warning", "Please select a project.");
 		}
-//		data(out, results);
-		IConsole console = myConsole;
-		String id = IConsoleConstants.ID_CONSOLE_VIEW;
-		try {
-			IConsoleView consoleView = (IConsoleView) page.showView(id);
-			consoleView.display(console);
-		} catch (PartInitException e) {
-			e.printStackTrace();
-		}
 		return null;
 	}
+	
+	private void writeToFile(JSONObject obj, String jobType, String targetAccountId, String timestamp) {
+		String userHomePath = System.getProperty("user.home");
+		String fileName = jobType + "_" + targetAccountId + "_" + timestamp + ".txt";
+		boolean isDirectoryExist = Files.isDirectory(Paths.get(userHomePath + "/strongpoint_action_logs"));
+		if (!isDirectoryExist) {
+			File newDir = new File(userHomePath + "/strongpoint_action_logs");
+			newDir.mkdir();
+		}
 
-	private MessageConsole findConsole(String name) {
-		ConsolePlugin plugin = ConsolePlugin.getDefault();
-		IConsoleManager conMan = plugin.getConsoleManager();
-//		IConsole[] existing = conMan.getConsoles();
-//		for (int i = 0; i < existing.length; i++)
-//			if (name.equals(existing[i].getName()))
-//				return (MessageConsole) existing[i];
-		MessageConsole myConsole = new MessageConsole(name, null);
-		conMan.addConsoles(new IConsole[] { myConsole });
-		return myConsole;
-	}
-
-	private void data(MessageConsoleStream streamOut, JSONObject obj) {
-		if (obj != null) {
-			JSONArray results = (JSONArray) obj.get("results");
-			String messageResult = (String) obj.get("message");
-			if (messageResult != null) {
-				streamOut.println("Error Message: " + messageResult);
-			} else {
-				System.out.println("results: " + results);
-				if ((JSONObject) results.get(0) != null) {
-					JSONObject accountIdResults = (JSONObject) results.get(0);
-					streamOut.println("Account ID: " + accountIdResults.get("accountId"));
-					streamOut.println("Status: ");
-					for (int i = 0; i < results.size(); i++) {
-						JSONObject messageResults = (JSONObject) results.get(i);
-						streamOut.println("    " + messageResults.get("message").toString());
-					}
-				}
+		File newFile = new File(userHomePath + "/strongpoint_action_logs/" + fileName);
+		if (!newFile.exists()) {
+			try {
+				newFile.createNewFile();
+			} catch (IOException e) {
+				e.printStackTrace();
 			}
 		}
+		
+		FileWriter writer;
+		try {
+			writer = new FileWriter(userHomePath + "/strongpoint_action_logs/" + fileName);
+			PrintWriter printWriter = new PrintWriter(writer);
+			if (obj != null) {
+				JSONArray results = (JSONArray) obj.get("results");
+				String messageResult = (String) obj.get("message");
+				if (messageResult != null) {
+					printWriter.println("Error Message: " + messageResult);
+				} else {
+					System.out.println("results: " + results);
+					if ((JSONObject) results.get(0) != null) {
+						JSONObject accountIdResults = (JSONObject) results.get(0);
+						printWriter.println("Account ID: " + accountIdResults.get("accountId"));
+						printWriter.println("Status: ");
+						for (int i = 0; i < results.size(); i++) {
+							JSONObject messageResults = (JSONObject) results.get(i);
+							printWriter.println("    " + messageResults.get("message").toString());
+						}
+					}
+				}
+				printWriter.close();
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+		}			
 	}
 
 	public static IProject getCurrentProject(IWorkbenchWindow window) {
