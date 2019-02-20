@@ -133,7 +133,12 @@ public class SdfcliSyncToNsHandler extends AbstractHandler {
 
 	private void writeToFile(JSONObject obj, String jobType, String targetAccountId, String timestamp) {
 		String userHomePath = System.getProperty("user.home");
-		String fileName = jobType + "_" + targetAccountId + "_" + timestamp + ".txt";
+		String parsedAccountId = targetAccountId;
+		if(targetAccountId.contains("(") && targetAccountId.contains(")")) {
+			parsedAccountId = targetAccountId.replace("(", "").replace(")", "");
+		}
+		String fileName = jobType + "_" + parsedAccountId + "_" + timestamp.replaceAll(":", "_") + ".txt";
+		System.out.println("FILENAME: " +fileName);
 		boolean isDirectoryExist = Files.isDirectory(Paths.get(userHomePath + "/strongpoint_action_logs"));
 		if (!isDirectoryExist) {
 			File newDir = new File(userHomePath + "/strongpoint_action_logs");

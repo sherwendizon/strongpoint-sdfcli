@@ -56,7 +56,7 @@ public class SdfcliAddAccountHandler extends AbstractHandler {
 
 	private void writeToFile(String jobType, String timestamp) {
 		String userHomePath = System.getProperty("user.home");
-		String fileName = jobType + "_" +not_available+ "_" + timestamp + ".txt";
+		String fileName = jobType + "_" +not_available+ "_" + timestamp.replaceAll(":", "_") + ".txt";
 		boolean isDirectoryExist = Files.isDirectory(Paths.get(userHomePath + "/strongpoint_action_logs"));
 		if (!isDirectoryExist) {
 			File newDir = new File(userHomePath + "/strongpoint_action_logs");

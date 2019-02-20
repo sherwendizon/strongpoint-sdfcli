@@ -100,7 +100,12 @@ public class StrongpointView extends ViewPart {
 							IViewPart detailViewPart = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(StrongpointDetailView.detailViewId);
 							StrongpointDetailView detailView = (StrongpointDetailView) detailViewPart;
 							String userHomePath = System.getProperty("user.home");
-							String fileName = selection[i].getText(0) + "_" + selection[i].getText(1) + "_" + selection[i].getText(4) + ".txt";
+							String parsedAccountId = selection[i].getText(1);
+							System.out.println("ACCOUNT ID: " +selection[i].getText(1));
+							if(selection[i].getText(1).contains("(") && selection[i].getText(1).contains(")")) {
+								parsedAccountId = selection[i].getText(1).replace("(", "").replace(")", "");
+							}
+							String fileName = selection[i].getText(0) + "_" + parsedAccountId + "_" + selection[i].getText(4).replaceAll(":", "_") + ".txt";
 							detailView.setFileAbsolutePath(userHomePath + "/strongpoint_action_logs/" + fileName);
 							detailView.updateView();
 						} catch (PartInitException e) {
