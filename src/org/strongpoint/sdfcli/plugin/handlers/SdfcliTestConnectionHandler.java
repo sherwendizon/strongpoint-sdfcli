@@ -31,6 +31,7 @@ import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.strongpoint.sdfcli.plugin.dialogs.DeployDialog;
 import org.strongpoint.sdfcli.plugin.dialogs.TestConnectionDialog;
+import org.strongpoint.sdfcli.plugin.utils.StrongpointDirectoryGeneralUtility;
 import org.strongpoint.sdfcli.plugin.utils.enums.JobTypes;
 import org.strongpoint.sdfcli.plugin.views.StrongpointView;
 
@@ -56,53 +57,12 @@ public class SdfcliTestConnectionHandler extends AbstractHandler{
 			String statusStr = "Success";
 			strongpointView.setStatus(statusStr);
 			strongpointView.populateTable(JobTypes.test_connection.getJobType());
-			writeToFile(testConnectionDialog.getResults(), JobTypes.test_connection.getJobType(),
+			StrongpointDirectoryGeneralUtility.newInstance().writeToFile(testConnectionDialog.getResults(), JobTypes.test_connection.getJobType(),
 					testConnectionDialog.getTargetAccountId(), timestamp.toString());
 		} catch (PartInitException e1) {
 			e1.printStackTrace();
 		}		
 		return null;
 	}
-	
-	private void writeToFile(JSONObject obj, String jobType, String targetAccountId, String timestamp) {
-		String userHomePath = System.getProperty("user.home");
-		String parsedAccountId = targetAccountId;
-		if(targetAccountId.contains("(") && targetAccountId.contains(")")) {
-			System.out.println("ACCOUNT ID: " +targetAccountId.replace("(", ""));
-			parsedAccountId = targetAccountId.replace("(", "").replace(")", "");
-		}
-		String fileName = jobType + "_" + parsedAccountId + "_" + timestamp.replaceAll(":", "_") + ".txt";
-		boolean isDirectoryExist = Files.isDirectory(Paths.get(userHomePath + "/strongpoint_action_logs"));
-		if (!isDirectoryExist) {
-			File newDir = new File(userHomePath + "/strongpoint_action_logs");
-			newDir.mkdir();
-		}
-
-		File newFile = new File(userHomePath + "/strongpoint_action_logs/" + fileName);
-		if (!newFile.exists()) {
-			try {
-				newFile.createNewFile();
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-		}
-		
-		FileWriter writer;
-		try {
-			writer = new FileWriter(userHomePath + "/strongpoint_action_logs/" + fileName);
-			PrintWriter printWriter = new PrintWriter(writer);
-			if (obj != null) {
-				String messageResult = (String) obj.get("message");
-				if (messageResult != null && messageResult.equalsIgnoreCase("success")) {
-					printWriter.println("A successful connection to " +targetAccountId+ " was established.");
-				} else {
-					printWriter.println("No established connection. Please make sure you have access to this account: " +targetAccountId);
-				}
-				printWriter.close();
-			}
-		} catch (IOException e) {
-			e.printStackTrace();
-		}			
-	}	
 	
 }

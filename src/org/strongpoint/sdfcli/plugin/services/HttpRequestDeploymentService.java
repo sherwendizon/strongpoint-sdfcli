@@ -22,6 +22,7 @@ import org.json.simple.JSONValue;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 import org.strongpoint.sdfcli.plugin.utils.Credentials;
+import org.strongpoint.sdfcli.plugin.utils.StrongpointDirectoryGeneralUtility;
 
 public class HttpRequestDeploymentService {
 	
@@ -29,7 +30,7 @@ public class HttpRequestDeploymentService {
 		return new HttpRequestDeploymentService();
 	}
 	
-	public JSONObject requestDeployment(JSONObject parameters, String projectPath) {
+	public JSONObject requestDeployment(JSONObject parameters, String projectPath, String jobType, String timestamp) {
 		JSONObject results = new JSONObject();
 		JSONObject creds = Credentials.getCredentialsFromFile();
 		String emailCred = "";
@@ -77,6 +78,10 @@ public class HttpRequestDeploymentService {
 				httpPost.reset();
 			}
 		}
+		
+		System.out.println("Writing to Request Deployment file..." +results.toJSONString() );
+		StrongpointDirectoryGeneralUtility.newInstance().writeToFile(results, jobType, accountId, timestamp, projectPath);
+		System.out.println("Finished writing Request Deployment file...");
 		
 		return results;
 	}

@@ -6,7 +6,11 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.concurrent.atomic.AtomicBoolean;
 
+import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IResource;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.swt.widgets.Shell;
 import org.json.simple.JSONArray;
@@ -14,6 +18,8 @@ import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 import org.strongpoint.sdfcli.plugin.utils.Credentials;
+import org.strongpoint.sdfcli.plugin.utils.StrongpointDirectoryGeneralUtility;
+import org.strongpoint.sdfcli.plugin.utils.enums.JobTypes;
 
 public class SyncToNsCliService {
 	
@@ -29,25 +35,36 @@ public class SyncToNsCliService {
 	
 	private String accountId;
 	
-	private boolean isImportObjectProcessDone;
+	private IProject project;
 	
-	private boolean isImportFileProcessDone;
+	private AtomicBoolean isImportObjectProcessDone = new AtomicBoolean(false);
 	
-	private boolean isAddDependenciesProcessDone;
+	private AtomicBoolean isImportFileProcessDone = new AtomicBoolean(false);
 	
-	public String getAccountId() {
-		return this.accountId;
+	private AtomicBoolean isAddDependenciesProcessDone = new AtomicBoolean(false);
+	
+	public String getAccountId(String projectPath) {
+		JSONObject importObj = StrongpointDirectoryGeneralUtility.newInstance().readImportJsonFile(projectPath);
+		String accountID = "";
+		if(importObj != null) {
+			accountID = importObj.get("accountId").toString();
+		}
+		return accountID;
 	}
 	
-	public boolean getIsImportObjectProcessDone() {
+	public void setProject(IProject project) {
+		this.project = project;
+	}
+	
+	public AtomicBoolean getIsImportObjectProcessDone() {
 		return this.isImportObjectProcessDone;
 	}
 	
-	public boolean getIsImportFileProcessDone() {
+	public AtomicBoolean getIsImportFileProcessDone() {
 		return this.isImportFileProcessDone;
 	}
 	
-	public boolean getIsAddDependenciesProcessDone() {
+	public AtomicBoolean getIsAddDependenciesProcessDone() {
 		return this.isAddDependenciesProcessDone;
 	}
 	
@@ -55,33 +72,21 @@ public class SyncToNsCliService {
 		this.parentShell = parentShell;
 	}
 	
-	private JSONObject readImportJsonFile(String projectPath) {
-		StringBuilder contents = new StringBuilder();
-		String str;
-		File file = new File(projectPath + "/import.json");
-		System.out.println("SYNC PROJECT PATH: " + projectPath + "/import.json");
-		JSONObject scriptObjects = null;
-		try {
-			if(file.exists() && !file.isDirectory()) {
-				BufferedReader reader = new BufferedReader(new FileReader(file));
-				while((str = reader.readLine())  != null) {
-					contents.append(str);
-				}
-				System.out.println("FILE Contents: " +contents.toString());
-				scriptObjects = (JSONObject) new JSONParser().parse(contents.toString());	
+	public void syncToNetsuiteOperation(String projectPath, String timestamp) {
+		Thread syncOperationThread = new Thread(new Runnable() {
+			
+			@Override
+			public void run() {
+				importObjectsCliResult(projectPath, JobTypes.import_objects.getJobType(), timestamp);
+				importFilesCliResult(projectPath, JobTypes.import_files.getJobType(), timestamp);
+				addDependenciesCliResult(projectPath, JobTypes.add_dependencies.getJobType(), timestamp);
 			}
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
-		} catch (IOException e) {
-			e.printStackTrace();
-		} catch (ParseException e) {
-			e.printStackTrace();
-		}
-		return scriptObjects;		
+		});
+		syncOperationThread.start();
 	}
 	
-	public JSONObject importObjectsCliResult(String projectPath) {
-		this.isImportObjectProcessDone = false;
+	public JSONObject importObjectsCliResult(String projectPath, String jobType, String timestamp) {
+		this.isImportObjectProcessDone = new AtomicBoolean(false);
 		System.out.println("Before Import Object Process: " +this.isImportObjectProcessDone);
 		JSONObject results = new JSONObject();
 		JSONObject credentials = Credentials.getCredentialsFromFile();
@@ -93,7 +98,7 @@ public class SyncToNsCliService {
 			password = credentials.get("password").toString();
 			sdfcliPath = credentials.get("path").toString();			
 		}
-		JSONObject importObj = readImportJsonFile(projectPath);
+		JSONObject importObj = StrongpointDirectoryGeneralUtility.newInstance().readImportJsonFile(projectPath);
 		if(importObj != null) {
 			String accountID = importObj.get("accountId").toString();
 			this.accountId = accountID;
@@ -151,13 +156,21 @@ public class SyncToNsCliService {
 			results.put("results", jsonArray);			
 		}
 
-		this.isImportObjectProcessDone = true;
+		this.isImportObjectProcessDone = new AtomicBoolean(true);
 		System.out.println("After Import Objects Process: " +this.isImportObjectProcessDone);
+		System.out.println("Writing to Import Object file...");
+		StrongpointDirectoryGeneralUtility.newInstance().writeToFile(results, jobType, this.accountId, timestamp);
+		System.out.println("Finished writing Import Object file...");
+		try {
+			project.refreshLocal(IResource.DEPTH_INFINITE, null);
+		} catch (CoreException e1) {
+			e1.printStackTrace();
+		}
 		return results;
 	}
 	
-	public JSONObject importFilesCliResult(String projectPath) {
-		this.isImportFileProcessDone = false;
+	public JSONObject importFilesCliResult(String projectPath, String jobType, String timestamp) {
+		this.isImportFileProcessDone = new AtomicBoolean(false);
 		System.out.println("Before Import Files Process: " +this.isImportFileProcessDone);
 		JSONObject results = new JSONObject();
 		JSONObject credentials = Credentials.getCredentialsFromFile();
@@ -169,7 +182,7 @@ public class SyncToNsCliService {
 			password = credentials.get("password").toString();
 			sdfcliPath = credentials.get("path").toString();			
 		}
-		JSONObject importObj = readImportJsonFile(projectPath);
+		JSONObject importObj = StrongpointDirectoryGeneralUtility.newInstance().readImportJsonFile(projectPath);
 		if(importObj != null) {
 			String accountID = importObj.get("accountId").toString();
 			JSONArray objs = (JSONArray) importObj.get("files");
@@ -226,13 +239,21 @@ public class SyncToNsCliService {
 			results.put("results", jsonArray);			
 		}
 
-		this.isImportFileProcessDone = true;
-		System.out.println("After Import Files Process: " +this.isImportFileProcessDone);		
+		this.isImportFileProcessDone = new AtomicBoolean(true);
+		System.out.println("After Import Files Process: " +this.isImportFileProcessDone);
+		System.out.println("Writing to Import Files file...");
+		StrongpointDirectoryGeneralUtility.newInstance().writeToFile(results, jobType, this.accountId, timestamp);
+		System.out.println("Finished writing Import Files file...");
+		try {
+			project.refreshLocal(IResource.DEPTH_INFINITE, null);
+		} catch (CoreException e1) {
+			e1.printStackTrace();
+		}
 		return results;
 	}
 	
-	public JSONObject addDependenciesCliResult(String projectPath) {
-		this.isAddDependenciesProcessDone = false;
+	public JSONObject addDependenciesCliResult(String projectPath, String jobType, String timestamp) {
+		this.isAddDependenciesProcessDone = new AtomicBoolean(false);
 		System.out.println("Before Add Dependencies Process: " +this.isAddDependenciesProcessDone);
 		JSONObject results = new JSONObject();
 		JSONObject credentials = Credentials.getCredentialsFromFile();
@@ -244,7 +265,7 @@ public class SyncToNsCliService {
 			password = credentials.get("password").toString();
 			sdfcliPath = credentials.get("path").toString();			
 		}
-		JSONObject importObj = readImportJsonFile(projectPath);
+		JSONObject importObj = StrongpointDirectoryGeneralUtility.newInstance().readImportJsonFile(projectPath);
 		if(importObj != null) {
 			String accountID = importObj.get("accountId").toString();
 			JSONArray objs = (JSONArray) importObj.get("files");
@@ -297,11 +318,15 @@ public class SyncToNsCliService {
 			} catch (Exception exception) {
 				exception.printStackTrace();
 			}
-			
-			this.isAddDependenciesProcessDone = true;
-			System.out.println("After Add Dependencies Process: " +this.isAddDependenciesProcessDone);
+						
 			results.put("results", jsonArray);			
 		}
+		
+		this.isAddDependenciesProcessDone = new AtomicBoolean(true);
+		System.out.println("After Add Dependencies Process: " +this.isAddDependenciesProcessDone);
+		System.out.println("Writing to Add Dependencies file...");
+		StrongpointDirectoryGeneralUtility.newInstance().writeToFile(results, jobType, this.accountId, timestamp);
+		System.out.println("Finished writing Add Dependencies file...");
 
 		return results;
 	}	

@@ -1,5 +1,8 @@
 package org.strongpoint.sdfcli.plugin.views;
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
@@ -26,16 +29,18 @@ public class StrongpointView extends ViewPart {
 	private Table table;
 
 	private static Composite compositeParent;
-	
+
 	private JSONObject displayObject;
-	
+
 	private String jobType;
-	
+
 	private String targetAccountId;
-	
+
 	private String status;
-	
+
 	private String timestamp;
+
+	private String progressStatus;
 
 	public StrongpointView() {
 		super();
@@ -44,21 +49,25 @@ public class StrongpointView extends ViewPart {
 	public void setDisplayObject(JSONObject displayObject) {
 		this.displayObject = displayObject;
 	}
-	
+
 	public void setJobType(String jobType) {
 		this.jobType = jobType;
 	}
-	
+
 	public void setTargetAccountId(String targetAccountId) {
 		this.targetAccountId = targetAccountId;
 	}
-	
+
 	public void setTimestamp(String timestamp) {
 		this.timestamp = timestamp;
 	}
-	
+
 	public void setStatus(String status) {
 		this.status = status;
+	}
+
+	public void setProgressStatus(String progressStatus) {
+		this.progressStatus = progressStatus;
 	}
 
 	@Override
@@ -66,7 +75,7 @@ public class StrongpointView extends ViewPart {
 		table = new Table(parent, SWT.BORDER);
 		TableColumn taskCol = new TableColumn(table, SWT.LEFT);
 		taskCol.setText("Action");
-		taskCol.setWidth(280);		
+		taskCol.setWidth(280);
 		TableColumn accountCol = new TableColumn(table, SWT.LEFT);
 		accountCol.setText("Target Account");
 		accountCol.setWidth(300);
@@ -85,9 +94,9 @@ public class StrongpointView extends ViewPart {
 		table.deselectAll();
 		addTableListener();
 	}
-	
+
 	private void addTableListener() {
-		if(table != null) {
+		if (table != null) {
 			table.addListener(SWT.Selection, new Listener() {
 
 				@Override
@@ -97,31 +106,38 @@ public class StrongpointView extends ViewPart {
 					for (int i = 0; i < selection.length; i++) {
 						string += selection[i] + " ";
 						try {
-							IViewPart detailViewPart = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(StrongpointDetailView.detailViewId);
+							IViewPart detailViewPart = PlatformUI.getWorkbench().getActiveWorkbenchWindow()
+									.getActivePage().showView(StrongpointDetailView.detailViewId);
 							StrongpointDetailView detailView = (StrongpointDetailView) detailViewPart;
 							String userHomePath = System.getProperty("user.home");
 							String parsedAccountId = selection[i].getText(1);
-							System.out.println("ACCOUNT ID: " +selection[i].getText(1));
-							if(selection[i].getText(1).contains("(") && selection[i].getText(1).contains(")")) {
-								parsedAccountId = selection[i].getText(1).replace("(", "").replace(")", "");
+							if (selection[i].getText(1).contains("(") && selection[i].getText(1).contains(")")) {
+								Matcher match = Pattern.compile("\\(([^)]+)\\)").matcher(selection[i].getText(1));
+								while (match.find()) {
+									parsedAccountId = match.group(1);
+								}
+//								parsedAccountId = selection[i].getText(1).replace("(", "").replace(")", "");
 							}
-							String fileName = selection[i].getText(0) + "_" + parsedAccountId + "_" + selection[i].getText(4).replaceAll(":", "_") + ".txt";
+							String fileName = selection[i].getText(0) + "_" + parsedAccountId + "_"
+									+ selection[i].getText(4).replaceAll(":", "_") + ".txt";
+							System.out.println("File Path: " + fileName);
 							detailView.setFileAbsolutePath(userHomePath + "/strongpoint_action_logs/" + fileName);
 							detailView.updateView();
 						} catch (PartInitException e) {
 							e.printStackTrace();
 						}
-					}	
+					}
 				}
-			});			
+			});
 		}
 	}
-	
+
 	public void populateTable(String jobType) {
-		if(table != null) {
+		if (table != null) {
 			table.deselectAll();
 			TableItem data = new TableItem(table, SWT.NONE);
-			data.setText(new String[] { jobType, targetAccountId, status, "100%", timestamp });
+			data.setText(
+					new String[] { jobType, this.targetAccountId, this.status, this.progressStatus, this.timestamp });
 		}
 	}
 

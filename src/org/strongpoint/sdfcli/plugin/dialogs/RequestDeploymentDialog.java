@@ -32,6 +32,7 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.strongpoint.sdfcli.plugin.services.HttpRequestDeploymentService;
+import org.strongpoint.sdfcli.plugin.utils.enums.JobTypes;
 
 public class RequestDeploymentDialog extends TitleAreaDialog {
 	
@@ -45,6 +46,7 @@ public class RequestDeploymentDialog extends TitleAreaDialog {
 	private JSONArray arr;
     private JSONArray employeeArray;
 	private String projectPath;
+	private String timestamp;
 	private JSONObject results;
 	
 	public RequestDeploymentDialog(Shell parentShell) {
@@ -61,6 +63,10 @@ public class RequestDeploymentDialog extends TitleAreaDialog {
 	
 	public void setProjectPath(String projectPath) {
 		this.projectPath = projectPath;
+	}
+	
+	public void setTimestamp(String timestamp) {
+		this.timestamp = timestamp;
 	}
 
 
@@ -100,9 +106,9 @@ public class RequestDeploymentDialog extends TitleAreaDialog {
 	@Override
 	protected void okPressed() {
 		System.out.println("[Logger] --- Request Deployment OK button is pressed");
-		JSONObject obj = new JSONObject();
 		int changeTypeInt = 0;
 		int employeeId = 0;
+		JSONObject obj = new JSONObject();
 		obj.put("name", nameText.getText());
 		for (int i = 0; i < arr.size(); i++) {
         	JSONObject object = (JSONObject) arr.get(i);
@@ -113,8 +119,19 @@ public class RequestDeploymentDialog extends TitleAreaDialog {
 		obj.put("changeType", changeTypeInt);
 		obj.put("changeOverview", changeOverviewText.getText());
 		obj.put("scriptIds", getScripIds(this.window));
-		results = HttpRequestDeploymentService.newInstance().requestDeployment(obj, this.projectPath);
+		Thread requestDeploymentThread = new Thread(new Runnable() {
+
+			@Override
+			public void run() {
+				processRequestDeployment(obj);
+			}
+		});
+		requestDeploymentThread.start();
 		super.okPressed();
+	}
+	
+	private void processRequestDeployment(JSONObject obj) {
+		results = HttpRequestDeploymentService.newInstance().requestDeployment(obj, this.projectPath, JobTypes.request_deployment.getJobType(), this.timestamp);		
 	}
 	
 	private void createNameElement(Composite container) {

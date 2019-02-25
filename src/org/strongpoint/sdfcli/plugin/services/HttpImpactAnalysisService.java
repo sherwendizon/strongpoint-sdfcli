@@ -12,6 +12,7 @@ import org.eclipse.swt.widgets.Shell;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
 import org.strongpoint.sdfcli.plugin.utils.Credentials;
+import org.strongpoint.sdfcli.plugin.utils.StrongpointDirectoryGeneralUtility;
 
 public class HttpImpactAnalysisService {
 	
@@ -19,7 +20,7 @@ public class HttpImpactAnalysisService {
 		return new HttpImpactAnalysisService();
 	}
 	
-	public JSONObject getImpactAnalysis(String changeRequestId, Shell shell, List<String> getScripIds, String accountID) {
+	public JSONObject getImpactAnalysis(String changeRequestId, Shell shell, List<String> getScripIds, String accountID, String jobType, String timestamp) {
 		String email = "";
 		String password = "";
 		JSONObject creds = Credentials.getCredentialsFromFile();
@@ -69,6 +70,10 @@ public class HttpImpactAnalysisService {
 				httpGet.reset();
 			}
 		}
+		
+		System.out.println("Writing to Impact Analysis file...");
+		StrongpointDirectoryGeneralUtility.newInstance().writeToFileImpactAnalysis(results, jobType, accountID, timestamp);
+		System.out.println("Finished writing Impact Analysis file...");
 		
 		return results;
 	}

@@ -1,6 +1,7 @@
 package org.strongpoint.sdfcli.plugin.views;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 
@@ -38,12 +39,19 @@ public class StrongpointDetailView extends ViewPart{
 		table.removeAll();
 		BufferedReader bufferedReader = null;
 		try {
-			bufferedReader = new BufferedReader(new FileReader(fileAbsolutePath));
-			String lineToRead;
-			while ((lineToRead = bufferedReader.readLine()) != null) {
+			File file = new File(fileAbsolutePath);
+			if( !file.exists() || file.getTotalSpace() <= 0L) {
 				TableItem item = new TableItem(table, SWT.NONE);
-				item.setText(lineToRead);
+				item.setText("Action is currently in progress.");	
+			} else {
+				bufferedReader = new BufferedReader(new FileReader(fileAbsolutePath));
+				String lineToRead;
+				while ((lineToRead = bufferedReader.readLine()) != null) {
+					TableItem item = new TableItem(table, SWT.NONE);
+					item.setText(lineToRead);
+				}	
 			}
+			
 		} catch (IOException e) {
 			e.printStackTrace();
 		} finally {
