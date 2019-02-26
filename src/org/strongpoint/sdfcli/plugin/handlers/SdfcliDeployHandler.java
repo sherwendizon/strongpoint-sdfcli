@@ -5,6 +5,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
@@ -57,21 +58,21 @@ public class SdfcliDeployHandler extends AbstractHandler {
 			strongpointView.setTargetAccountId(deployDialog.getTargetAccountId());
 			strongpointView.setTimestamp(timestamp.toString());
 			String statusStr = "In Progress";
-			if (deployDialog.getResults() != null && !deployDialog.getResults().get("code").toString().equalsIgnoreCase("200")) {
-				statusStr = "Failed";
-			}
-			if (deployDialog.getResults() != null && deployDialog.getResults().get("code").toString().equalsIgnoreCase("200")) {
-				statusStr = "Success";
-			}
+//			if (deployDialog.getResults() != null && !deployDialog.getResults().get("code").toString().equalsIgnoreCase("200")) {
+//				statusStr = "Failed";
+//			}
+//			if (deployDialog.getResults() != null && deployDialog.getResults().get("code").toString().equalsIgnoreCase("200")) {
+//				statusStr = "Success";
+//			}
 			strongpointView.setStatus(statusStr);
-			strongpointView.setProgressStatus(Integer.toString(100) + "%");
+//			strongpointView.setProgressStatus(Integer.toString(100) + "%");
 			strongpointView.populateTable(JobTypes.deployment.getJobType());
 			deployDialog.setTimestamp(timestamp.toString());
 			List<String> savedSearches = StrongpointDirectoryGeneralUtility.newInstance().readSavedSearchDirectory(path.toPortableString());
 			if ( savedSearches != null) {
 				Map<String, String> ssTimestamps = new HashMap<String, String>();
 				for (int i = 0; i < savedSearches.size(); i++) {
-					strongpointView.setProgressStatus(Integer.toString(70) + "%");
+//					strongpointView.setProgressStatus(Integer.toString(70) + "%");
 					Date savedSearchDate = new Date();
 					Timestamp savedSearchTimestamp = new Timestamp(savedSearchDate.getTime());
 					String savedSearchJobPerFile = JobTypes.savedSearch.getJobType() + " - "
@@ -85,7 +86,7 @@ public class SdfcliDeployHandler extends AbstractHandler {
 //						savedSearchStatusStr = "Failed";
 //					}
 					strongpointView.setStatus(savedSearchStatusStr);
-					strongpointView.setProgressStatus(Integer.toString(90) + "%");
+//					strongpointView.setProgressStatus(Integer.toString(90) + "%");
 					strongpointView.populateTable(savedSearchJobPerFile);
 					ssTimestamps.put(savedSearches.get(i), savedSearchTimestamp.toString());
 				}

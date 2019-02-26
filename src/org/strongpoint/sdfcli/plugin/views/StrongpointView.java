@@ -4,10 +4,12 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.TableEditor;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Listener;
+import org.eclipse.swt.widgets.ProgressBar;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
@@ -41,6 +43,12 @@ public class StrongpointView extends ViewPart {
 	private String timestamp;
 
 	private String progressStatus;
+	
+	private TableItem data;
+	
+	private ProgressBar bar;
+	
+	private TableEditor editor;
 
 	public StrongpointView() {
 		super();
@@ -135,9 +143,17 @@ public class StrongpointView extends ViewPart {
 	public void populateTable(String jobType) {
 		if (table != null) {
 			table.deselectAll();
-			TableItem data = new TableItem(table, SWT.NONE);
+			data = new TableItem(table, SWT.NONE);
 			data.setText(
-					new String[] { jobType, this.targetAccountId, this.status, this.progressStatus, this.timestamp });
+					new String[] { jobType, this.targetAccountId, this.status, "",/*this.progressStatus,*/ this.timestamp });
+	        bar = new ProgressBar(table, SWT.HIGH);
+	        for (int i = 0; i <= 100; i++) {
+				bar.setSelection(i);
+			}
+	        TableEditor editor = new TableEditor(table);
+	        editor.grabHorizontal = true;
+	        editor.grabVertical = true;
+	        editor.setEditor(bar, data, 3);	        
 		}
 	}
 

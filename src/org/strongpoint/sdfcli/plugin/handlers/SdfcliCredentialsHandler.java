@@ -40,6 +40,7 @@ public class SdfcliCredentialsHandler extends AbstractHandler {
 			strongpointView.setTimestamp(timestamp.toString());
 			String statusStr = "Success";
 			strongpointView.setStatus(statusStr);
+//			strongpointView.setProgressStatus(Integer.toString(100) + "%");
 			strongpointView.populateTable(JobTypes.credentials.getJobType());
 			StrongpointDirectoryGeneralUtility.newInstance().writeToFile(JobTypes.credentials.getJobType(), timestamp.toString());
 		} catch (PartInitException e1) {

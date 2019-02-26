@@ -40,6 +40,7 @@ public class SdfcliAddAccountHandler extends AbstractHandler {
 			strongpointView.setTimestamp(timestamp.toString());
 			String statusStr = "Success";
 			strongpointView.setStatus(statusStr);
+//			strongpointView.setProgressStatus(Integer.toString(100) + "%");
 			strongpointView.populateTable(JobTypes.account.getJobType());
 			StrongpointDirectoryGeneralUtility.newInstance().writeToFile(JobTypes.account.getJobType(), timestamp.toString());
 		} catch (PartInitException e1) {

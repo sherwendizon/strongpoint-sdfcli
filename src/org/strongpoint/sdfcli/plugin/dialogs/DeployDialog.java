@@ -48,7 +48,9 @@ import org.json.simple.parser.ParseException;
 import org.strongpoint.sdfcli.plugin.services.DeployCliService;
 import org.strongpoint.sdfcli.plugin.utils.Accounts;
 import org.strongpoint.sdfcli.plugin.utils.Credentials;
+import org.strongpoint.sdfcli.plugin.utils.StrongpointDirectoryGeneralUtility;
 import org.strongpoint.sdfcli.plugin.utils.enums.JobTypes;
+import org.strongpoint.sdfcli.plugin.views.StrongpointView;
 
 public class DeployDialog extends TitleAreaDialog {
 
@@ -185,7 +187,7 @@ public class DeployDialog extends TitleAreaDialog {
 		JSONObject data = (JSONObject) approveResult.get("data");
 		JSONObject supportedObjs = DeployCliService.newInstance().getSupportedObjects(accountId, emailCred,
 				passwordCred);
-		JSONObject importObjects = readImportJsonFile(this.projectPath);
+		JSONObject importObjects = StrongpointDirectoryGeneralUtility.newInstance().readImportJsonFile(this.projectPath);
 		JSONArray objects = (JSONArray) importObjects.get("objects");
 		List<String> listStr = new ArrayList<String>();
 		boolean isExcessObj = false;
@@ -336,31 +338,6 @@ public class DeployDialog extends TitleAreaDialog {
 		}
 
 		return hasUnsupportedObj;
-	}
-
-	private JSONObject readImportJsonFile(String projectPath) {
-		StringBuilder contents = new StringBuilder();
-		String str;
-		File file = new File(projectPath + "/import.json");
-		System.out.println("SYNC PROJECT PATH: " + projectPath + "/import.json");
-		JSONObject scriptObjects = null;
-		try {
-			if (file.exists() && !file.isDirectory()) {
-				BufferedReader reader = new BufferedReader(new FileReader(file));
-				while ((str = reader.readLine()) != null) {
-					contents.append(str);
-				}
-				System.out.println("FILE Contents: " + contents.toString());
-				scriptObjects = (JSONObject) new JSONParser().parse(contents.toString());
-			}
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
-		} catch (IOException e) {
-			e.printStackTrace();
-		} catch (ParseException e) {
-			e.printStackTrace();
-		}
-		return scriptObjects;
 	}
 
 }
