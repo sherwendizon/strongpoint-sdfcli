@@ -1,14 +1,5 @@
 package org.strongpoint.sdfcli.plugin.handlers;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.sql.Timestamp;
 import java.util.Date;
 
@@ -32,14 +23,13 @@ import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
-import org.json.simple.parser.ParseException;
 import org.strongpoint.sdfcli.plugin.dialogs.RequestDeploymentDialog;
+import org.strongpoint.sdfcli.plugin.services.SourceUpdatesService;
 import org.strongpoint.sdfcli.plugin.utils.StrongpointDirectoryGeneralUtility;
 import org.strongpoint.sdfcli.plugin.utils.enums.JobTypes;
 import org.strongpoint.sdfcli.plugin.views.StrongpointView;
 
-public class SdfcliChangeRequestHandler extends AbstractHandler{
+public class SdfcliSourceUpdatesHandler extends AbstractHandler {
 
 	@Override
 	public Object execute(ExecutionEvent event) throws ExecutionException {
@@ -47,46 +37,47 @@ public class SdfcliChangeRequestHandler extends AbstractHandler{
 		IWorkbenchPage page = window.getActivePage();
 		if (getCurrentProject(window) != null) {
 			IPath path = getCurrentProject(window).getLocation();
-			RequestDeploymentDialog requestDeploymentDialog = new RequestDeploymentDialog(window.getShell());
-			requestDeploymentDialog.setWorkbenchWindow(window);
-			requestDeploymentDialog.setProjectPath(path.toPortableString());
 			Date date = new Date();
 			Timestamp timestamp = new Timestamp(date.getTime());
 			String accountId = accountId(path.toPortableString());
-			requestDeploymentDialog.setTimestamp(timestamp.toString());
-			requestDeploymentDialog.open();
+			SourceUpdatesService.newInstance().checkSourceUpdates(getCurrentProject(window),
+					getCurrentProject(window).getLocation().toPortableString(), accountId, timestamp.toString());
+//			RequestDeploymentDialog requestDeploymentDialog = new RequestDeploymentDialog(window.getShell());
+//			requestDeploymentDialog.setWorkbenchWindow(window);
+//			requestDeploymentDialog.setProjectPath(path.toPortableString());
+
+//			requestDeploymentDialog.setTimestamp(timestamp.toString());
+//			requestDeploymentDialog.open();
 			try {
 				IViewPart viewPart = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage()
 						.showView(StrongpointView.viewId);
 				StrongpointView strongpointView = (StrongpointView) viewPart;
-				strongpointView.setJobType(JobTypes.request_deployment.getJobType());
-				strongpointView.setDisplayObject(requestDeploymentDialog.getResults());
+				strongpointView.setJobType(JobTypes.source_updates.getJobType());
+//				strongpointView.setDisplayObject(requestDeploymentDialog.getResults());
 				strongpointView.setTargetAccountId(accountId);
 				strongpointView.setTimestamp(timestamp.toString());
 				String statusStr = "In Progress";
 				strongpointView.setStatus(statusStr);
-				strongpointView.populateTable(JobTypes.request_deployment.getJobType());
-//				writeToFile(requestDeploymentDialog.getResults(), JobTypes.request_deployment.getJobType(),
-//						accountId, timestamp.toString(), path.toPortableString());
+				strongpointView.populateTable(JobTypes.source_updates.getJobType());
 			} catch (PartInitException e1) {
 				e1.printStackTrace();
-			}					
+			}
 		} else {
 			MessageDialog.openWarning(window.getShell(), "Warning", "Please select a project.");
 		}
-		
+
 		return null;
 	}
-		
+
 	private String accountId(String projectPath) {
 		String accountId = "";
-        JSONObject importObj = StrongpointDirectoryGeneralUtility.newInstance().readImportJsonFile(projectPath);
-        if(importObj != null) {
-        	accountId = importObj.get("accountId").toString();
-        }
-        return accountId;
+		JSONObject importObj = StrongpointDirectoryGeneralUtility.newInstance().readImportJsonFile(projectPath);
+		if (importObj != null) {
+			accountId = importObj.get("accountId").toString();
+		}
+		return accountId;
 	}
-    
+
 	public static IProject getCurrentProject(IWorkbenchWindow window) {
 		ISelectionService selectionService = window.getSelectionService();
 		ISelection selection = selectionService.getSelection();

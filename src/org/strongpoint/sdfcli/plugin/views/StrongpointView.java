@@ -153,7 +153,7 @@ public class StrongpointView extends ViewPart {
 	        TableEditor editor = new TableEditor(table);
 	        editor.grabHorizontal = true;
 	        editor.grabVertical = true;
-	        editor.setEditor(bar, data, 3);	        
+	        editor.setEditor(bar, data, 3);
 		}
 	}
 

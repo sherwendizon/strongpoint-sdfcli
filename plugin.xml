@@ -47,7 +47,12 @@
             categoryId="strongpoint-sdfcli.commands.category"
             name="Credentials Settings"
             id="strongpoint-sdfcli.commands.credentialsCommand">
-      </command>                                
+      </command> 
+      <command
+            categoryId="strongpoint-sdfcli.commands.category"
+            name="Check for Source Updates"
+            id="strongpoint-sdfcli.commands.sourceUpdatesCommand">
+      </command>                                     
    </extension>
    <extension
          point="org.eclipse.ui.handlers">
@@ -82,7 +87,11 @@
       <handler
             class="org.strongpoint.sdfcli.plugin.handlers.SdfcliCredentialsHandler"
             commandId="strongpoint-sdfcli.commands.credentialsCommand">
-      </handler>                               
+      </handler>
+      <handler
+            class="org.strongpoint.sdfcli.plugin.handlers.SdfcliSourceUpdatesHandler"
+            commandId="strongpoint-sdfcli.commands.sourceUpdatesCommand">
+      </handler>                                     
    </extension>
    <extension
          point="org.eclipse.ui.bindings">
@@ -133,7 +142,13 @@
             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
             contextId="org.eclipse.ui.contexts.window"
             sequence="M1+2">
-      </key>                              
+      </key>
+      <key
+            commandId="strongpoint-sdfcli.commands.sourceUpdatesCommand"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            contextId="org.eclipse.ui.contexts.window"
+            sequence="M1+3">
+      </key>                                     
    </extension>
    <extension
          point="org.eclipse.ui.menus">
@@ -182,7 +197,12 @@
                   commandId="strongpoint-sdfcli.commands.credentialsCommand"
                   id="strongpoint-sdfcli.menus.credentialsCommand"
                   mnemonic="C">
-            </command>                                                             
+            </command>
+            <command
+                  commandId="strongpoint-sdfcli.commands.sourceUpdatesCommand"
+                  id="strongpoint-sdfcli.menus.sourceUpdatesCommand"
+                  mnemonic="U">
+            </command>                                                                          
          </menu>
       </menuContribution>
       <!--<menuContribution

@@ -27,6 +27,7 @@ import org.eclipse.jdt.internal.core.PackageFragmentRoot;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.swt.program.Program;
 import org.eclipse.ui.ISelectionService;
 import org.eclipse.ui.IViewPart;
 import org.eclipse.ui.IWorkbenchPage;
@@ -126,11 +127,16 @@ public class SdfcliImpactAnalysisHandler extends AbstractHandler {
 						+ sourceAccountID + "&custpage_email2=" + email + "&custpage_password2=" + password
 						+ "&custpage_accounttarget=" + targetAccountId;
 			}
-			try {
-				IWebBrowser browser = PlatformUI.getWorkbench().getBrowserSupport().createBrowser("Diff");
-				browser.openURL(new URL(diffUrl));
-			} catch (PartInitException | MalformedURLException e) {
-				e.printStackTrace();
+
+			if(System.getProperty("os.name").toLowerCase().indexOf("win") >= 0) {
+				Program.launch(diffUrl);
+			} else {
+				try {
+					IWebBrowser browser = PlatformUI.getWorkbench().getBrowserSupport().createBrowser("Diff");
+					browser.openURL(new URL(diffUrl));
+				} catch (PartInitException | MalformedURLException e) {
+					e.printStackTrace();
+				}
 			}
 		}		
 	}
