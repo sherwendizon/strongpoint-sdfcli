@@ -72,10 +72,10 @@ public class SdfcliImpactAnalysisHandler extends AbstractHandler {
 				strongpointView.setDisplayObject(impactAnalysisDialog.getResults());
 				strongpointView.setTargetAccountId(impactAnalysisDialog.getTargetAccountId());
 				strongpointView.setTimestamp(timestamp.toString());
-				String statusStr = "Success";
+				String statusStr = "In Progress";
 				strongpointView.setStatus(statusStr);
 				strongpointView.populateTable(JobTypes.impact_analysis.getJobType());
-				if(statusStr.equalsIgnoreCase("success")) {
+				if(!statusStr.equalsIgnoreCase("success")) {
 					launchDiff(impactAnalysisDialog.getDiffResults());
 				}
 			} catch (PartInitException e1) {

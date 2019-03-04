@@ -54,7 +54,7 @@ public class SdfcliTestConnectionHandler extends AbstractHandler{
 			strongpointView.setDisplayObject(testConnectionDialog.getResults());
 			strongpointView.setTargetAccountId(testConnectionDialog.getTargetAccountId());
 			strongpointView.setTimestamp(timestamp.toString());
-			String statusStr = "Success";
+			String statusStr = "In Progress";
 			strongpointView.setStatus(statusStr);
 			strongpointView.populateTable(JobTypes.test_connection.getJobType());
 			StrongpointDirectoryGeneralUtility.newInstance().writeToFile(testConnectionDialog.getResults(), JobTypes.test_connection.getJobType(),

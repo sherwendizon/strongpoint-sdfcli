@@ -13,7 +13,8 @@ public enum JobTypes {
 	import_objects("Sync To Netsuite - Importing Objects"),
 	import_files("Sync To Netsuite - Importing Files"),
 	add_dependencies("Sync To Netsuite - Adding Dependencies"),
-	source_updates("Check for Source Account Updates");
+	source_updates("Check for Source Account Updates"),
+	target_updates("Check for Target Account Updates");
 	
 	private String jobType;
 	

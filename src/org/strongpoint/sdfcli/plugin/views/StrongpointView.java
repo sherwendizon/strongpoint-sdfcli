@@ -1,10 +1,12 @@
 package org.strongpoint.sdfcli.plugin.views;
 
+import java.io.File;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.TableEditor;
+import org.eclipse.swt.events.ControlListener;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Event;
@@ -43,6 +45,8 @@ public class StrongpointView extends ViewPart {
 	private String timestamp;
 
 	private String progressStatus;
+	
+	private String fullPath;
 	
 	private TableItem data;
 	
@@ -129,14 +133,23 @@ public class StrongpointView extends ViewPart {
 							String fileName = selection[i].getText(0) + "_" + parsedAccountId + "_"
 									+ selection[i].getText(4).replaceAll(":", "_") + ".txt";
 							System.out.println("File Path: " + fileName);
-							detailView.setFileAbsolutePath(userHomePath + "/strongpoint_action_logs/" + fileName);
+							fullPath = userHomePath + "/strongpoint_action_logs/" + fileName;
+							detailView.setFileAbsolutePath(fullPath);
 							detailView.updateView();
+							updateTable(fullPath);
 						} catch (PartInitException e) {
 							e.printStackTrace();
 						}
 					}
 				}
 			});
+		}
+	}
+	
+	private void updateTable(String filePath) {
+		File file = new File(filePath);
+		if( file.exists() && file.getTotalSpace() > 0L) {
+			data.setText(2, "Done");
 		}
 	}
 

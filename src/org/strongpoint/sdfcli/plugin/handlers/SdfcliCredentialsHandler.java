@@ -38,7 +38,7 @@ public class SdfcliCredentialsHandler extends AbstractHandler {
 			strongpointView.setDisplayObject(null);
 			strongpointView.setTargetAccountId(not_available);
 			strongpointView.setTimestamp(timestamp.toString());
-			String statusStr = "Success";
+			String statusStr = "In Progress";
 			strongpointView.setStatus(statusStr);
 //			strongpointView.setProgressStatus(Integer.toString(100) + "%");
 			strongpointView.populateTable(JobTypes.credentials.getJobType());
