@@ -148,6 +148,7 @@ public class StrongpointView extends ViewPart {
 	
 	private void updateTable(String filePath) {
 		File file = new File(filePath);
+		System.out.println("File Size: " +file.getTotalSpace());
 		if( file.exists() && file.getTotalSpace() > 0L) {
 			data.setText(2, "Done");
 		}

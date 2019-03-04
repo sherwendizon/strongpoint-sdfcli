@@ -8,6 +8,7 @@ import java.util.UUID;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.strongpoint.sdfcli.plugin.utils.Accounts;
+import org.strongpoint.sdfcli.plugin.utils.StrongpointDirectoryGeneralUtility;
 
 public class AddEditAccountService {
 	
@@ -18,6 +19,8 @@ public class AddEditAccountService {
 	private String uuid;
 	
 	private final static String userHomePath = System.getProperty("user.home");
+	
+	private final static String osName = System.getProperty("os.name").toLowerCase();
 
 	public String getAccountId() {
 		return accountId;
@@ -44,10 +47,21 @@ public class AddEditAccountService {
 	}
 
 	public void writeToJSONFile(boolean isEdit) {
+		StrongpointDirectoryGeneralUtility.newInstance().createSdfcliDirectory();
 		JSONObject obj = new JSONObject();
 	    obj.put("accountId", this.accountId);
 	    obj.put("accountName", this.accountName);
 	
+//	    String path = "";
+//	    if(osName.indexOf("win") >= 0) {
+//	    	path = userHomePath.replace("\\", "/");
+//	    	obj.put("path", path + "/sdfcli/");
+//	    } else {    	
+//	    	System.out.println("NON-WINDOWS: " +userHomePath + "\\sdfcli\\");
+//	    	path = userHomePath.replace("\\", "") + "/sdfcli/";
+//	    	obj.put("path", path.replace("\\", ""));
+//	    }	    
+	    
 	    try {
 	        File file = new File( userHomePath + "/sdfcli/" + "accounts.json");
 	        if(isEdit) {

@@ -335,4 +335,15 @@ public class StrongpointDirectoryGeneralUtility {
 		}
 	}
 	
+	public void createSdfcliDirectory() {
+		String userHomePath = System.getProperty("user.home");
+		
+		File file = new File(userHomePath + "/sdfcli");
+		if(file.exists() && file.isDirectory()) {
+			System.out.println("SDFCLI directory already created!");
+		} else {
+			file.mkdir();
+		}
+	}
+	
 }

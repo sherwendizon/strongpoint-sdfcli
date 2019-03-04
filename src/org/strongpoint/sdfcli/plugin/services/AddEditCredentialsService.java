@@ -10,6 +10,8 @@ import java.util.UUID;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.strongpoint.sdfcli.plugin.utils.Accounts;
+import org.strongpoint.sdfcli.plugin.utils.StrongpointDirectoryGeneralUtility;
+import org.strongpoint.sdfcli.plugin.utils.jobs.StrongpointJobManager;
 
 public class AddEditCredentialsService {
 	
@@ -38,6 +40,7 @@ public class AddEditCredentialsService {
 	}
 
 	public void writeToJSONFile() {
+		StrongpointDirectoryGeneralUtility.newInstance().createSdfcliDirectory();
 		JSONObject obj = new JSONObject();
 	    obj.put("email", this.emailStr);
 	    obj.put("password", this.passwordStr);
