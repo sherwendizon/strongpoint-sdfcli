@@ -6,7 +6,12 @@ import java.util.regex.Pattern;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.TableEditor;
-import org.eclipse.swt.events.ControlListener;
+import org.eclipse.swt.events.MouseEvent;
+import org.eclipse.swt.events.MouseListener;
+import org.eclipse.swt.events.MouseMoveListener;
+import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
+import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Event;
@@ -21,6 +26,7 @@ import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.ViewPart;
 import org.json.simple.JSONObject;
+import org.strongpoint.sdfcli.plugin.utils.StrongpointDirectoryGeneralUtility;
 
 public class StrongpointView extends ViewPart {
 
@@ -45,13 +51,13 @@ public class StrongpointView extends ViewPart {
 	private String timestamp;
 
 	private String progressStatus;
-	
+
 	private String fullPath;
-	
+
 	private TableItem data;
-	
+
 	private ProgressBar bar;
-	
+
 	private TableEditor editor;
 
 	public StrongpointView() {
@@ -109,7 +115,7 @@ public class StrongpointView extends ViewPart {
 
 	private void addTableListener() {
 		if (table != null) {
-			table.addListener(SWT.Selection, new Listener() {
+			table.addListener(SWT.MouseDoubleClick, new Listener() {
 
 				@Override
 				public void handleEvent(Event event) {
@@ -136,38 +142,89 @@ public class StrongpointView extends ViewPart {
 							fullPath = userHomePath + "/strongpoint_action_logs/" + fileName;
 							detailView.setFileAbsolutePath(fullPath);
 							detailView.updateView();
-							updateTable(fullPath);
+//							autoUpdateOnMouseMove(fullPath, selection[i]);
+							updateTable(fullPath, selection[i]);
 						} catch (PartInitException e) {
 							e.printStackTrace();
 						}
 					}
 				}
 			});
+
 		}
 	}
-	
-	private void updateTable(String filePath) {
+
+//	private void autoUpdateOnMouseMove(String fullPath, TableItem select) {
+//		table.addMouseMoveListener(new MouseMoveListener() {
+//			
+//			@Override
+//			public void mouseMove(MouseEvent arg0) {
+//				System.out.println("Mouse move");
+//				updateTable(fullPath, select);
+//			}
+//		});
+//
+////		table.addSelectionListener(new SelectionListener() {
+////			
+////			@Override
+////			public void widgetSelected(SelectionEvent arg0) {
+////				updateTable(fullPath, select);
+////			}
+////			
+////			@Override
+////			public void widgetDefaultSelected(SelectionEvent arg0) {
+////				updateTable(fullPath, select);
+////			}
+////		});
+//	}
+
+	private void updateTable(String filePath, TableItem selectedItem) {
 		File file = new File(filePath);
-		System.out.println("File Size: " +file.getTotalSpace());
-		if( file.exists() && file.getTotalSpace() > 0L) {
-			data.setText(2, "Done");
+//		System.out.println("File Size: " + file.getTotalSpace());
+//		System.out.println("SelectedItem: " + selectedItem);
+//		System.out.println("Editor Item: " + editor.getItem());
+		if (file.exists() && file.getTotalSpace() > 0L) {
+			if (StrongpointDirectoryGeneralUtility.newInstance().readLogFileforErrorMessages(filePath)) {
+				selectedItem.setText(2, "Error");
+				selectedItem.setBackground(new Color(Display.getCurrent(), 242, 188, 177));
+//				bar.setState(SWT.PAUSED);
+//				if(selectedItem.equals(editor.getItem())) {
+//					editor.getEditor().setVisible(false);
+//					selectedItem.setText(3, "100%");
+//				}
+			} else {
+				selectedItem.setText(2, "Success");
+				selectedItem.setBackground(new Color(Display.getCurrent(), 198, 242, 177));
+//				bar.setState(SWT.PAUSED);
+//				if(selectedItem.equals(editor.getItem())) {
+//					editor.getEditor().setVisible(false);
+//					selectedItem.setText(3, "100%");
+//				}
+			}
+//			bar.setState(SWT.PAUSED);
+//			editor.setEditor(bar, selectedItem, 3);
+		} else {
+			selectedItem.setText(2, "In Progress");
 		}
+
 	}
 
 	public void populateTable(String jobType) {
 		if (table != null) {
 			table.deselectAll();
 			data = new TableItem(table, SWT.NONE);
-			data.setText(
-					new String[] { jobType, this.targetAccountId, this.status, "",/*this.progressStatus,*/ this.timestamp });
-	        bar = new ProgressBar(table, SWT.HIGH);
-	        for (int i = 0; i <= 100; i++) {
+			data.setText(new String[] { jobType, this.targetAccountId, this.status, "",
+					/* this.progressStatus, */ this.timestamp });
+			bar = new ProgressBar(table, SWT.MEDIUM);
+			bar.setMinimum(0);
+			bar.setMaximum(100);
+			for (int i = 0; i <= 100; i++) {
 				bar.setSelection(i);
 			}
-	        TableEditor editor = new TableEditor(table);
-	        editor.grabHorizontal = true;
-	        editor.grabVertical = true;
-	        editor.setEditor(bar, data, 3);
+			editor = new TableEditor(table);
+			editor.grabHorizontal = true;
+			editor.grabVertical = true;
+			editor.setEditor(bar, data, 3);
 		}
 	}
 

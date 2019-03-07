@@ -97,6 +97,28 @@ public class StrongpointDirectoryGeneralUtility {
 		return savedSearchtObject;		
 	}
 	
+	public boolean readLogFileforErrorMessages(String filenameStr) {
+//		StringBuilder contents = new StringBuilder();
+		String str;
+		File file = new File(filenameStr);
+		boolean isError = false;
+		try {
+			if(file.exists() && !file.isDirectory()) {
+				BufferedReader reader = new BufferedReader(new FileReader(file));
+				while((str = reader.readLine())  != null) {
+					if(str.contains("Error") || str.contains("No approved deployment")) {
+						isError = true;
+					}
+				}
+			}
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return isError;		
+	}
+	
 	public void writeSavedSearchResultsToFile(JSONArray savedSearchesResults, String accountId, Map<String, String> ssTimestamps) {
 		if (savedSearchesResults != null) {
 			for (int i = 0; i < savedSearchesResults.size(); i++) {
@@ -334,6 +356,58 @@ public class StrongpointDirectoryGeneralUtility {
 			e.printStackTrace();
 		}
 	}
+	
+	public void writeToFileSourceTargetUpdates(JSONObject obj, String jobType, String targetAccountId, String timestamp) {
+		String userHomePath = System.getProperty("user.home");
+		String parsedAccountId = targetAccountId;
+		if (targetAccountId.contains("(") && targetAccountId.contains(")")) {
+			Matcher match = Pattern.compile("\\(([^)]+)\\)").matcher(targetAccountId);
+			while (match.find()) {
+				parsedAccountId = match.group(1);
+			}
+		}
+		String fileName = jobType + "_" + parsedAccountId + "_" + timestamp.replaceAll(":", "_") + ".txt";
+		boolean isDirectoryExist = Files.isDirectory(Paths.get(userHomePath + "/strongpoint_action_logs"));
+		if (!isDirectoryExist) {
+			File newDir = new File(userHomePath + "/strongpoint_action_logs");
+			newDir.mkdir();
+		}
+
+		File newFile = new File(userHomePath + "/strongpoint_action_logs/" + fileName);
+		if (!newFile.exists()) {
+			try {
+				newFile.createNewFile();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+
+		FileWriter writer;
+		try {
+			writer = new FileWriter(userHomePath + "/strongpoint_action_logs/" + fileName);
+			PrintWriter printWriter = new PrintWriter(writer);
+			if (obj != null) {
+				JSONArray scriptIds = (JSONArray) obj.get("scriptIds");
+				String accountId = obj.get("accountId").toString();
+				String messageResult = (String) obj.get("message");
+				
+				printWriter.println("Account ID: " + accountId);
+				printWriter.println("Message: " + messageResult);
+				printWriter.println("Script IDs Affected: ");
+				if(!scriptIds.isEmpty()) {
+					for (int i = 0; i < scriptIds.size(); i++) {
+						printWriter.println("    " + scriptIds.get(i).toString());
+					}					
+				} else {
+					printWriter.println("    No Scripts IDs are affected and are up to date.");
+				}
+
+				printWriter.close();
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}	
 	
 	public void createSdfcliDirectory() {
 		String userHomePath = System.getProperty("user.home");

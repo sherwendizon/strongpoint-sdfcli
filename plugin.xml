@@ -156,7 +156,7 @@
             commandId="strongpoint-sdfcli.commands.sourceUpdatesCommand"
             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
             contextId="org.eclipse.ui.contexts.window"
-            sequence="M1+3">
+            sequence="M1+j">
       </key>
       <key
             commandId="strongpoint-sdfcli.commands.targetUpdatesCommand"

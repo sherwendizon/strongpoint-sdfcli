@@ -1,33 +1,14 @@
 package org.strongpoint.sdfcli.plugin.services;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.attribute.BasicFileAttributes;
-import java.sql.Date;
-import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.entity.ContentType;
-import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
 import org.eclipse.core.resources.IProject;
-import org.eclipse.core.runtime.jobs.Job;
-import org.eclipse.swt.widgets.Shell;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
@@ -42,85 +23,46 @@ public class SourceUpdatesService {
 	public static SourceUpdatesService newInstance() {
 		return new SourceUpdatesService();
 	}
-	
-	public void checkSourceUpdates(IProject project, String projectPath, String accountId, String timestamp) {
+
+	public void checkSourceUpdates(IProject project, String projectPath, String accountId, String timestamp,
+			List<String> scriptIds) {
 		Thread syncOperationThread = new Thread(new Runnable() {
-			
+
 			@Override
 			public void run() {
-				localCopyIsUpToDateChecker(project, projectPath, accountId, timestamp);
+				localCopyIsUpToDateChecker(project, projectPath, accountId, timestamp, scriptIds);
 			}
 		});
 		syncOperationThread.start();
 	}
 
-	private void localCopyIsUpToDateChecker(IProject project, String projectPath, String accountId, String timestamp) {
-		Map<String, String> localCopyMap = new HashMap<String, String>();
-		JSONArray jsonArray = new JSONArray();
-//		Timestamp timestampProject = new Timestamp(project.getLocalTimeStamp());
-//		System.out.println("PROJECT DATE: " +timestampProject.toString());
-//		System.out.println("-----------------------");
-		File projectFile = new File(projectPath);
-		Path projPath = Paths.get(projectFile.getPath());
-		try {
-			BasicFileAttributes projectAttributes = Files.readAttributes(projPath, BasicFileAttributes.class);
-//			System.out.println("Name: " +projectFile.getName());
-//			System.out.println("Created: " +new Timestamp(projectAttributes.creationTime().toMillis()).toString());	
-//			System.out.println("Modified: " +new Timestamp(projectAttributes.lastModifiedTime().toMillis()).toString());
-//			System.out.println("Last Accessed: " +new Timestamp(projectAttributes.lastAccessTime().toMillis()).toString());
-//			System.out.println("-----------------------");
-			localCopyMap.put(projectFile.getName(),
-					new Timestamp(projectAttributes.lastAccessTime().toMillis()).toString());
-		} catch (IOException e1) {
-			e1.printStackTrace();
-		}
-		ArrayList<File> files = new ArrayList<File>(Arrays.asList(projectFile.listFiles()));
-		for (File file : files) {
-			Path path = Paths.get(file.getPath());
-			try {
-				BasicFileAttributes fileAttributes = Files.readAttributes(path, BasicFileAttributes.class);
-//				System.out.println("Name: " +file.getName());
-//				System.out.println("Created: " +new Timestamp(fileAttributes.creationTime().toMillis()).toString());	
-//				System.out.println("Modified: " +new Timestamp(fileAttributes.lastModifiedTime().toMillis()).toString());
-//				System.out.println("Last Accessed: " +new Timestamp(fileAttributes.lastAccessTime().toMillis()).toString());
-//				System.out.println("-----------------------");
-				localCopyMap.put(file.getName(), new Timestamp(fileAttributes.lastAccessTime().toMillis()).toString());
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
+	private void localCopyIsUpToDateChecker(IProject project, String projectPath, String accountId, String timestamp,
+			List<String> scriptIds) {
+		JSONObject results = new JSONObject();
+//		JSONObject objResults = testResponseSourceProjectDates();
+		JSONObject objResults = getSourceProjectDates(accountId, projectPath, scriptIds);
+		JSONArray data = (JSONArray) objResults.get("data");
+		if (objResults != null) {
+			results.put("message", objResults.get("message").toString());
+			results.put("accountId", accountId);
+			results.put("scriptIds", data);
 		}
 
-		JSONObject objResults = testResponseSourceProjectDates();
-		JSONObject data = (JSONObject) objResults.get("data");
-		if (objResults != null) {
-			JSONArray arrayDates = (JSONArray) data.get("result");
-			System.out.println("RESULTS SIZE: " + arrayDates.size());
-			for (int i = 0; i < arrayDates.size(); i++) {
-				JSONObject filenameDate = (JSONObject) arrayDates.get(i);
-				System.out.println("FILE SOURCE: " + filenameDate.get("filename").toString());
-				Date localCopyDate = new Date(
-						Timestamp.valueOf(localCopyMap.get(filenameDate.get("filename").toString())).getTime());
-				Date sourceCopyDate = new Date(Timestamp.valueOf(filenameDate.get("date").toString()).getTime());
-				if (sourceCopyDate.after(localCopyDate)) {
-					JSONObject object = new JSONObject();
-					object.put("message", "Please update local copy of " + filenameDate.get("filename").toString()
-							+ " with source copy");
-					object.put("accountId", accountId);
-					jsonArray.add(object);
-				}
-			}
-		}
-		JSONObject results = new JSONObject();
-		results.put("results", jsonArray);
 		System.out.println("Writing to Source Updates file...");
-		StrongpointDirectoryGeneralUtility.newInstance().writeToFile(results, JobTypes.source_updates.getJobType(), accountId, timestamp);
+		StrongpointDirectoryGeneralUtility.newInstance().writeToFileSourceTargetUpdates(results,
+				JobTypes.source_updates.getJobType(), accountId, timestamp);
 		System.out.println("Finished writing Source Updates file...");
 	}
 
-	private JSONObject getSourceProjectDates(String accountID, String email, String password) {
+	private JSONObject getSourceProjectDates(String accountID, String projectPath, List<String> scriptIds) {
+		String scriptIdsWithouWhitespaces = String.join(",", scriptIds);
+		JSONObject creds = Credentials.getCredentialsFromFile();
+		JSONObject importObjects = StrongpointDirectoryGeneralUtility.newInstance().readImportJsonFile(projectPath);
 		JSONObject results = new JSONObject();
-		String strongpointURL = "https://rest.netsuite.com/app/site/hosting/restlet.nl?script=customscript_flo_get_supported_objects&deploy=customdeploy_flo_get_supported_objects";
-		System.out.println(strongpointURL);
+		String strongpointURL = "https://rest.netsuite.com/app/site/hosting/restlet.nl?script=customscript_flo_find_obj_change&deploy=customdeploy_flo_find_obj_change&scriptIds="
+				+ scriptIdsWithouWhitespaces + "&importDateTime="
+				+ String.valueOf((long) importObjects.get("importDateTime"));
+		System.out.println("Source Updates URL: " + strongpointURL);
 		HttpGet httpGet = null;
 		int statusCode;
 		String responseBodyStr;
@@ -128,8 +70,9 @@ public class SourceUpdatesService {
 		try {
 			CloseableHttpClient client = HttpClients.createDefault();
 			httpGet = new HttpGet(strongpointURL);
-			httpGet.addHeader("Authorization", "NLAuth nlauth_account=" + accountID + ", nlauth_email=" + email
-					+ ", nlauth_signature=" + password + ", nlauth_role=3");
+			httpGet.addHeader("Authorization",
+					"NLAuth nlauth_account=" + accountID + ", nlauth_email=" + creds.get("email").toString()
+							+ ", nlauth_signature=" + creds.get("password").toString() + ", nlauth_role=3");
 			response = client.execute(httpGet);
 			HttpEntity entity = response.getEntity();
 			statusCode = response.getStatusLine().getStatusCode();
@@ -150,11 +93,13 @@ public class SourceUpdatesService {
 			}
 		}
 
+		System.out.println("Source Results: " + results.toJSONString());
+
 		return results;
 	}
 
 	private JSONObject testResponseSourceProjectDates() {
-		String jsonStr = "{\"code\":200,\"message\":\"Source Account Latest Dates.\",\"data\":{\"result\":[{\"filename\":\"2397_-_Fix_Pivot_Report_Not_Showing_Data\",\"date\":\"2019-03-03 22:33:44.92\"},{\"filename\":\"FileCabinet\",\"date\":\"2019-03-28 22:04:23.473\"}]}}";
+		String jsonStr = "{\"code\": 200,\"data\": [\"customrole_flo_sdf_role\",\"customscript_flo_dlu_spider\",\"customscript_flo_get_approval_status\",\"customscript_flo_get_diff_restlet\"],\"message\": \"Source Account Objects with Change(s) After Date.\"}";
 		JSONParser parser = new JSONParser();
 		JSONObject results = null;
 		try {

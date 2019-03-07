@@ -42,7 +42,7 @@ public class HttpRequestDeploymentService {
 			passwordCred = creds.get("password").toString();
 			pathCred = creds.get("path").toString();
 		}
-        JSONObject importObj = readImportJsonFile(projectPath);
+        JSONObject importObj = StrongpointDirectoryGeneralUtility.newInstance().readImportJsonFile(projectPath);
         if(importObj != null) {
         	accountId = importObj.get("accountId").toString();
         	parameters.put("parentCrId", importObj.get("parentCrId").toString());
@@ -71,8 +71,9 @@ public class HttpRequestDeploymentService {
 			}
 			results = (JSONObject) JSONValue.parse(responseBodyStr);
 		} catch (Exception exception) {
-			System.out.println("Request Deployment call error: " +exception.getMessage());
-			throw new RuntimeException("Request Deployment call error: " +exception.getMessage());
+			results.put("code", 404);
+			results.put("message", "Error. HTTP Request returns a 404. Cannot reach NS endpoint");
+			results.put("data", null);
 		} finally {
 			if (httpPost != null) {
 				httpPost.reset();
@@ -87,7 +88,7 @@ public class HttpRequestDeploymentService {
 	}
 	
 	public JSONObject getChangeTypes(String projectPath) {
-		JSONObject results;
+		JSONObject results = new JSONObject();
 		JSONObject creds = Credentials.getCredentialsFromFile();
 		String emailCred = "";
 		String passwordCred = "";
@@ -98,7 +99,7 @@ public class HttpRequestDeploymentService {
 			passwordCred = creds.get("password").toString();
 			pathCred = creds.get("path").toString();
 		}
-        JSONObject importObj = readImportJsonFile(projectPath);
+        JSONObject importObj = StrongpointDirectoryGeneralUtility.newInstance().readImportJsonFile(projectPath);
         if(importObj != null) {
         	accountId = importObj.get("accountId").toString();
         }		
@@ -121,8 +122,9 @@ public class HttpRequestDeploymentService {
                 results = (JSONObject) JSONValue.parse(strRespBody);
             }
         } catch (Exception exception) {
-			System.out.println("Request for all Requestors call error: " + exception.getMessage());
-			throw new RuntimeException("Request for all Requestors call error: " + exception.getMessage());
+			results.put("code", 404);
+			results.put("message", "Error. HTTP Request returns a 404. Cannot reach NS endpoint");
+			results.put("data", null);;
         } finally {
 			if (httpGet != null) {
 				httpGet.reset();
@@ -131,28 +133,4 @@ public class HttpRequestDeploymentService {
         return results;
 	}
 	
-	private JSONObject readImportJsonFile(String projectPath) {
-		StringBuilder contents = new StringBuilder();
-		String str;
-		File file = new File(projectPath + "/import.json");
-		System.out.println("SYNC PROJECT PATH: " + projectPath + "/import.json");
-		JSONObject scriptObjects = null;
-		try {
-			if(file.exists() && !file.isDirectory()) {
-				BufferedReader reader = new BufferedReader(new FileReader(file));
-				while((str = reader.readLine())  != null) {
-					contents.append(str);
-				}
-				System.out.println("FILE Contents: " +contents.toString());
-				scriptObjects = (JSONObject) new JSONParser().parse(contents.toString());	
-			}
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
-		} catch (IOException e) {
-			e.printStackTrace();
-		} catch (ParseException e) {
-			e.printStackTrace();
-		}
-		return scriptObjects;		
-	}	
 }

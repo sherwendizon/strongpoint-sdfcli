@@ -46,56 +46,22 @@ public class TargetUpdatesService {
 	}
 
 	private void localCopyIsUpToDateChecker(IProject project, String projectPath, String accountId, String timestamp) {
-		Map<String, String> localCopyMap = new HashMap<String, String>();
-		JSONArray jsonArray = new JSONArray();
-//		Timestamp timestampProject = new Timestamp(project.getLocalTimeStamp());
-//		System.out.println("PROJECT DATE: " +timestampProject.toString());
-//		System.out.println("-----------------------");
-		File projectFile = new File(projectPath);
-		Path projPath = Paths.get(projectFile.getPath());
-		try {
-			BasicFileAttributes projectAttributes = Files.readAttributes(projPath, BasicFileAttributes.class);
-			localCopyMap.put(projectFile.getName(),
-					new Timestamp(projectAttributes.lastAccessTime().toMillis()).toString());
-		} catch (IOException e1) {
-			e1.printStackTrace();
-		}
-		ArrayList<File> files = new ArrayList<File>(Arrays.asList(projectFile.listFiles()));
-		for (File file : files) {
-			Path path = Paths.get(file.getPath());
-			try {
-				BasicFileAttributes fileAttributes = Files.readAttributes(path, BasicFileAttributes.class);
-				localCopyMap.put(file.getName(), new Timestamp(fileAttributes.lastAccessTime().toMillis()).toString());
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-		}
-
-		JSONObject objResults = testResponseSourceProjectDates();
-		JSONObject data = (JSONObject) objResults.get("data");
-		if (objResults != null) {
-			JSONArray arrayDates = (JSONArray) data.get("result");
-			System.out.println("RESULTS SIZE: " + arrayDates.size());
-			for (int i = 0; i < arrayDates.size(); i++) {
-				JSONObject filenameDate = (JSONObject) arrayDates.get(i);
-				System.out.println("FILE SOURCE: " + filenameDate.get("filename").toString());
-				Date localCopyDate = new Date(
-						Timestamp.valueOf(localCopyMap.get(filenameDate.get("filename").toString())).getTime());
-				Date sourceCopyDate = new Date(Timestamp.valueOf(filenameDate.get("date").toString()).getTime());
-				if (sourceCopyDate.after(localCopyDate)) {
-					JSONObject object = new JSONObject();
-					object.put("message", "Please update local copy of " + filenameDate.get("filename").toString()
-							+ " with target(production) copy");
-					object.put("accountId", accountId);
-					jsonArray.add(object);
-				}
-			}
-		}
 		JSONObject results = new JSONObject();
-		results.put("results", jsonArray);
-		System.out.println("Writing to Target Updates file...");
-		StrongpointDirectoryGeneralUtility.newInstance().writeToFile(results, JobTypes.target_updates.getJobType(), accountId, timestamp);
-		System.out.println("Finished writing Target Updates file...");
+		JSONObject objResults = testResponseTargetProjectDates();
+		JSONArray data = (JSONArray) objResults.get("data");
+		if (objResults != null) {
+			if(!data.isEmpty()) {
+				results.put("message", objResults.get("message").toString());
+				results.put("accountId", accountId);
+				results.put("scriptIds", data);
+			} else {
+				System.out.println("Else Local Updates");
+			}
+		}
+		
+		System.out.println("Writing to Source Updates file...");
+		StrongpointDirectoryGeneralUtility.newInstance().writeToFileSourceTargetUpdates(results, JobTypes.target_updates.getJobType(), accountId, timestamp);
+		System.out.println("Finished writing Source Updates file...");
 	}
 
 	private JSONObject getSourceProjectDates(String accountID, String email, String password) {
@@ -134,8 +100,8 @@ public class TargetUpdatesService {
 		return results;
 	}
 
-	private JSONObject testResponseSourceProjectDates() {
-		String jsonStr = "{\"code\":200,\"message\":\"Target Account Latest Dates.\",\"data\":{\"result\":[{\"filename\":\"2397_-_Fix_Pivot_Report_Not_Showing_Data\",\"date\":\"2019-03-03 22:33:44.92\"},{\"filename\":\"FileCabinet\",\"date\":\"2019-03-28 22:04:23.473\"}]}}";
+	private JSONObject testResponseTargetProjectDates() {
+		String jsonStr = "{\"code\": 200,\"data\": [\"customrole_flo_sdf_role\",\"customscript_flo_dlu_spider\",\"customscript_flo_get_approval_status\",\"customscript_flo_get_diff_restlet\"],\"message\": \"Target Account Objects with Change(s) After Date.\"}";
 		JSONParser parser = new JSONParser();
 		JSONObject results = null;
 		try {

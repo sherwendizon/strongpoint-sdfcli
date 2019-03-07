@@ -106,7 +106,8 @@ public class SyncToNsCliService {
 			String[] objsStr = new String[objs.size()];
 			System.out.println("IMPORT OBJECTS: " +objs.toJSONString());
 			for (int i = 0; i < objs.size(); i++) {
-				objsStr[i] += (String) objs.get(i);
+//				JSONObject scriptObj = (JSONObject) objs.get(i);
+				objsStr[i] += objs.get(i).toString();
 			}
 			System.out.println("OBJECT PARAMETERS: " +objsStr.toString());
 			String.join(" ", objsStr);
@@ -189,6 +190,8 @@ public class SyncToNsCliService {
 			String[] objsStr = new String[objs.size()];
 			System.out.println("IMPORT FILES: " +objs.toJSONString());
 			for (int i = 0; i < objs.size(); i++) {
+//				JSONObject scriptObj = (JSONObject) objs.get(i);
+//				objsStr[i] += "\"" +scriptObj.get("scriptId").toString()+ "\"";				
 				objsStr[i] += "\"" +(String) objs.get(i)+ "\"";
 			}
 			System.out.println("FILE PARAMETERS: " +objsStr.toString());
@@ -272,6 +275,8 @@ public class SyncToNsCliService {
 			String[] objsStr = new String[objs.size()];
 			System.out.println("IMPORT FILES: " +objs.toJSONString());
 			for (int i = 0; i < objs.size(); i++) {
+//				JSONObject scriptObj = (JSONObject) objs.get(i);
+//				objsStr[i] += "\"" +scriptObj.get("scriptId").toString()+ "\"";				
 				objsStr[i] += "\"" +(String) objs.get(i)+ "\"";
 			}
 			System.out.println("FILE PARAMETERS: " +objsStr.toString());

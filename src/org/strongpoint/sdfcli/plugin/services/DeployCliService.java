@@ -86,9 +86,9 @@ public class DeployCliService {
 
 		results.put("results", jsonArray);
 
-		System.out.println("Writing to file...");
-		StrongpointDirectoryGeneralUtility.newInstance().writeToFile(results, jobType, accountID, timestamp);
-		System.out.println("Finished writing file...");
+//		System.out.println("Writing to file...");
+//		StrongpointDirectoryGeneralUtility.newInstance().writeToFile(results, jobType, accountID, timestamp);
+//		System.out.println("Finished writing file...");
 
 		return results;
 	}
@@ -179,7 +179,7 @@ public class DeployCliService {
 	}
 
 	public JSONArray deploySavedSearches(String accountID, String email, String password, String sdfcliPath,
-			String projectPath, Shell parentShell, String jobType, Map<String, String> ssTimestamps) {
+			String projectPath, Shell parentShell, String jobType, Map<String, String> ssTimestamps, boolean isApproved) {
 		JSONArray results = new JSONArray();
 		JSONObject creds = Credentials.getCredentialsFromFile();
 		String emailCred = "";
@@ -196,41 +196,55 @@ public class DeployCliService {
 		List<String> filenames = StrongpointDirectoryGeneralUtility.newInstance().readSavedSearchDirectory(projectPath);
 		if (filenames != null) {
 			for (String filename : filenames) {
-				JSONObject obj = new JSONObject();
-				obj.put("search", StrongpointDirectoryGeneralUtility.newInstance()
-						.readSavedSearchFile(projectPath + "/FileCabinet/SavedSearches/" + filename));
+				if(!isApproved) {
+					JSONObject isNotApprovedMessage = new JSONObject();
+					isNotApprovedMessage.put("code", 300);
+					isNotApprovedMessage.put("message", "No approved deployment. Cannot proceed with Saved Search operation.");
+					isNotApprovedMessage.put("data", null);
+					isNotApprovedMessage.put("filename", filename);
+					results.add(isNotApprovedMessage);
+				} else {
+					JSONObject obj = new JSONObject();
+					obj.put("search", StrongpointDirectoryGeneralUtility.newInstance()
+							.readSavedSearchFile(projectPath + "/FileCabinet/SavedSearches/" + filename));
 
-				try {
-					CloseableHttpClient client = HttpClients.createDefault();
-					httpPost = new HttpPost(strongpointURL);
-					httpPost.addHeader("Authorization", "NLAuth nlauth_account=" + accountID + ", nlauth_email="
-							+ emailCred + ", nlauth_signature=" + passwordCred + ", nlauth_role=3");
-					System.out.println("PARAMETERS: " + obj.toJSONString());
-					httpPost.addHeader("Content-type", "application/json");
-					StringEntity stringEntity = new StringEntity(obj.toJSONString(), ContentType.APPLICATION_JSON);
-					httpPost.setEntity(stringEntity);
-					CloseableHttpResponse httpResponse = client.execute(httpPost);
-					HttpEntity entity = httpResponse.getEntity();
-					statusCode = httpResponse.getStatusLine().getStatusCode();
-					responseBodyStr = EntityUtils.toString(entity);
+					try {
+						CloseableHttpClient client = HttpClients.createDefault();
+						httpPost = new HttpPost(strongpointURL);
+						httpPost.addHeader("Authorization", "NLAuth nlauth_account=" + accountID + ", nlauth_email="
+								+ emailCred + ", nlauth_signature=" + passwordCred + ", nlauth_role=3");
+						System.out.println("PARAMETERS: " + obj.toJSONString());
+						httpPost.addHeader("Content-type", "application/json");
+						StringEntity stringEntity = new StringEntity(obj.toJSONString(), ContentType.APPLICATION_JSON);
+						httpPost.setEntity(stringEntity);
+						CloseableHttpResponse httpResponse = client.execute(httpPost);
+						HttpEntity entity = httpResponse.getEntity();
+						statusCode = httpResponse.getStatusLine().getStatusCode();
+						responseBodyStr = EntityUtils.toString(entity);
 
-					if (statusCode >= 400) {
-						throw new RuntimeException("HTTP Request returns a " + statusCode);
-					}
-					JSONObject resultObj = (JSONObject) JSONValue.parse(responseBodyStr);
-					resultObj.put("filename", filename);
-					results.add(resultObj);
-				} catch (Exception exception) {
-					System.out.println("Saved Search Deployment call error: " + exception.getMessage());
-					throw new RuntimeException("Saved Search Deployment call error: " + exception.getMessage());
-				} finally {
-					if (httpPost != null) {
-						httpPost.reset();
-					}
+						if (statusCode >= 400) {
+							throw new RuntimeException("HTTP Request returns a " + statusCode);
+						}
+						JSONObject resultObj = (JSONObject) JSONValue.parse(responseBodyStr);
+						resultObj.put("filename", filename);
+						results.add(resultObj);
+					} catch (Exception exception) {
+						JSONObject httpErrorMessage = new JSONObject();
+						httpErrorMessage.put("code", 404);
+						httpErrorMessage.put("message", "Error. HTTP Request returns a 404. Cannot reach NS endpoint");
+						httpErrorMessage.put("data", null);
+						httpErrorMessage.put("filename", filename);
+						results.add(httpErrorMessage);
+//						throw new RuntimeException("Saved Search Deployment call error: " + exception.getMessage());
+					} finally {
+						if (httpPost != null) {
+							httpPost.reset();
+						}
+					}	
 				}
-
 			}
 		}
+	
 		
 		System.out.println("Writing Saved Search to file...");
 		StrongpointDirectoryGeneralUtility.newInstance().writeSavedSearchResultsToFile(results, accountID, ssTimestamps);

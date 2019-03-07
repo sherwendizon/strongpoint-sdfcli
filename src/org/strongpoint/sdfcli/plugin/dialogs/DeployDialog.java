@@ -72,6 +72,8 @@ public class DeployDialog extends TitleAreaDialog {
 	
 	private Map<String, String> ssTimestamps;
 	
+	private boolean isApproved;
+	
 	public DeployDialog(Shell parentShell) {
 		super(parentShell);
 		this.parentShell = parentShell;
@@ -107,6 +109,10 @@ public class DeployDialog extends TitleAreaDialog {
 	
 	public String getTimestamp() {
 		return this.timestamp;
+	}
+	
+	public boolean getIsApproved() {
+		return this.isApproved;
 	}
 
 	@Override
@@ -185,6 +191,7 @@ public class DeployDialog extends TitleAreaDialog {
 				emailCred, passwordCred, String.join(",", getScripIds(this.window)));
 		System.out.println("Deploy Approve results: " + approveResult.toJSONString());
 		JSONObject data = (JSONObject) approveResult.get("data");
+		isApproved = (boolean) data.get("result");
 		JSONObject supportedObjs = DeployCliService.newInstance().getSupportedObjects(accountId, emailCred,
 				passwordCred);
 		JSONObject importObjects = StrongpointDirectoryGeneralUtility.newInstance().readImportJsonFile(this.projectPath);
@@ -193,6 +200,8 @@ public class DeployDialog extends TitleAreaDialog {
 		boolean isExcessObj = false;
 		if (objects != null) {
 			for (int i = 0; i < objects.size(); i++) {
+//				JSONObject scriptObj = (JSONObject) objects.get(i);
+//				listStr.add(scriptObj.get("scriptId").toString());
 				listStr.add(objects.get(i).toString());
 			}
 		}
@@ -226,13 +235,18 @@ public class DeployDialog extends TitleAreaDialog {
 					JSONObject messageObject = new JSONObject();
 					messageObject.put("message", approveResult.get("message").toString());
 					results = messageObject;
+					DeployCliService.newInstance().deploySavedSearches(accountId, emailCred,
+							passwordCred, pathCred, this.projectPath, this.parentShell, JobTypes.savedSearch.getJobType(), this.ssTimestamps, (boolean) data.get("result"));
 				} else {
 					results = DeployCliService.newInstance().deployCliResult(accountId, emailCred, passwordCred,
 							pathCred, this.projectPath, this.parentShell, JobTypes.deployment.getJobType(), timestamp);
 					savedSearchResults = DeployCliService.newInstance().deploySavedSearches(accountId, emailCred,
-							passwordCred, pathCred, this.projectPath, this.parentShell, JobTypes.savedSearch.getJobType(), this.ssTimestamps);
+							passwordCred, pathCred, this.projectPath, this.parentShell, JobTypes.savedSearch.getJobType(), this.ssTimestamps, (boolean) data.get("result"));
 				}
 			}
+			System.out.println("Writing to Deploy file...");
+			StrongpointDirectoryGeneralUtility.newInstance().writeToFile(results, JobTypes.deployment.getJobType(), accountId, timestamp);
+			System.out.println("Finished writing Deploy file...");
 		}
 	}
 

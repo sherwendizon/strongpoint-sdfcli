@@ -43,6 +43,7 @@ import org.json.simple.parser.ParseException;
 import org.strongpoint.sdfcli.plugin.dialogs.ImpactAnalysisDialog;
 import org.strongpoint.sdfcli.plugin.utils.Accounts;
 import org.strongpoint.sdfcli.plugin.utils.Credentials;
+import org.strongpoint.sdfcli.plugin.utils.StrongpointDirectoryGeneralUtility;
 import org.strongpoint.sdfcli.plugin.utils.enums.JobTypes;
 import org.strongpoint.sdfcli.plugin.views.StrongpointView;
 
@@ -101,7 +102,7 @@ public class SdfcliImpactAnalysisHandler extends AbstractHandler {
 					password = credentials.get("password").toString();
 					sdfcliPath = credentials.get("path").toString();
 				}
-				JSONObject importObj = readImportJsonFile(path.toPortableString());
+				JSONObject importObj = StrongpointDirectoryGeneralUtility.newInstance().readImportJsonFile(path.toPortableString());
 				String sourceAccountID = "";
 				String sourceCrID = "";
 				if (importObj != null) {
@@ -158,31 +159,6 @@ public class SdfcliImpactAnalysisHandler extends AbstractHandler {
 			}
 		}
 		return project;
-	}
-
-	private JSONObject readImportJsonFile(String projectPath) {
-		StringBuilder contents = new StringBuilder();
-		String str;
-		File file = new File(projectPath + "/import.json");
-		System.out.println("SYNC PROJECT PATH: " + projectPath + "/import.json");
-		JSONObject scriptObjects = null;
-		try {
-			if (file.exists() && !file.isDirectory()) {
-				BufferedReader reader = new BufferedReader(new FileReader(file));
-				while ((str = reader.readLine()) != null) {
-					contents.append(str);
-				}
-				System.out.println("FILE Contents: " + contents.toString());
-				scriptObjects = (JSONObject) new JSONParser().parse(contents.toString());
-			}
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
-		} catch (IOException e) {
-			e.printStackTrace();
-		} catch (ParseException e) {
-			e.printStackTrace();
-		}
-		return scriptObjects;
 	}
 
 }

@@ -69,7 +69,7 @@ public class SdfcliDeployHandler extends AbstractHandler {
 			strongpointView.populateTable(JobTypes.deployment.getJobType());
 			deployDialog.setTimestamp(timestamp.toString());
 			List<String> savedSearches = StrongpointDirectoryGeneralUtility.newInstance().readSavedSearchDirectory(path.toPortableString());
-			if ( savedSearches != null) {
+			if ( savedSearches != null ) {
 				Map<String, String> ssTimestamps = new HashMap<String, String>();
 				for (int i = 0; i < savedSearches.size(); i++) {
 //					strongpointView.setProgressStatus(Integer.toString(70) + "%");
