@@ -2,6 +2,7 @@ package org.strongpoint.sdfcli.plugin.handlers;
 
 import java.sql.Timestamp;
 import java.util.Date;
+import java.util.List;
 
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
@@ -15,6 +16,7 @@ import org.eclipse.jdt.internal.core.PackageFragmentRoot;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.jface.window.Window;
 import org.eclipse.ui.ISelectionService;
 import org.eclipse.ui.IViewPart;
 import org.eclipse.ui.IWorkbenchPage;
@@ -22,9 +24,11 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.handlers.HandlerUtil;
+import org.strongpoint.sdfcli.plugin.dialogs.SelectObjectsDialog;
 import org.strongpoint.sdfcli.plugin.services.SyncToNsCliService;
 import org.strongpoint.sdfcli.plugin.utils.enums.JobTypes;
 import org.strongpoint.sdfcli.plugin.views.StrongpointView;
+import org.strongpoint.sdfcli.plugin.dialogs.SelectObjectsDialog;
 
 public class SdfcliSyncToNsHandler extends AbstractHandler {
 
@@ -37,8 +41,22 @@ public class SdfcliSyncToNsHandler extends AbstractHandler {
 		currentProject = getCurrentProject(window);
 		if (getCurrentProject(window) != null) {
 			IPath path = getCurrentProject(window).getLocation();
+			//List<String> objectsToDeploy;
+			
+			SelectObjectsDialog selectObjectsDialog = new SelectObjectsDialog(window.getShell());
+			selectObjectsDialog.setProjectPath(path.toPortableString());
+			if (Window.CANCEL == selectObjectsDialog.open()) {
+				return null;
+			}
+			
+			if (selectObjectsDialog.getSelectedObjects().size() == 0) {
+				MessageDialog.openWarning(window.getShell(), "Warning", "Please select a project you would like to sync.");
+				return null;
+			}
+			
 			SyncToNsCliService syncToNsCliService = new SyncToNsCliService();
 			syncToNsCliService.setProject(currentProject);
+			syncToNsCliService.setObjectsToDeploy(selectObjectsDialog.getSelectedObjects());
 			IViewPart viewPart = null;
 			try {
 				viewPart = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage()
