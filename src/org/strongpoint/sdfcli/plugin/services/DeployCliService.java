@@ -179,7 +179,7 @@ public class DeployCliService {
 	}
 
 	public JSONArray deploySavedSearches(String accountID, String email, String password, String sdfcliPath,
-			String projectPath, Shell parentShell, String jobType, Map<String, String> ssTimestamps, boolean isApproved) {
+			String projectPath, Shell parentShell, String jobType, Map<String, String> ssTimestamps, boolean isApproved, String message) {
 		JSONArray results = new JSONArray();
 		JSONObject creds = Credentials.getCredentialsFromFile();
 		String emailCred = "";
@@ -199,7 +199,7 @@ public class DeployCliService {
 				if(!isApproved) {
 					JSONObject isNotApprovedMessage = new JSONObject();
 					isNotApprovedMessage.put("code", 300);
-					isNotApprovedMessage.put("message", "No approved deployment. Cannot proceed with Saved Search operation.");
+					isNotApprovedMessage.put("message", message+"Cannot proceed with Saved Search operation.");
 					isNotApprovedMessage.put("data", null);
 					isNotApprovedMessage.put("filename", filename);
 					results.add(isNotApprovedMessage);

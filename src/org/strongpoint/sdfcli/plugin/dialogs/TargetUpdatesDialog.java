@@ -99,7 +99,7 @@ public class TargetUpdatesDialog extends TitleAreaDialog{
 			MessageDialog.openError(this.parentShell, "No user credentials found", "Please set user credentials in Strongpoint > Credentials Settings menu");
 		}		
 //		results = HttpTestConnectionService.newInstance().getConnectionResults(accountID);
-		TargetUpdatesService.newInstance().checkSourceUpdates(this.project,
+		TargetUpdatesService.newInstance().checkTargetUpdates(this.project,
 				this.project.getLocation().toPortableString(), accountID, this.timestamp.toString());
 		super.okPressed();
 	}

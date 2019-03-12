@@ -106,7 +106,7 @@ public class StrongpointDirectoryGeneralUtility {
 			if(file.exists() && !file.isDirectory()) {
 				BufferedReader reader = new BufferedReader(new FileReader(file));
 				while((str = reader.readLine())  != null) {
-					if(str.contains("Error") || str.contains("No approved deployment")) {
+					if(str.contains("Error") || str.contains("No approved deployment") || str.contains("Account's Change Policy")) {
 						isError = true;
 					}
 				}
@@ -357,7 +357,7 @@ public class StrongpointDirectoryGeneralUtility {
 		}
 	}
 	
-	public void writeToFileSourceTargetUpdates(JSONObject obj, String jobType, String targetAccountId, String timestamp) {
+	public void writeToFileSourceUpdates(JSONObject obj, String jobType, String targetAccountId, String timestamp) {
 		String userHomePath = System.getProperty("user.home");
 		String parsedAccountId = targetAccountId;
 		if (targetAccountId.contains("(") && targetAccountId.contains(")")) {
@@ -397,6 +397,61 @@ public class StrongpointDirectoryGeneralUtility {
 				if(!scriptIds.isEmpty()) {
 					for (int i = 0; i < scriptIds.size(); i++) {
 						printWriter.println("    " + scriptIds.get(i).toString());
+					}					
+				} else {
+					printWriter.println("    No Scripts IDs are affected and are up to date.");
+				}
+
+				printWriter.close();
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	public void writeToFileTargetUpdates(JSONObject obj, String jobType, String targetAccountId, String timestamp) {
+		String userHomePath = System.getProperty("user.home");
+		String parsedAccountId = targetAccountId;
+		if (targetAccountId.contains("(") && targetAccountId.contains(")")) {
+			Matcher match = Pattern.compile("\\(([^)]+)\\)").matcher(targetAccountId);
+			while (match.find()) {
+				parsedAccountId = match.group(1);
+			}
+		}
+		String fileName = jobType + "_" + parsedAccountId + "_" + timestamp.replaceAll(":", "_") + ".txt";
+		boolean isDirectoryExist = Files.isDirectory(Paths.get(userHomePath + "/strongpoint_action_logs"));
+		if (!isDirectoryExist) {
+			File newDir = new File(userHomePath + "/strongpoint_action_logs");
+			newDir.mkdir();
+		}
+
+		File newFile = new File(userHomePath + "/strongpoint_action_logs/" + fileName);
+		if (!newFile.exists()) {
+			try {
+				newFile.createNewFile();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+
+		FileWriter writer;
+		try {
+			writer = new FileWriter(userHomePath + "/strongpoint_action_logs/" + fileName);
+			PrintWriter printWriter = new PrintWriter(writer);
+			if (obj != null) {
+				JSONArray scriptIds = (JSONArray) obj.get("scriptIds");
+				String accountId = obj.get("accountId").toString();
+				String messageResult = (String) obj.get("message");
+				
+				printWriter.println("Account ID: " + accountId);
+				printWriter.println("Message: " + messageResult);
+				printWriter.println("Script IDs Affected: ");
+				if(!scriptIds.isEmpty()) {
+					for (int i = 0; i < scriptIds.size(); i++) {
+//						printWriter.println("    " + scriptIds.get(i).toString());
+						JSONObject scripIdObject = (JSONObject) scriptIds.get(i);
+						printWriter.println("    ID: " + scripIdObject.get("scriptId").toString());
+						printWriter.println("    Status: " + scripIdObject.get("target_message").toString());
 					}					
 				} else {
 					printWriter.println("    No Scripts IDs are affected and are up to date.");

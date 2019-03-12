@@ -46,6 +46,7 @@ import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 import org.strongpoint.sdfcli.plugin.services.DeployCliService;
+import org.strongpoint.sdfcli.plugin.services.TargetUpdatesService;
 import org.strongpoint.sdfcli.plugin.utils.Accounts;
 import org.strongpoint.sdfcli.plugin.utils.Credentials;
 import org.strongpoint.sdfcli.plugin.utils.StrongpointDirectoryGeneralUtility;
@@ -69,11 +70,11 @@ public class DeployDialog extends TitleAreaDialog {
 	private String selectedValue = "";
 
 	private String timestamp;
-	
+
 	private Map<String, String> ssTimestamps;
-	
+
 	private boolean isApproved;
-	
+
 	public DeployDialog(Shell parentShell) {
 		super(parentShell);
 		this.parentShell = parentShell;
@@ -106,11 +107,11 @@ public class DeployDialog extends TitleAreaDialog {
 	public void setTimestamp(String timestamp) {
 		this.timestamp = timestamp;
 	}
-	
+
 	public String getTimestamp() {
 		return this.timestamp;
 	}
-	
+
 	public boolean getIsApproved() {
 		return this.isApproved;
 	}
@@ -189,20 +190,23 @@ public class DeployDialog extends TitleAreaDialog {
 		String accountId = selectedValue.substring(selectedValue.indexOf("(") + 1, selectedValue.indexOf(")"));
 		JSONObject approveResult = DeployCliService.newInstance().isApprovedDeployment(parentShell, accountId,
 				emailCred, passwordCred, String.join(",", getScripIds(this.window)));
+		JSONObject targetUpdates = TargetUpdatesService.newInstance().localUpdatedWithTarget(accountId,
+				this.projectPath, scriptIds);
 		System.out.println("Deploy Approve results: " + approveResult.toJSONString());
 		JSONObject data = (JSONObject) approveResult.get("data");
 		isApproved = (boolean) data.get("result");
 		JSONObject supportedObjs = DeployCliService.newInstance().getSupportedObjects(accountId, emailCred,
 				passwordCred);
-		JSONObject importObjects = StrongpointDirectoryGeneralUtility.newInstance().readImportJsonFile(this.projectPath);
+		JSONObject importObjects = StrongpointDirectoryGeneralUtility.newInstance()
+				.readImportJsonFile(this.projectPath);
 		JSONArray objects = (JSONArray) importObjects.get("objects");
 		List<String> listStr = new ArrayList<String>();
 		boolean isExcessObj = false;
 		if (objects != null) {
 			for (int i = 0; i < objects.size(); i++) {
-//				JSONObject scriptObj = (JSONObject) objects.get(i);
-//				listStr.add(scriptObj.get("scriptId").toString());
-				listStr.add(objects.get(i).toString());
+				JSONObject scriptObj = (JSONObject) objects.get(i);
+				listStr.add(scriptObj.get("name").toString());
+//				listStr.add(objects.get(i).toString());
 			}
 		}
 		for (String objStr : scriptIds) {
@@ -212,12 +216,30 @@ public class DeployDialog extends TitleAreaDialog {
 			}
 		}
 		if (isExcessObj) {
-			MessageDialog.openError(this.parentShell, "Object List Error",
-					"Objects in the project changed after approval. Request a new Change Request.");
+			JSONObject messageObject = new JSONObject();
+			String message = "Object List Error. \r\nObjects in the project changed after approval. Request a new Change Request.";
+			messageObject.put("message", message);
+			results = messageObject;
+			DeployCliService.newInstance().deploySavedSearches(accountId, emailCred, passwordCred, pathCred,
+					this.projectPath, this.parentShell, JobTypes.savedSearch.getJobType(), this.ssTimestamps,
+					(boolean) data.get("result"), approveResult.get("message").toString());
+//			MessageDialog.openError(this.parentShell, "Object List Error",
+//					"Objects in the project changed after approval. Request a new Change Request.");
+			System.out.println("Writing to Deploy file...");
+			StrongpointDirectoryGeneralUtility.newInstance().writeToFile(results, JobTypes.deployment.getJobType(),
+					accountId, timestamp);
+			System.out.println("Finished writing Deploy file...");
 		} else {
 			if (hasUnsupportedObjects(scriptIds, supportedObjs)) {
-				MessageDialog.openWarning(this.parentShell, "Unsupported Objects Detected",
-						"Please manually complete and validate using Environment Compare.");
+				JSONObject messageObject = new JSONObject();
+				String message = "Unsupported Objects Detected Error. \r\nPlease manually complete and validate using Environment Compare.";
+				messageObject.put("message", message);
+				results = messageObject;
+				DeployCliService.newInstance().deploySavedSearches(accountId, emailCred, passwordCred, pathCred,
+						this.projectPath, this.parentShell, JobTypes.savedSearch.getJobType(), this.ssTimestamps,
+						(boolean) data.get("result"), approveResult.get("message").toString());
+//				MessageDialog.openWarning(this.parentShell, "Unsupported Objects Detected",
+//						"Please manually complete and validate using Environment Compare.");
 			} else {
 //				JSONObject policyObj = DeployCliService.newInstance().getPolicy();
 //				if(policyObj != null && (boolean)policyObj.get("results")) {
@@ -235,17 +257,43 @@ public class DeployDialog extends TitleAreaDialog {
 					JSONObject messageObject = new JSONObject();
 					messageObject.put("message", approveResult.get("message").toString());
 					results = messageObject;
-					DeployCliService.newInstance().deploySavedSearches(accountId, emailCred,
-							passwordCred, pathCred, this.projectPath, this.parentShell, JobTypes.savedSearch.getJobType(), this.ssTimestamps, (boolean) data.get("result"));
+					DeployCliService.newInstance().deploySavedSearches(accountId, emailCred, passwordCred, pathCred,
+							this.projectPath, this.parentShell, JobTypes.savedSearch.getJobType(), this.ssTimestamps,
+							(boolean) data.get("result"), approveResult.get("message").toString());
 				} else {
-					results = DeployCliService.newInstance().deployCliResult(accountId, emailCred, passwordCred,
-							pathCred, this.projectPath, this.parentShell, JobTypes.deployment.getJobType(), timestamp);
-					savedSearchResults = DeployCliService.newInstance().deploySavedSearches(accountId, emailCred,
-							passwordCred, pathCred, this.projectPath, this.parentShell, JobTypes.savedSearch.getJobType(), this.ssTimestamps, (boolean) data.get("result"));
+					JSONObject targetData = (JSONObject) targetUpdates.get("data");
+					JSONArray targetDataResult = (JSONArray) targetData.get("result");
+					if (!targetDataResult.isEmpty()) {
+						List<String> listStriptIds = new ArrayList<>();
+						for (int i = 0; i < targetDataResult.size(); i++) {
+							JSONObject targetDataResultObject = (JSONObject) targetDataResult.get(i);
+							listStriptIds.add(targetDataResultObject.get("name").toString());
+						}
+						JSONObject messageObject = new JSONObject();
+						messageObject.put("message", "Error: The local copies of the following objects are outdated with the target account copy: \r\n" + String.join(",", listStriptIds));
+						results = messageObject;
+						DeployCliService.newInstance().deploySavedSearches(accountId, emailCred, passwordCred, pathCred,
+								this.projectPath, this.parentShell, JobTypes.savedSearch.getJobType(),
+								this.ssTimestamps, false, "Error: ");
+//						MessageDialog.openWarning(this.parentShell, "Outdated Target Objects",
+//								"The local copies of the following objects are outdated with the target account copy: " +String.join(",", listStriptIds));
+					} else {
+						results = DeployCliService.newInstance().deployCliResult(accountId, emailCred, passwordCred,
+								pathCred, this.projectPath, this.parentShell, JobTypes.deployment.getJobType(),
+								timestamp);
+						savedSearchResults = DeployCliService.newInstance().deploySavedSearches(accountId, emailCred,
+								passwordCred, pathCred, this.projectPath, this.parentShell,
+								JobTypes.savedSearch.getJobType(), this.ssTimestamps, (boolean) data.get("result"), "");
+					}
+//					results = DeployCliService.newInstance().deployCliResult(accountId, emailCred, passwordCred,
+//							pathCred, this.projectPath, this.parentShell, JobTypes.deployment.getJobType(), timestamp);
+//					savedSearchResults = DeployCliService.newInstance().deploySavedSearches(accountId, emailCred,
+//							passwordCred, pathCred, this.projectPath, this.parentShell, JobTypes.savedSearch.getJobType(), this.ssTimestamps, (boolean) data.get("result"));
 				}
 			}
 			System.out.println("Writing to Deploy file...");
-			StrongpointDirectoryGeneralUtility.newInstance().writeToFile(results, JobTypes.deployment.getJobType(), accountId, timestamp);
+			StrongpointDirectoryGeneralUtility.newInstance().writeToFile(results, JobTypes.deployment.getJobType(),
+					accountId, timestamp);
 			System.out.println("Finished writing Deploy file...");
 		}
 	}

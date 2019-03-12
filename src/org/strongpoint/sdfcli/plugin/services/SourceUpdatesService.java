@@ -49,7 +49,7 @@ public class SourceUpdatesService {
 		}
 
 		System.out.println("Writing to Source Updates file...");
-		StrongpointDirectoryGeneralUtility.newInstance().writeToFileSourceTargetUpdates(results,
+		StrongpointDirectoryGeneralUtility.newInstance().writeToFileSourceUpdates(results,
 				JobTypes.source_updates.getJobType(), accountId, timestamp);
 		System.out.println("Finished writing Source Updates file...");
 	}
