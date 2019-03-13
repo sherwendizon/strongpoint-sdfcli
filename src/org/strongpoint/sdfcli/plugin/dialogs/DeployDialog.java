@@ -190,8 +190,8 @@ public class DeployDialog extends TitleAreaDialog {
 		String accountId = selectedValue.substring(selectedValue.indexOf("(") + 1, selectedValue.indexOf(")"));
 		JSONObject approveResult = DeployCliService.newInstance().isApprovedDeployment(parentShell, accountId,
 				emailCred, passwordCred, String.join(",", getScripIds(this.window)));
-		JSONObject targetUpdates = TargetUpdatesService.newInstance().localUpdatedWithTarget(accountId,
-				this.projectPath, scriptIds);
+//		JSONObject targetUpdates = TargetUpdatesService.newInstance().localUpdatedWithTarget(accountId,
+//				this.projectPath, scriptIds);
 		System.out.println("Deploy Approve results: " + approveResult.toJSONString());
 		JSONObject data = (JSONObject) approveResult.get("data");
 		isApproved = (boolean) data.get("result");
@@ -204,9 +204,9 @@ public class DeployDialog extends TitleAreaDialog {
 		boolean isExcessObj = false;
 		if (objects != null) {
 			for (int i = 0; i < objects.size(); i++) {
-				JSONObject scriptObj = (JSONObject) objects.get(i);
-				listStr.add(scriptObj.get("name").toString());
-//				listStr.add(objects.get(i).toString());
+//				JSONObject scriptObj = (JSONObject) objects.get(i);
+//				listStr.add(scriptObj.get("name").toString());
+				listStr.add(objects.get(i).toString());
 			}
 		}
 		for (String objStr : scriptIds) {
@@ -261,30 +261,30 @@ public class DeployDialog extends TitleAreaDialog {
 							this.projectPath, this.parentShell, JobTypes.savedSearch.getJobType(), this.ssTimestamps,
 							(boolean) data.get("result"), approveResult.get("message").toString());
 				} else {
-					JSONObject targetData = (JSONObject) targetUpdates.get("data");
-					JSONArray targetDataResult = (JSONArray) targetData.get("result");
-					if (!targetDataResult.isEmpty()) {
-						List<String> listStriptIds = new ArrayList<>();
-						for (int i = 0; i < targetDataResult.size(); i++) {
-							JSONObject targetDataResultObject = (JSONObject) targetDataResult.get(i);
-							listStriptIds.add(targetDataResultObject.get("name").toString());
-						}
-						JSONObject messageObject = new JSONObject();
-						messageObject.put("message", "Error: The local copies of the following objects are outdated with the target account copy: \r\n" + String.join(",", listStriptIds));
-						results = messageObject;
-						DeployCliService.newInstance().deploySavedSearches(accountId, emailCred, passwordCred, pathCred,
-								this.projectPath, this.parentShell, JobTypes.savedSearch.getJobType(),
-								this.ssTimestamps, false, "Error: ");
-//						MessageDialog.openWarning(this.parentShell, "Outdated Target Objects",
-//								"The local copies of the following objects are outdated with the target account copy: " +String.join(",", listStriptIds));
-					} else {
+//					JSONObject targetData = (JSONObject) targetUpdates.get("data");
+//					JSONArray targetDataResult = (JSONArray) targetData.get("result");
+//					if (!targetDataResult.isEmpty()) {
+//						List<String> listStriptIds = new ArrayList<>();
+//						for (int i = 0; i < targetDataResult.size(); i++) {
+//							JSONObject targetDataResultObject = (JSONObject) targetDataResult.get(i);
+//							listStriptIds.add(targetDataResultObject.get("name").toString());
+//						}
+//						JSONObject messageObject = new JSONObject();
+//						messageObject.put("message", "Error: The local copies of the following objects are outdated with the target account copy: \r\n" + String.join(",", listStriptIds));
+//						results = messageObject;
+//						DeployCliService.newInstance().deploySavedSearches(accountId, emailCred, passwordCred, pathCred,
+//								this.projectPath, this.parentShell, JobTypes.savedSearch.getJobType(),
+//								this.ssTimestamps, false, "Error: ");
+////						MessageDialog.openWarning(this.parentShell, "Outdated Target Objects",
+////								"The local copies of the following objects are outdated with the target account copy: " +String.join(",", listStriptIds));
+//					} else {
 						results = DeployCliService.newInstance().deployCliResult(accountId, emailCred, passwordCred,
 								pathCred, this.projectPath, this.parentShell, JobTypes.deployment.getJobType(),
 								timestamp);
 						savedSearchResults = DeployCliService.newInstance().deploySavedSearches(accountId, emailCred,
 								passwordCred, pathCred, this.projectPath, this.parentShell,
 								JobTypes.savedSearch.getJobType(), this.ssTimestamps, (boolean) data.get("result"), "");
-					}
+//					}
 //					results = DeployCliService.newInstance().deployCliResult(accountId, emailCred, passwordCred,
 //							pathCred, this.projectPath, this.parentShell, JobTypes.deployment.getJobType(), timestamp);
 //					savedSearchResults = DeployCliService.newInstance().deploySavedSearches(accountId, emailCred,

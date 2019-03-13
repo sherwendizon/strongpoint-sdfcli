@@ -106,9 +106,9 @@ public class SyncToNsCliService {
 			String[] objsStr = new String[objs.size()];
 			System.out.println("IMPORT OBJECTS: " +objs.toJSONString());
 			for (int i = 0; i < objs.size(); i++) {
-				JSONObject scriptObj = (JSONObject) objs.get(i);
-				objsStr[i] += scriptObj.get("name").toString();
-//				objsStr[i] += objs.get(i).toString();
+//				JSONObject scriptObj = (JSONObject) objs.get(i);
+//				objsStr[i] += scriptObj.get("name").toString();
+				objsStr[i] += objs.get(i).toString();
 			}
 			System.out.println("OBJECT PARAMETERS: " +objsStr.toString());
 			String.join(" ", objsStr);

@@ -47,7 +47,8 @@
             categoryId="strongpoint-sdfcli.commands.category"
             name="Credentials Settings"
             id="strongpoint-sdfcli.commands.credentialsCommand">
-      </command> 
+      </command>
+<!--       
       <command
             categoryId="strongpoint-sdfcli.commands.category"
             name="Check for Source Updates"
@@ -57,7 +58,8 @@
             categoryId="strongpoint-sdfcli.commands.category"
             name="Check for Target Updates"
             id="strongpoint-sdfcli.commands.targetUpdatesCommand">
-      </command>                                           
+      </command>
+-->                                                 
    </extension>
    <extension
          point="org.eclipse.ui.handlers">
@@ -93,6 +95,7 @@
             class="org.strongpoint.sdfcli.plugin.handlers.SdfcliCredentialsHandler"
             commandId="strongpoint-sdfcli.commands.credentialsCommand">
       </handler>
+<!--
       <handler
             class="org.strongpoint.sdfcli.plugin.handlers.SdfcliSourceUpdatesHandler"
             commandId="strongpoint-sdfcli.commands.sourceUpdatesCommand">
@@ -100,7 +103,8 @@
       <handler
             class="org.strongpoint.sdfcli.plugin.handlers.SdfcliTargetUpdatesHandler"
             commandId="strongpoint-sdfcli.commands.targetUpdatesCommand">
-      </handler>                                           
+      </handler>
+-->                                            
    </extension>
    <extension
          point="org.eclipse.ui.bindings">
@@ -152,6 +156,7 @@
             contextId="org.eclipse.ui.contexts.window"
             sequence="M1+2">
       </key>
+<!--
       <key
             commandId="strongpoint-sdfcli.commands.sourceUpdatesCommand"
             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
@@ -163,7 +168,8 @@
             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
             contextId="org.eclipse.ui.contexts.window"
             sequence="M1+4">
-      </key>                                           
+      </key>
+-->                                           
    </extension>
    <extension
          point="org.eclipse.ui.menus">
@@ -213,6 +219,7 @@
                   id="strongpoint-sdfcli.menus.credentialsCommand"
                   mnemonic="C">
             </command>
+<!--            
             <command
                   commandId="strongpoint-sdfcli.commands.sourceUpdatesCommand"
                   id="strongpoint-sdfcli.menus.sourceUpdatesCommand"
@@ -222,7 +229,8 @@
                   commandId="strongpoint-sdfcli.commands.targetUpdatesCommand"
                   id="strongpoint-sdfcli.menus.targetUpdatesCommand"
                   mnemonic="G">
-            </command>                                                                                      
+            </command>
+-->                                                                                      
          </menu>
       </menuContribution>
       <!--<menuContribution
