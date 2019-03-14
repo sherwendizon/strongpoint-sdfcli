@@ -8,7 +8,6 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
-import org.eclipse.core.resources.IProject;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
@@ -16,7 +15,6 @@ import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 import org.strongpoint.sdfcli.plugin.utils.Credentials;
 import org.strongpoint.sdfcli.plugin.utils.StrongpointDirectoryGeneralUtility;
-import org.strongpoint.sdfcli.plugin.utils.enums.JobTypes;
 
 public class MissingDependenciesService {
 
@@ -24,45 +22,42 @@ public class MissingDependenciesService {
 		return new MissingDependenciesService();
 	}
 
-	public void checkTargetMissingDependenciesUpdates(IProject project, String projectPath, String accountId, String timestamp,
-			List<String> scriptIds) {
-		Thread syncOperationThread = new Thread(new Runnable() {
-
-			@Override
-			public void run() {
-				localCopyDependenciesChecker(project, projectPath, accountId, timestamp, scriptIds);
-			}
-		});
-		syncOperationThread.start();
-	}
-
-	private void localCopyDependenciesChecker(IProject project, String projectPath, String accountId, String timestamp,
-			List<String> scriptIds) {
+	public JSONObject getMissingDependencies(String accountID, String projectPath, List<String> scriptIds) {
+		List<String> dependenciesFromManifest = StrongpointDirectoryGeneralUtility.newInstance()
+				.readManifestXMLFile(projectPath + "/manifest.xml");
+//		JSONObject importObjects = StrongpointDirectoryGeneralUtility.newInstance().readImportJsonFile(projectPath);
+//		JSONObject responseObject = getMissingDependenciesFromNS(accountID, projectPath, dependenciesFromManifest);
+		JSONObject responseObject = testResponseMissingDependencies();
+		JSONArray targetData = (JSONArray) responseObject.get("data");
 		JSONObject results = new JSONObject();
-//		JSONObject objResults = testResponseSourceProjectDates();
-		JSONObject objResults = getSourceProjectDates(accountId, projectPath, scriptIds);
-		JSONArray data = (JSONArray) objResults.get("data");
-		if (objResults != null) {
-			results.put("message", objResults.get("message").toString());
-			results.put("accountId", accountId);
-			results.put("scriptIds", data);
-		}
+		results.put("code", (Long) responseObject.get("code"));
+		results.put("message", responseObject.get("message").toString());
+		JSONObject dataObject = new JSONObject();
+		JSONArray resultsArray = new JSONArray();
+		for (int i = 0; i < targetData.size(); i++) {
+			if (!dependenciesFromManifest.contains(targetData.get(i).toString())) {
+				resultsArray.add(targetData.get(i).toString());
+			}
+//			if (resultObject.get("date") == null) {
+//				resultsArray.add(resultObject);
+//			}
 
-		System.out.println("Writing to Source Updates file...");
-		StrongpointDirectoryGeneralUtility.newInstance().writeToFileSourceUpdates(results,
-				JobTypes.source_updates.getJobType(), accountId, timestamp);
-		System.out.println("Finished writing Source Updates file...");
+		}
+		dataObject.put("result", resultsArray);
+		results.put("data", dataObject);
+		System.out.println("Missing Dependencies Results: " + results.toJSONString());
+
+		return results;
 	}
 
-	private JSONObject getSourceProjectDates(String accountID, String projectPath, List<String> scriptIds) {
+	private JSONObject getMissingDependenciesFromNS(String accountID, String projectPath, List<String> scriptIds) {
 		String scriptIdsWithouWhitespaces = String.join(",", scriptIds);
 		JSONObject creds = Credentials.getCredentialsFromFile();
 		JSONObject importObjects = StrongpointDirectoryGeneralUtility.newInstance().readImportJsonFile(projectPath);
 		JSONObject results = new JSONObject();
-		String strongpointURL = "https://rest.netsuite.com/app/site/hosting/restlet.nl?script=customscript_flo_find_obj_change&deploy=customdeploy_flo_find_obj_change&scriptIds="
-				+ scriptIdsWithouWhitespaces + "&importDateTime="
-				+ String.valueOf((long) importObjects.get("importDateTime"));
-		System.out.println("Source Updates URL: " + strongpointURL);
+		String strongpointURL = "https://rest.netsuite.com/app/site/hosting/restlet.nl?script=customscript_flo_get_last_mod_date&deploy=customdeploy_flo_get_last_mod_date&scriptIds="
+				+ scriptIdsWithouWhitespaces;
+		System.out.println("Target Updates URL: " + strongpointURL);
 		HttpGet httpGet = null;
 		int statusCode;
 		String responseBodyStr;
@@ -93,13 +88,13 @@ public class MissingDependenciesService {
 			}
 		}
 
-		System.out.println("Source Results: " + results.toJSONString());
+		System.out.println("Target Results: " + results.toJSONString());
 
 		return results;
 	}
 
-	private JSONObject testResponseSourceProjectDates() {
-		String jsonStr = "{\"code\": 200,\"data\": [\"customrole_flo_sdf_role\",\"customscript_flo_dlu_spider\",\"customscript_flo_get_approval_status\",\"customscript_flo_get_diff_restlet\"],\"message\": \"Source Account Objects with Change(s) After Date.\"}";
+	private JSONObject testResponseMissingDependencies() {
+		String jsonStr = "{\"code\": 200,\"data\": [\"customrole_flo_sdf_role\",\"customscript_flo_dlu_spider\",\"customscript_flo_get_approval_status\",\"customscript_flo_get_diff_restlet\"],\"message\": \"Local copy has missing dependencies.\"}";
 		JSONParser parser = new JSONParser();
 		JSONObject results = null;
 		try {

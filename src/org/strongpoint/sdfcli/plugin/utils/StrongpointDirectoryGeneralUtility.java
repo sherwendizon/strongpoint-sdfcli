@@ -19,21 +19,30 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+
 import org.eclipse.core.resources.IProject;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 import org.strongpoint.sdfcli.plugin.utils.enums.JobTypes;
+import org.w3c.dom.Document;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.w3c.dom.Element;
+import org.xml.sax.SAXException;
 
 public class StrongpointDirectoryGeneralUtility {
-	
+
 	private static final String not_available = "Not available";
-	
+
 	public static StrongpointDirectoryGeneralUtility newInstance() {
 		return new StrongpointDirectoryGeneralUtility();
 	}
-	
+
 	public JSONObject readImportJsonFile(String projectPath) {
 		StringBuilder contents = new StringBuilder();
 		String str;
@@ -41,13 +50,13 @@ public class StrongpointDirectoryGeneralUtility {
 		System.out.println("SYNC PROJECT PATH: " + projectPath + "/import.json");
 		JSONObject scriptObjects = null;
 		try {
-			if(file.exists() && !file.isDirectory()) {
+			if (file.exists() && !file.isDirectory()) {
 				BufferedReader reader = new BufferedReader(new FileReader(file));
-				while((str = reader.readLine())  != null) {
+				while ((str = reader.readLine()) != null) {
 					contents.append(str);
 				}
-				System.out.println("FILE Contents: " +contents.toString());
-				scriptObjects = (JSONObject) new JSONParser().parse(contents.toString());	
+				System.out.println("FILE Contents: " + contents.toString());
+				scriptObjects = (JSONObject) new JSONParser().parse(contents.toString());
 			}
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
@@ -56,9 +65,9 @@ public class StrongpointDirectoryGeneralUtility {
 		} catch (ParseException e) {
 			e.printStackTrace();
 		}
-		return scriptObjects;		
+		return scriptObjects;
 	}
-	
+
 	public List<String> readSavedSearchDirectory(String projectPath) {
 		List<String> filenames = new ArrayList<>();
 		StringBuilder contents = new StringBuilder();
@@ -66,26 +75,26 @@ public class StrongpointDirectoryGeneralUtility {
 		File savedSearchFolder = new File(projectPath + "/FileCabinet/SavedSearches");
 		File[] listOfFiles = savedSearchFolder.listFiles();
 		for (int i = 0; i < listOfFiles.length; i++) {
-		  if (listOfFiles[i].isFile()) {
-			  filenames.add(listOfFiles[i].getName());
-		  }
+			if (listOfFiles[i].isFile()) {
+				filenames.add(listOfFiles[i].getName());
+			}
 		}
-		
-		return filenames;		
+
+		return filenames;
 	}
-	
+
 	public JSONObject readSavedSearchFile(String filenameStr) {
 		StringBuilder contents = new StringBuilder();
 		String str;
 		File file = new File(filenameStr);
 		JSONObject savedSearchtObject = null;
 		try {
-			if(file.exists() && !file.isDirectory()) {
+			if (file.exists() && !file.isDirectory()) {
 				BufferedReader reader = new BufferedReader(new FileReader(file));
-				while((str = reader.readLine())  != null) {
+				while ((str = reader.readLine()) != null) {
 					contents.append(str);
 				}
-				savedSearchtObject = (JSONObject) new JSONParser().parse(contents.toString());	
+				savedSearchtObject = (JSONObject) new JSONParser().parse(contents.toString());
 			}
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
@@ -94,19 +103,20 @@ public class StrongpointDirectoryGeneralUtility {
 		} catch (ParseException e) {
 			e.printStackTrace();
 		}
-		return savedSearchtObject;		
+		return savedSearchtObject;
 	}
-	
+
 	public boolean readLogFileforErrorMessages(String filenameStr) {
 //		StringBuilder contents = new StringBuilder();
 		String str;
 		File file = new File(filenameStr);
 		boolean isError = false;
 		try {
-			if(file.exists() && !file.isDirectory()) {
+			if (file.exists() && !file.isDirectory()) {
 				BufferedReader reader = new BufferedReader(new FileReader(file));
-				while((str = reader.readLine())  != null) {
-					if(str.contains("Error") || str.contains("No approved deployment") || str.contains("Account's Change Policy")) {
+				while ((str = reader.readLine()) != null) {
+					if (str.contains("Error") || str.contains("No approved deployment")
+							|| str.contains("Account's Change Policy")) {
 						isError = true;
 					}
 				}
@@ -116,26 +126,73 @@ public class StrongpointDirectoryGeneralUtility {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		return isError;		
+		return isError;
 	}
-	
-	public void writeSavedSearchResultsToFile(JSONArray savedSearchesResults, String accountId, Map<String, String> ssTimestamps) {
+
+	public List<String> readManifestXMLFile(String manifestFilePathStr) {
+		List<String> objectDependencies = new ArrayList<>();
+		DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
+		try {
+			DocumentBuilder documentBuilder = documentBuilderFactory.newDocumentBuilder();
+			Document manifestDocument = documentBuilder.parse(manifestFilePathStr);
+			System.out.println("ROOT NODE: " + manifestDocument.getDocumentElement().getNodeName());
+			NodeList dependenciesNodeList = manifestDocument.getElementsByTagName("dependencies");
+			for (int i = 0; i < dependenciesNodeList.getLength(); i++) {
+				Node dependencyNode = dependenciesNodeList.item(i);
+				if (dependencyNode.getNodeType() == Node.ELEMENT_NODE) {
+					System.out.println("DEPENDENCIES: " + dependencyNode.getNodeName());
+					NodeList objectsList = dependencyNode.getChildNodes();
+					for (int j = 0; j < objectsList.getLength(); j++) {
+						Node objectsNode = objectsList.item(j);
+						if ((objectsNode.getNodeType() == Node.ELEMENT_NODE)
+								&& objectsNode.getNodeName().equalsIgnoreCase("objects")) {
+							System.out.println("OBJECT LIST: " + objectsNode.getNodeName());
+							NodeList objectNode = objectsNode.getChildNodes();
+							for (int k = 0; k < objectNode.getLength(); k++) {
+								Node objNode = objectNode.item(k);
+								if (objNode.getNodeType() == Node.ELEMENT_NODE) {
+									System.out.println("OBJECT NODE: " + objNode.getNodeName());
+									NodeList objectValueNodeList = objNode.getChildNodes();
+									for (int l = 0; l < objectValueNodeList.getLength(); l++) {
+										Node objectValueNode = objectValueNodeList.item(l);
+										if (objectValueNode.getNodeType() == Node.TEXT_NODE) {
+											System.out.println("OBJECT VALUE: " + objectValueNode.getNodeValue());
+											objectDependencies.add(objectValueNode.getNodeValue());
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+		} catch (ParserConfigurationException e) {
+			e.printStackTrace();
+		} catch (SAXException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return objectDependencies;
+	}
+
+	public void writeSavedSearchResultsToFile(JSONArray savedSearchesResults, String accountId,
+			Map<String, String> ssTimestamps) {
 		if (savedSearchesResults != null) {
 			for (int i = 0; i < savedSearchesResults.size(); i++) {
 				for (Map.Entry<String, String> ssTimestamp : ssTimestamps.entrySet()) {
-				    System.out.println(ssTimestamp.getKey() + "/" + ssTimestamp.getValue());
-				    JSONObject obj = (JSONObject) savedSearchesResults.get(i);
-				    if(ssTimestamp.getKey().equalsIgnoreCase(obj.get("filename").toString())) {
+					System.out.println(ssTimestamp.getKey() + "/" + ssTimestamp.getValue());
+					JSONObject obj = (JSONObject) savedSearchesResults.get(i);
+					if (ssTimestamp.getKey().equalsIgnoreCase(obj.get("filename").toString())) {
 						String savedSearchJobPerFile = JobTypes.savedSearch.getJobType() + " - "
 								+ obj.get("filename").toString();
-						writeToFile(obj, savedSearchJobPerFile, accountId,
-								ssTimestamp.getValue());
-				    }
+						writeToFile(obj, savedSearchJobPerFile, accountId, ssTimestamp.getValue());
+					}
 				}
 			}
-		}		
+		}
 	}
-	
+
 	public void writeToFile(JSONObject obj, String jobType, String targetAccountId, String timestamp) {
 		String userHomePath = System.getProperty("user.home");
 		String parsedAccountId = targetAccountId;
@@ -187,11 +244,12 @@ public class StrongpointDirectoryGeneralUtility {
 			e.printStackTrace();
 		}
 	}
-	
-	public void writeToFile(JSONObject obj, String jobType, String targetAccountId, String timestamp, String projectPath) {
+
+	public void writeToFile(JSONObject obj, String jobType, String targetAccountId, String timestamp,
+			String projectPath) {
 		String userHomePath = System.getProperty("user.home");
 		String parsedAccountId = targetAccountId;
-		if(targetAccountId.contains("(") && targetAccountId.contains(")")) {
+		if (targetAccountId.contains("(") && targetAccountId.contains(")")) {
 			Matcher match = Pattern.compile("\\(([^)]+)\\)").matcher(targetAccountId);
 			while (match.find()) {
 				parsedAccountId = match.group(1);
@@ -212,29 +270,29 @@ public class StrongpointDirectoryGeneralUtility {
 				e.printStackTrace();
 			}
 		}
-		
+
 		FileWriter writer;
 		try {
 			writer = new FileWriter(userHomePath + "/strongpoint_action_logs/" + fileName);
 			PrintWriter printWriter = new PrintWriter(writer);
 			if (obj != null) {
-	            JSONObject importObj = readImportJsonFile(projectPath);
-	            if(importObj != null) {
-	            	printWriter.println("Account ID: " + importObj.get("accountId").toString());
-	            }
-	            System.out.println("REQUEST DEPLOYMENT RESULT: " +obj.toJSONString());
-	            printWriter.println("Deployment Record ID: " + obj.get("id").toString());
+				JSONObject importObj = readImportJsonFile(projectPath);
+				if (importObj != null) {
+					printWriter.println("Account ID: " + importObj.get("accountId").toString());
+				}
+				System.out.println("REQUEST DEPLOYMENT RESULT: " + obj.toJSONString());
+				printWriter.println("Deployment Record ID: " + obj.get("id").toString());
 				printWriter.close();
 			}
 		} catch (IOException e) {
 			e.printStackTrace();
-		}			
+		}
 	}
-	
+
 	public void writeToFileImpactAnalysis(JSONObject obj, String jobType, String targetAccountId, String timestamp) {
 		String userHomePath = System.getProperty("user.home");
 		String parsedAccountId = targetAccountId;
-		if(targetAccountId.contains("(") && targetAccountId.contains(")")) {
+		if (targetAccountId.contains("(") && targetAccountId.contains(")")) {
 			parsedAccountId = targetAccountId.replace("(", "").replace(")", "");
 		}
 		String fileName = jobType + "_" + parsedAccountId + "_" + timestamp.replaceAll(":", "_") + ".txt";
@@ -258,8 +316,10 @@ public class StrongpointDirectoryGeneralUtility {
 			writer = new FileWriter(userHomePath + "/strongpoint_action_logs/" + fileName);
 			PrintWriter printWriter = new PrintWriter(writer);
 			if (obj.get("code") == null) {
-				printWriter.println("An error occured while running Impact Analysis, user may not have access to account: " +targetAccountId);
-			} else if (obj != null && obj.get("code").toString().equals("300"))  {
+				printWriter
+						.println("An error occured while running Impact Analysis, user may not have access to account: "
+								+ targetAccountId);
+			} else if (obj != null && obj.get("code").toString().equals("300")) {
 				printWriter.println("An error occured while running Impact Analysis." + obj.get("data").toString());
 			} else {
 				JSONObject dataObj = (JSONObject) obj.get("data");
@@ -321,10 +381,10 @@ public class StrongpointDirectoryGeneralUtility {
 			e.printStackTrace();
 		}
 	}
-	
+
 	public void writeToFile(String jobType, String timestamp) {
 		String userHomePath = System.getProperty("user.home");
-		String fileName = jobType + "_" +not_available+ "_" + timestamp.replaceAll(":", "_") + ".txt";
+		String fileName = jobType + "_" + not_available + "_" + timestamp.replaceAll(":", "_") + ".txt";
 		boolean isDirectoryExist = Files.isDirectory(Paths.get(userHomePath + "/strongpoint_action_logs"));
 		if (!isDirectoryExist) {
 			File newDir = new File(userHomePath + "/strongpoint_action_logs");
@@ -344,19 +404,19 @@ public class StrongpointDirectoryGeneralUtility {
 		try {
 			writer = new FileWriter(userHomePath + "/strongpoint_action_logs/" + fileName);
 			PrintWriter printWriter = new PrintWriter(writer);
-			if(jobType.equalsIgnoreCase(JobTypes.account.getJobType())) {
+			if (jobType.equalsIgnoreCase(JobTypes.account.getJobType())) {
 				printWriter.println("Successfully added or updated an account.");
 			} else {
 				printWriter.println("Successfully added or updated your credentials.");
 			}
-			
+
 			printWriter.close();
 
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 	}
-	
+
 	public void writeToFileSourceUpdates(JSONObject obj, String jobType, String targetAccountId, String timestamp) {
 		String userHomePath = System.getProperty("user.home");
 		String parsedAccountId = targetAccountId;
@@ -390,14 +450,14 @@ public class StrongpointDirectoryGeneralUtility {
 				JSONArray scriptIds = (JSONArray) obj.get("scriptIds");
 				String accountId = obj.get("accountId").toString();
 				String messageResult = (String) obj.get("message");
-				
+
 				printWriter.println("Account ID: " + accountId);
 				printWriter.println("Message: " + messageResult);
 				printWriter.println("Script IDs Affected: ");
-				if(!scriptIds.isEmpty()) {
+				if (!scriptIds.isEmpty()) {
 					for (int i = 0; i < scriptIds.size(); i++) {
 						printWriter.println("    " + scriptIds.get(i).toString());
-					}					
+					}
 				} else {
 					printWriter.println("    No Scripts IDs are affected and are up to date.");
 				}
@@ -408,7 +468,7 @@ public class StrongpointDirectoryGeneralUtility {
 			e.printStackTrace();
 		}
 	}
-	
+
 	public void writeToFileTargetUpdates(JSONObject obj, String jobType, String targetAccountId, String timestamp) {
 		String userHomePath = System.getProperty("user.home");
 		String parsedAccountId = targetAccountId;
@@ -442,17 +502,17 @@ public class StrongpointDirectoryGeneralUtility {
 				JSONArray scriptIds = (JSONArray) obj.get("scriptIds");
 				String accountId = obj.get("accountId").toString();
 				String messageResult = (String) obj.get("message");
-				
+
 				printWriter.println("Account ID: " + accountId);
 				printWriter.println("Message: " + messageResult);
 				printWriter.println("Script IDs Affected: ");
-				if(!scriptIds.isEmpty()) {
+				if (!scriptIds.isEmpty()) {
 					for (int i = 0; i < scriptIds.size(); i++) {
 //						printWriter.println("    " + scriptIds.get(i).toString());
 						JSONObject scripIdObject = (JSONObject) scriptIds.get(i);
 						printWriter.println("    ID: " + scripIdObject.get("scriptId").toString());
 						printWriter.println("    Status: " + scripIdObject.get("target_message").toString());
-					}					
+					}
 				} else {
 					printWriter.println("    No Scripts IDs are affected and are up to date.");
 				}
@@ -462,17 +522,17 @@ public class StrongpointDirectoryGeneralUtility {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-	}	
-	
+	}
+
 	public void createSdfcliDirectory() {
 		String userHomePath = System.getProperty("user.home");
-		
+
 		File file = new File(userHomePath + "/sdfcli");
-		if(file.exists() && file.isDirectory()) {
+		if (file.exists() && file.isDirectory()) {
 			System.out.println("SDFCLI directory already created!");
 		} else {
 			file.mkdir();
 		}
 	}
-	
+
 }

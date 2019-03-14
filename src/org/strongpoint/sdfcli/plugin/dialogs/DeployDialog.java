@@ -46,6 +46,7 @@ import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 import org.strongpoint.sdfcli.plugin.services.DeployCliService;
+import org.strongpoint.sdfcli.plugin.services.MissingDependenciesService;
 import org.strongpoint.sdfcli.plugin.services.TargetUpdatesService;
 import org.strongpoint.sdfcli.plugin.utils.Accounts;
 import org.strongpoint.sdfcli.plugin.utils.Credentials;
@@ -192,6 +193,8 @@ public class DeployDialog extends TitleAreaDialog {
 				emailCred, passwordCred, String.join(",", getScripIds(this.window)));
 		JSONObject targetUpdates = TargetUpdatesService.newInstance().localUpdatedWithTarget(accountId,
 				this.projectPath, scriptIds);
+		JSONObject missingDependencies = MissingDependenciesService.newInstance().getMissingDependencies(accountId,
+				this.projectPath, scriptIds);
 		System.out.println("Deploy Approve results: " + approveResult.toJSONString());
 		JSONObject data = (JSONObject) approveResult.get("data");
 		isApproved = (boolean) data.get("result");
@@ -263,14 +266,16 @@ public class DeployDialog extends TitleAreaDialog {
 				} else {
 					JSONObject targetData = (JSONObject) targetUpdates.get("data");
 					JSONArray targetDataResult = (JSONArray) targetData.get("result");
-					if (!targetDataResult.isEmpty()) {
+					if ( !targetDataResult.isEmpty() ) {
 						List<String> listStriptIds = new ArrayList<>();
 						for (int i = 0; i < targetDataResult.size(); i++) {
 							JSONObject targetDataResultObject = (JSONObject) targetDataResult.get(i);
 							listStriptIds.add(targetDataResultObject.get("name").toString());
 						}
 						JSONObject messageObject = new JSONObject();
-						messageObject.put("message", "Error: The local copies of the following objects are outdated with the target account copy: \r\n" + String.join(",", listStriptIds));
+						messageObject.put("message",
+								"Error: The local copies of the following objects are outdated with the target account copy: \r\n"
+										+ String.join(",", listStriptIds));
 						results = messageObject;
 						DeployCliService.newInstance().deploySavedSearches(accountId, emailCred, passwordCred, pathCred,
 								this.projectPath, this.parentShell, JobTypes.savedSearch.getJobType(),
@@ -278,12 +283,30 @@ public class DeployDialog extends TitleAreaDialog {
 //						MessageDialog.openWarning(this.parentShell, "Outdated Target Objects",
 //								"The local copies of the following objects are outdated with the target account copy: " +String.join(",", listStriptIds));
 					} else {
-						results = DeployCliService.newInstance().deployCliResult(accountId, emailCred, passwordCred,
-								pathCred, this.projectPath, this.parentShell, JobTypes.deployment.getJobType(),
-								timestamp);
-						savedSearchResults = DeployCliService.newInstance().deploySavedSearches(accountId, emailCred,
-								passwordCred, pathCred, this.projectPath, this.parentShell,
-								JobTypes.savedSearch.getJobType(), this.ssTimestamps, (boolean) data.get("result"), "");
+						JSONObject missingDependenciesData = (JSONObject) missingDependencies.get("data");
+						JSONArray missingDependenciesDataResult = (JSONArray) missingDependenciesData.get("result");
+						List<String> missingDependenciesList = new ArrayList<>();
+						for (int i = 0; i < missingDependenciesDataResult.size(); i++) {
+							missingDependenciesList.add(missingDependenciesDataResult.get(i).toString());
+						}
+						if (!missingDependenciesDataResult.isEmpty()) {
+							JSONObject messageObject = new JSONObject();
+							messageObject.put("message",
+									"Error: The local copies of the objects have missing dependencies: \r\n"
+											+ String.join(",", missingDependenciesList));
+							results = messageObject;
+							DeployCliService.newInstance().deploySavedSearches(accountId, emailCred, passwordCred,
+									pathCred, this.projectPath, this.parentShell, JobTypes.savedSearch.getJobType(),
+									this.ssTimestamps, false, "Error: ");
+						} else {
+							results = DeployCliService.newInstance().deployCliResult(accountId, emailCred, passwordCred,
+									pathCred, this.projectPath, this.parentShell, JobTypes.deployment.getJobType(),
+									timestamp);
+							savedSearchResults = DeployCliService.newInstance().deploySavedSearches(accountId,
+									emailCred, passwordCred, pathCred, this.projectPath, this.parentShell,
+									JobTypes.savedSearch.getJobType(), this.ssTimestamps, (boolean) data.get("result"),
+									"");
+						}
 					}
 //					results = DeployCliService.newInstance().deployCliResult(accountId, emailCred, passwordCred,
 //							pathCred, this.projectPath, this.parentShell, JobTypes.deployment.getJobType(), timestamp);
