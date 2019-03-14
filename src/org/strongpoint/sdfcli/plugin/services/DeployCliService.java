@@ -38,8 +38,7 @@ public class DeployCliService {
 		System.out.println("Project Path: " + projectPath);
 		System.out.println("SDFCLI Path: " + sdfcliPath);
 		String deployCommand = "(echo " + "\"" + password + "\""
-				+ " ; yes | awk '{print \"YES\"}' ; yes | awk '{print \"YES\"}') | " + sdfcliPath
-				+ "sdfcli deploy -account " + accountID + " -email " + email + " -p " + projectPath
+				+ " ; yes | awk '{print \"YES\"}' ; yes | awk '{print \"YES\"}') | " + "sdfcli deploy -account " + accountID + " -email " + email + " -p " + projectPath
 				+ " -role 3 -url system.netsuite.com -l /webdev/sdf/sdk/test.log";
 //		String deployCommand = sdfcliPath +"sdfcli deploy";
 		String[] commands = { "/bin/bash", "-c", "cd ~ && cd " + projectPath + "/ && " + deployCommand };
