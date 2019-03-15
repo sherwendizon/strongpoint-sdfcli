@@ -64,8 +64,8 @@ public class TargetUpdatesService {
 				results.put("accountId", accountId);
 				for (int i = 0; i < dataResult.size(); i++) {
 					JSONObject dataResultObj = (JSONObject) dataResult.get(i);
-					if (dataResultObj.get("date") != null
-							&& new Date(localImportObjectTime).getTime() < new Date((long) dataResultObj.get("date")).getTime()) {
+					if (dataResultObj.get("date") != null && new Date(localImportObjectTime)
+							.getTime() < new Date((long) dataResultObj.get("date")).getTime()) {
 						// target copy has the latest copy based on timestamp
 						JSONObject targetUpdatedObj = new JSONObject();
 						targetUpdatedObj.put("scriptId", dataResultObj.get("name").toString());
@@ -73,8 +73,8 @@ public class TargetUpdatesService {
 								"Local copy is not updated with the Target Account's copy.");
 						arrayResults.add(targetUpdatedObj);
 					}
-					if (dataResultObj.get("date") != null
-							&& new Date(localImportObjectTime).getTime() >= new Date((long) dataResultObj.get("date")).getTime()) {
+					if (dataResultObj.get("date") != null && new Date(localImportObjectTime)
+							.getTime() >= new Date((long) dataResultObj.get("date")).getTime()) {
 						// local copy has the latest copy based on timestamp
 						JSONObject targetUpdatedObj = new JSONObject();
 						targetUpdatedObj.put("scriptId", dataResultObj.get("name").toString());
@@ -126,7 +126,8 @@ public class TargetUpdatesService {
 			JSONObject resultObject = (JSONObject) targetDataResult.get(i);
 			if (sourceScriptIdTimestampMap.containsKey(resultObject.get("name").toString())) {
 				if (new Date((long) resultObject.get("date"))
-						.after(new Date(sourceScriptIdTimestampMap.get(resultObject.get("name").toString())))) {
+						.getTime() < new Date(sourceScriptIdTimestampMap.get(resultObject.get("name").toString()))
+								.getTime()) {
 					resultsArray.add(resultObject);
 				}
 			}
