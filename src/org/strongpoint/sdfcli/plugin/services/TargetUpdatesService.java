@@ -65,7 +65,7 @@ public class TargetUpdatesService {
 				for (int i = 0; i < dataResult.size(); i++) {
 					JSONObject dataResultObj = (JSONObject) dataResult.get(i);
 					if (dataResultObj.get("date") != null
-							&& new Date(localImportObjectTime).before(new Date((long) dataResultObj.get("date")))) {
+							&& new Date(localImportObjectTime).getTime() < new Date((long) dataResultObj.get("date")).getTime()) {
 						// target copy has the latest copy based on timestamp
 						JSONObject targetUpdatedObj = new JSONObject();
 						targetUpdatedObj.put("scriptId", dataResultObj.get("name").toString());
@@ -74,11 +74,11 @@ public class TargetUpdatesService {
 						arrayResults.add(targetUpdatedObj);
 					}
 					if (dataResultObj.get("date") != null
-							&& new Date(localImportObjectTime).after(new Date((long) dataResultObj.get("date")))) {
+							&& new Date(localImportObjectTime).getTime() >= new Date((long) dataResultObj.get("date")).getTime()) {
 						// local copy has the latest copy based on timestamp
 						JSONObject targetUpdatedObj = new JSONObject();
 						targetUpdatedObj.put("scriptId", dataResultObj.get("name").toString());
-						targetUpdatedObj.put("target_message", "Local copy is ahead with the Target Account's copy.");
+						targetUpdatedObj.put("target_message", "Local copy is updated with Target Account's copy.");
 						arrayResults.add(targetUpdatedObj);
 					}
 					if (dataResultObj.get("date") == null) {
