@@ -124,7 +124,7 @@ public class SyncToNsCliService {
 			StringBuffer cmdOutput = new StringBuffer();
 			System.out.println("Project Path: " + projectPath);
 			String importobjectsCommand = "(echo " + "\"" + password + "\"" + " ; yes | awk '{print \"YES\"}') | "
-					+ sdfcliPath + "sdfcli importobjects -account " + accountID
+					+ "sdfcli importobjects -account " + accountID
 					+ " -destinationfolder /Objects/ -email " + email + " -p " + projectPath + " -role 3 -scriptid "
 					+ String.join(" ", objsStr).toString().replaceAll("null", "")
 					+ " -type ALL -url system.netsuite.com";
@@ -234,7 +234,7 @@ public class SyncToNsCliService {
 				StringBuffer cmdOutput = new StringBuffer();
 				System.out.println("Project Path: " + projectPath);
 				String importFilesCommand = "(echo " + "\"" + password + "\"" + " ; yes | awk '{print \"YES\"}') | "
-						+ sdfcliPath + "sdfcli importfiles -paths "
+						+ "sdfcli importfiles -paths "
 						+ String.join(" ", filesToImport).toString().replaceAll("null", "") + " -account " + accountID
 						+ " -email " + email + " -p " + projectPath + " -role 3 -url system.netsuite.com";
 				System.out.println("IMPORT FILES CMD: " + importFilesCommand);
@@ -333,8 +333,7 @@ public class SyncToNsCliService {
 			JSONArray jsonArray = new JSONArray();
 			StringBuffer cmdOutput = new StringBuffer();
 			System.out.println("Project Path: " + projectPath);
-			String addDependenciesCommand = "(yes | awk '{print \"YES\"}') | " + sdfcliPath
-					+ "sdfcli adddependencies -account " + accountID + " -all -email " + email + " -p " + projectPath
+			String addDependenciesCommand = "(yes | awk '{print \"YES\"}') | " + "sdfcli adddependencies -account " + accountID + " -all -email " + email + " -p " + projectPath
 					+ " -role 3 -url system.netsuite.com";
 			System.out.println("ADD DEPENDENCIES CMD: " + addDependenciesCommand);
 			String[] commands = { "/bin/bash", "-c", "cd ~ && cd " + projectPath + "/ && " + addDependenciesCommand };
