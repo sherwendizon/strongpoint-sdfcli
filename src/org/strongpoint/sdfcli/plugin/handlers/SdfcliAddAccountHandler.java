@@ -19,7 +19,7 @@ import org.strongpoint.sdfcli.plugin.views.StrongpointView;
 
 public class SdfcliAddAccountHandler extends AbstractHandler {
 
-	private static final String not_available = "Not available";
+	private static final String not_available = "Not Applicable";
 
 	@Override
 	public Object execute(ExecutionEvent event) throws ExecutionException {

@@ -28,7 +28,7 @@ import org.strongpoint.sdfcli.plugin.utils.enums.JobTypes;
 
 public class StrongpointDirectoryGeneralUtility {
 	
-	private static final String not_available = "Not available";
+	private static final String not_available = "Not Applicable";
 	
 	public static StrongpointDirectoryGeneralUtility newInstance() {
 		return new StrongpointDirectoryGeneralUtility();
