@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -65,6 +66,7 @@ public class DeployCliService {
 			BufferedReader reader = new BufferedReader(
 					new InputStreamReader(changeRootDirectoryProcess.getInputStream()));
 			String line = "";
+			List<String> resultList = new ArrayList<String>();
 			while ((line = reader.readLine()) != null) {
 				if (!line.contains("[INFO]") && !line.contains("SuiteCloud Development Framework CLI")
 						&& !line.contains("Using user credentials") && !line.contains("Enter password:Preview")) {
@@ -73,14 +75,19 @@ public class DeployCliService {
 					System.out.println(line);
 					cmdOutput.append(line);
 					obj.put("message", line);
+					resultList.add(line);
 					jsonArray.add(obj);
 				}
 			}
+			
+			if(resultList.isEmpty()) {
+				errorMessages(accountID, "deploying");
+			}
 
 		} catch (IOException e) {
-			e.printStackTrace();
+			errorMessages(accountID, "deploying");
 		} catch (Exception exception) {
-			exception.printStackTrace();
+			errorMessages(accountID, "deploying");
 		}
 
 		results.put("results", jsonArray);
@@ -122,15 +129,23 @@ public class DeployCliService {
 			System.out.println("IS APPROVE RESPONSE: " + responseBodyStr);
 			if (statusCode >= 400) {
 				results = new JSONObject();
-				results.put("error", statusCode);
-				throw new RuntimeException("HTTP Request returns a " + statusCode);
+				results.put("message", responseBodyStr);
+				JSONObject result = new JSONObject();
+				result.put("result", false);
+				results.put("data", result);
+				results.put("code", statusCode);
+			} else {
+				results = (JSONObject) JSONValue.parse(responseBodyStr);				
 			}
 
-			results = (JSONObject) JSONValue.parse(responseBodyStr);
 		} catch (Exception exception) {
 //			System.out.println("Request Deployment call error: " +exception.getMessage());
 			results = new JSONObject();
-			results.put("error", exception.getMessage());
+			results.put("message", exception.getMessage());
+			JSONObject result = new JSONObject();
+			result.put("result", false);
+			results.put("data", result);
+			results.put("code", 400);
 //			throw new RuntimeException("Request Deployment call error: " +exception.getMessage());
 		} finally {
 			if (httpGet != null) {
@@ -161,13 +176,18 @@ public class DeployCliService {
 
 			if (statusCode >= 400) {
 				results = new JSONObject();
-				results.put("error", statusCode);
-				throw new RuntimeException("HTTP Request returns a " + statusCode);
+				results.put("message", responseBodyStr);
+				JSONObject result = new JSONObject();
+				results.put("data", null);
+				results.put("code", statusCode);
+			} else {
+				results = (JSONObject) JSONValue.parse(responseBodyStr);	
 			}
-			results = (JSONObject) JSONValue.parse(responseBodyStr);
 		} catch (Exception exception) {
 			results = new JSONObject();
-			results.put("error", exception.getMessage());
+			results.put("message", exception.getMessage());
+			results.put("data", null);
+			results.put("code", 400);
 		} finally {
 			if (httpGet != null) {
 				httpGet.reset();
@@ -222,7 +242,12 @@ public class DeployCliService {
 						responseBodyStr = EntityUtils.toString(entity);
 
 						if (statusCode >= 400) {
-							throw new RuntimeException("HTTP Request returns a " + statusCode);
+							JSONObject httpErrorMessage = new JSONObject();
+							httpErrorMessage.put("code", statusCode);
+							httpErrorMessage.put("message", "Error. HTTP Request has an error.");
+							httpErrorMessage.put("data", null);
+							httpErrorMessage.put("filename", filename);
+							results.add(httpErrorMessage);
 						}
 						JSONObject resultObj = (JSONObject) JSONValue.parse(responseBodyStr);
 						resultObj.put("filename", filename);
@@ -250,6 +275,26 @@ public class DeployCliService {
 		System.out.println("Finished writing saved search to file...");
 		
 		return results;
+	}
+	
+	private JSONArray errorMessages(String accountID, String action) {
+		JSONArray jsonArray = new JSONArray();
+		JSONObject errorObject1 = new JSONObject();
+		errorObject1.put("accountId", accountID);
+		errorObject1.put("message", "There was an error during "+action+". Please check the following: ");
+		jsonArray.add(errorObject1);
+
+		JSONObject errorObject2 = new JSONObject();
+		errorObject2.put("accountId", accountID);
+		errorObject2.put("message", " - Make sure your credentials are correct.");
+		jsonArray.add(errorObject2);
+
+		JSONObject errorObject3 = new JSONObject();
+		errorObject3.put("accountId", accountID);
+		errorObject3.put("message", " - Make sure the account ID is correct.");
+		jsonArray.add(errorObject3);
+
+		return jsonArray;
 	}
 
 }
