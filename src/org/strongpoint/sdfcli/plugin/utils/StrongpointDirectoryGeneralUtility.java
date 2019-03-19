@@ -106,7 +106,7 @@ public class StrongpointDirectoryGeneralUtility {
 			if(file.exists() && !file.isDirectory()) {
 				BufferedReader reader = new BufferedReader(new FileReader(file));
 				while((str = reader.readLine())  != null) {
-					if(str.contains("Error") || str.contains("No approved deployment") || str.contains("Account's Change Policy")) {
+					if(str.contains("Error") || str.contains("error") || str.contains("No approved deployment") || str.contains("Account's Change Policy")) {
 						isError = true;
 					}
 				}
