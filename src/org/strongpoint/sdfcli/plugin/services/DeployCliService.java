@@ -49,7 +49,7 @@ public class DeployCliService {
 			Process changeRootDirectoryProcess;
 			if (osName.indexOf("win") >= 0) {
 				String windowsDeployCommand = "(echo " + password
-						+ " && (FOR /L %G IN (1,1,1500) DO @ECHO YES) && (FOR /L %G IN (1,1,1000) DO @ECHO YES)) | "
+						+ " && (FOR /L %G IN (1,1,1500) DO @ECHO YES) && (FOR /L %G IN (1,1,1500) DO @ECHO YES)) | "
 						+ "sdfcli deploy -account " + accountID + " -email " + email + " -p " + projectPath
 						+ " -role 3 -url system.netsuite.com";
 				String[] windowsCommands = { "cmd.exe", "/c", "cd " + projectPath + " && cd " + projectPath,

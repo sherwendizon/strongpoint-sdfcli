@@ -423,6 +423,11 @@ public class SyncToNsCliService {
 		errorObject3.put("accountId", accountID);
 		errorObject3.put("message", " - Make sure the account ID is correct.");
 		jsonArray.add(errorObject3);
+		
+		JSONObject errorObject4 = new JSONObject();
+		errorObject4.put("accountId", accountID);
+		errorObject4.put("message", " - Make sure your filename and/or file path has no special characters(&, $, etc.).");
+		jsonArray.add(errorObject4);
 
 		return jsonArray;
 	}
