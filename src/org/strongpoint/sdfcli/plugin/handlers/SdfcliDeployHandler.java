@@ -86,7 +86,12 @@ public class SdfcliDeployHandler extends AbstractHandler {
 					strongpointView.setDisplayObject(deployDialog.getResults());
 					strongpointView.setTargetAccountId(deployDialog.getTargetAccountId());
 					strongpointView.setTimestamp(savedSearchTimestamp.toString());
-					String savedSearchStatusStr = "In Progress";
+					String savedSearchStatusStr = "";
+					if(deployDialog.isCancelButtonPressed()) {
+						savedSearchStatusStr = "Cancelled";
+					} else {
+						savedSearchStatusStr = "In Progress";
+					}
 //					if (!obj.get("code").toString().equalsIgnoreCase("200")) {
 //						savedSearchStatusStr = "Failed";
 //					}
