@@ -74,6 +74,8 @@ public class DeployDialog extends TitleAreaDialog {
 	private Map<String, String> ssTimestamps;
 
 	private boolean isApproved;
+	
+	private boolean cancelButtonPressed;
 
 	public DeployDialog(Shell parentShell) {
 		super(parentShell);
@@ -115,6 +117,10 @@ public class DeployDialog extends TitleAreaDialog {
 	public boolean getIsApproved() {
 		return this.isApproved;
 	}
+	
+	public boolean isCancelButtonPressed() {
+		return this.cancelButtonPressed;
+	}
 
 	@Override
 	public void create() {
@@ -145,6 +151,12 @@ public class DeployDialog extends TitleAreaDialog {
 	@Override
 	protected Point getInitialSize() {
 		return new Point(450, 210);
+	}
+	
+	@Override
+	protected void cancelPressed() {
+		this.cancelButtonPressed = true;
+		super.cancelPressed();
 	}
 
 	@Override

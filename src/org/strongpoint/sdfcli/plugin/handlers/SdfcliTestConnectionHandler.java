@@ -54,11 +54,18 @@ public class SdfcliTestConnectionHandler extends AbstractHandler{
 			strongpointView.setDisplayObject(testConnectionDialog.getResults());
 			strongpointView.setTargetAccountId(testConnectionDialog.getTargetAccountId());
 			strongpointView.setTimestamp(timestamp.toString());
-			String statusStr = "In Progress";
+			String statusStr = "";
+			if(testConnectionDialog.isCancelButtonPressed()) {
+				statusStr = "Cancelled";
+			} else {
+				statusStr = "In Progress";
+			}
 			strongpointView.setStatus(statusStr);
 			strongpointView.populateTable(JobTypes.test_connection.getJobType());
-			StrongpointDirectoryGeneralUtility.newInstance().writeToFile(testConnectionDialog.getResults(), JobTypes.test_connection.getJobType(),
-					testConnectionDialog.getTargetAccountId(), timestamp.toString());
+			if(!testConnectionDialog.isCancelButtonPressed()) {
+				StrongpointDirectoryGeneralUtility.newInstance().writeToFile(testConnectionDialog.getResults(), JobTypes.test_connection.getJobType(),
+						testConnectionDialog.getTargetAccountId(), timestamp.toString());	
+			}
 		} catch (PartInitException e1) {
 			e1.printStackTrace();
 		}		

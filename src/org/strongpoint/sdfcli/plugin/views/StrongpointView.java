@@ -141,7 +141,7 @@ public class StrongpointView extends ViewPart {
 							System.out.println("File Path: " + fileName);
 							fullPath = userHomePath + "/strongpoint_action_logs/" + fileName;
 							detailView.setFileAbsolutePath(fullPath);
-							detailView.updateView();
+							detailView.updateView(selection[i]);
 //							autoUpdateOnMouseMove(fullPath, selection[i]);
 							updateTable(fullPath, selection[i]);
 						} catch (PartInitException e) {
@@ -203,6 +203,9 @@ public class StrongpointView extends ViewPart {
 			}
 //			bar.setState(SWT.PAUSED);
 //			editor.setEditor(bar, selectedItem, 3);
+		} else if(selectedItem.getText(2).equalsIgnoreCase("cancelled")) {
+			selectedItem.setText(2, "Cancelled");
+			selectedItem.setBackground(new Color(Display.getCurrent(), 255, 255, 102));
 		} else {
 			selectedItem.setText(2, "In Progress");
 		}

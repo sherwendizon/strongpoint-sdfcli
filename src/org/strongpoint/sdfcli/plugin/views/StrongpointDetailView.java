@@ -35,14 +35,19 @@ public class StrongpointDetailView extends ViewPart{
 		// TODO Auto-generated method stub
 	}
 	
-	public void updateView() {
+	public void updateView(TableItem selectedItem) {
 		table.removeAll();
 		BufferedReader bufferedReader = null;
 		try {
 			File file = new File(fileAbsolutePath);
-			if( !file.exists() || file.getTotalSpace() <= 0L) {
+			if ( !file.exists() || file.getTotalSpace() <= 0L) {
 				TableItem item = new TableItem(table, SWT.NONE);
-				item.setText("Action is currently in progress.");	
+				if(selectedItem.getText(2).equalsIgnoreCase("cancelled")) {
+					item.setText("Action was cancelled.");	
+				} else {
+					item.setText("Action is currently in progress.");	
+				}
+					
 			} else {
 				bufferedReader = new BufferedReader(new FileReader(fileAbsolutePath));
 				String lineToRead;

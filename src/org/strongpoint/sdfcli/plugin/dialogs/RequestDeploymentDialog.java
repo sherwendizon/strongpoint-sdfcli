@@ -48,6 +48,7 @@ public class RequestDeploymentDialog extends TitleAreaDialog {
 	private String projectPath;
 	private String timestamp;
 	private JSONObject results;
+	private boolean cancelButtonPressed;
 	
 	public RequestDeploymentDialog(Shell parentShell) {
 		super(parentShell);
@@ -68,7 +69,10 @@ public class RequestDeploymentDialog extends TitleAreaDialog {
 	public void setTimestamp(String timestamp) {
 		this.timestamp = timestamp;
 	}
-
+	
+	public boolean isCancelButtonPressed() {
+		return this.cancelButtonPressed;
+	}
 
 	@Override
 	public void create() {
@@ -101,6 +105,12 @@ public class RequestDeploymentDialog extends TitleAreaDialog {
 	@Override
 	protected Point getInitialSize() {
 		return new Point(450, 450);
+	}
+	
+	@Override
+	protected void cancelPressed() {
+		this.cancelButtonPressed = true;
+		super.cancelPressed();
 	}
 	
 	@Override

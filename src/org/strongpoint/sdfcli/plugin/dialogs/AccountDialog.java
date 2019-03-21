@@ -39,6 +39,8 @@ public class AccountDialog extends TitleAreaDialog{
 	private IWorkbenchWindow window;
 	
 	private Shell parentShell;
+	
+	private boolean cancelButtonPressed;
 
 	public AccountDialog(Shell parentShell) {
 		super(parentShell);
@@ -55,6 +57,10 @@ public class AccountDialog extends TitleAreaDialog{
 	
 	public JSONObject getResults() {
 		return this.results;
+	}
+	
+	public boolean isCancelButtonPressed() {
+		return this.cancelButtonPressed;
 	}
 	
 	@Override
@@ -87,6 +93,12 @@ public class AccountDialog extends TitleAreaDialog{
 	@Override
 	protected Point getInitialSize() {
 		return new Point(450, 200);
+	}
+	
+	@Override
+	protected void cancelPressed() {
+		this.cancelButtonPressed = true;
+		super.cancelPressed();
 	}
 	
 	@Override

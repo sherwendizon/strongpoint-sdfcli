@@ -48,6 +48,8 @@ public class CredentialsDialog extends TitleAreaDialog{
 	private IWorkbenchWindow window;
 	
 	private Shell parentShell;
+	
+	private boolean cancelButtonPressed;
 
 	public CredentialsDialog(Shell parentShell) {
 		super(parentShell);
@@ -56,7 +58,11 @@ public class CredentialsDialog extends TitleAreaDialog{
 	
 	public void setWorkbenchWindow(IWorkbenchWindow window) {
 		this.window = window;
-	}		
+	}
+	
+	public boolean isCancelButtonPressed() {
+		return this.cancelButtonPressed;
+	}
 	
 	@Override
 	public void create() {
@@ -93,6 +99,12 @@ public class CredentialsDialog extends TitleAreaDialog{
 	@Override
 	protected Point getInitialSize() {
 		return new Point(450, 300);
+	}
+	
+	@Override
+	protected void cancelPressed() {
+		this.cancelButtonPressed = true;
+		super.cancelPressed();
 	}
 	
 	@Override

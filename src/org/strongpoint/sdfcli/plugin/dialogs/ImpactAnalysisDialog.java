@@ -49,6 +49,7 @@ public class ImpactAnalysisDialog extends TitleAreaDialog {
 	private String projectPath;
 	private String jobType;
 	private String timestamp;
+	private boolean cancelButtonPressed;
 
 	public ImpactAnalysisDialog(Shell parentShell) {
 		super(parentShell);
@@ -82,6 +83,10 @@ public class ImpactAnalysisDialog extends TitleAreaDialog {
 	public String getTargetAccountId() {
 		return selectedValue;
 	}
+	
+	public boolean isCancelButtonPressed() {
+		return this.cancelButtonPressed;
+	}
 
 	@Override
 	public void create() {
@@ -114,6 +119,12 @@ public class ImpactAnalysisDialog extends TitleAreaDialog {
 	@Override
 	protected Point getInitialSize() {
 		return new Point(450, 300);
+	}
+	
+	@Override
+	protected void cancelPressed() {
+		this.cancelButtonPressed = true;
+		super.cancelPressed();
 	}
 
 	@Override

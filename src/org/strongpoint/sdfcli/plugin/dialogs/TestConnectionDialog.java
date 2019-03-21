@@ -45,6 +45,7 @@ public class TestConnectionDialog extends TitleAreaDialog{
 	private IWorkbenchWindow window;
 	private String selectedValue = "";
 	private Shell parentShell;
+	private boolean cancelButtonPressed;
 
 	public TestConnectionDialog(Shell parentShell) {
 		super(parentShell);
@@ -61,7 +62,11 @@ public class TestConnectionDialog extends TitleAreaDialog{
 	
 	public String getTargetAccountId() {
 		return selectedValue;
-	}	
+	}
+	
+	public boolean isCancelButtonPressed() {
+		return this.cancelButtonPressed;
+	}
 	
 	@Override
 	public void create() {
@@ -92,6 +97,12 @@ public class TestConnectionDialog extends TitleAreaDialog{
 	@Override
 	protected Point getInitialSize() {
 		return new Point(450, 210);
+	}
+	
+	@Override
+	protected void cancelPressed() {
+		this.cancelButtonPressed = true;
+		super.cancelPressed();
 	}
 	
 	@Override
