@@ -1,3 +1,15 @@
 2019-03-21 00:20:49,071 - Option "-scriptid" must be specified.
 2019-03-21 00:21:27,848 - Option "-scriptid" must be specified.
 2019-03-21 00:21:48,861 - Option "-scriptid" must be specified.
+2019-03-21 18:01:38,755 - The file cabinet path(s) "/SuiteApps/TestGreet.js,Mfg/AddOppItem_Client.js,(1).js,/SuiteBundles/Bundle,232363/SODRuleValidation.js,(2),/SuiteBundles/Bundle,36969/FLOAgentBlock_Main.js,/SuiteBundles/Bundle,36969/FLOConfigAndStatsClientScript.js,/SuiteBundles/Bundle,36969/FLOCreateStandardFieldMapReduce.js,/SuiteBundles/Bundle,234200/FLODLUSpider.js" are invalid. The file cabinet path must start with either of the following: "/SuiteScripts,/Templates/E-mail Templates,/Templates/Marketing Templates".
+2019-03-21 18:55:22,990 - /SuiteScripts/Honeycomb%Mfg/AddOppItem_Client.js not imported - "INVALID FILE PATH: /SuiteScripts/Honeycomb%Mfg/AddOppItem_Client.js".
+2019-03-21 18:56:01,826 - The file cabinet path(s) "Mfg/AddOppItem_Client.js" are invalid. The file cabinet path must start with either of the following: "/SuiteScripts,/Templates/E-mail Templates,/Templates/Marketing Templates".
+2019-03-21 18:56:46,361 - The file cabinet path(s) "Mfg/AddOppItem_Client.js" are invalid. The file cabinet path must start with either of the following: "/SuiteScripts,/Templates/E-mail Templates,/Templates/Marketing Templates".
+2019-03-21 18:58:54,857 - /SuiteScripts/Honeycomb\x20Mfg/AddOppItem_Client.js not imported - "INVALID FILE PATH: /SuiteScripts/Honeycomb\x20Mfg/AddOppItem_Client.js".
+2019-03-21 19:01:22,263 - /SuiteScripts/Honeycomb\x20Mfg/AddOppItem_Client.js not imported - "INVALID FILE PATH: /SuiteScripts/Honeycomb\x20Mfg/AddOppItem_Client.js".
+2019-03-21 19:02:11,953 - /SuiteScripts/Honeycomb\x20Mfg/AddOppItem_Client.js not imported - "INVALID FILE PATH: /SuiteScripts/Honeycomb\x20Mfg/AddOppItem_Client.js".
+2019-03-21 19:04:15,837 - /SuiteScripts/HoneycombMfg/AddOppItem_Client.js not imported - "INVALID FILE PATH: /SuiteScripts/HoneycombMfg/AddOppItem_Client.js".
+2019-03-21 19:19:24,877 - Project folder "/home/sherwed/sdfcli/4314_-_Deploy_Scripts" does not exists.
+2019-03-21 20:44:38,401 - The file cabinet path(s) "Mfg/AddOppItem_Client.js" are invalid. The file cabinet path must start with either of the following: "/SuiteScripts,/Templates/E-mail Templates,/Templates/Marketing Templates".
+2019-03-21 20:45:20,514 - The file cabinet path(s) "Mfg/AddOppItem_Client.js" are invalid. The file cabinet path must start with either of the following: "/SuiteScripts,/Templates/E-mail Templates,/Templates/Marketing Templates".
+2019-03-21 20:46:09,088 - The file cabinet path(s) "Mfg/AddOppItem_Client.js" are invalid. The file cabinet path must start with either of the following: "/SuiteScripts,/Templates/E-mail Templates,/Templates/Marketing Templates".

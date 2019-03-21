@@ -217,14 +217,18 @@ public class SyncToNsCliService {
 			String accountID = importObj.get("accountId").toString();
 			JSONArray objs = (JSONArray) importObj.get("files");
 			String[] objsStr = new String[objs.size()];
+			String[] objsStrForWindows = new String[objs.size()];
 			System.out.println("IMPORT FILES: " + objs.toJSONString());
 			for (int i = 0; i < objs.size(); i++) {
 //				JSONObject scriptObj = (JSONObject) objs.get(i);
 //				objsStr[i] += "\"" +scriptObj.get("scriptId").toString()+ "\"";				
 				objsStr[i] += "\"" + (String) objs.get(i) + "\"";
+				String forWrindows = (String) objs.get(i);
+				objsStrForWindows[i] += forWrindows.replace(" ", "^ ");
 			}
 			System.out.println("FILE PARAMETERS: " + objsStr.toString());
 			String.join(" ", objsStr);
+			String.join(" ", objsStrForWindows);
 			System.out.println(
 					"FILE PARAMETERS WITH JOIN: " + String.join(" ", objsStr).toString().replaceAll("null", ""));
 			JSONArray jsonArray = new JSONArray();
@@ -243,7 +247,7 @@ public class SyncToNsCliService {
 				if (osName.indexOf("win") >= 0) {
 					String windowsImportFilesCommand = "(echo " + password
 							+ " && (FOR /L %G IN (1,1,1500) DO @ECHO YES)) | " + "sdfcli importfiles -paths "
-							+ String.join(" ", objsStr).toString().replaceAll("null", "") + " -account " + accountID
+							+ String.join(" ", objsStrForWindows).toString().replaceAll("null", "") + " -account " + accountID
 							+ " -email " + email + " -p " + projectPath + " -role 3 -url system.netsuite.com";
 					String[] windowsCommands = { "cmd.exe", "/c", "cd " + projectPath + " && cd " + projectPath,
 							" && " + windowsImportFilesCommand };
@@ -257,7 +261,7 @@ public class SyncToNsCliService {
 					System.out.println("Linux or MacOS: " + importFilesCommand);
 					System.out.println("Windows: " + "(echo " + password
 							+ " && (FOR /L %G IN (1,1,1500) DO @ECHO YES)) | " + "sdfcli importfiles -paths "
-							+ String.join(" ", objsStr).toString().replaceAll("null", "") + " -account " + accountID
+							+ String.join(" ", objsStrForWindows).toString().replaceAll("null", "") + " -account " + accountID
 							+ " -email " + email + " -p " + projectPath + " -role 3 -url system.netsuite.com");
 					changeRootDirectoryProcess = changeRootDirectory.exec(commands);
 				}
