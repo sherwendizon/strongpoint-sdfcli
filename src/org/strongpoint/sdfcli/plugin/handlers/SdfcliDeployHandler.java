@@ -1,6 +1,7 @@
 package org.strongpoint.sdfcli.plugin.handlers;
 
 import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -10,8 +11,10 @@ import java.util.concurrent.TimeUnit;
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
+import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IJavaProject;
@@ -41,7 +44,9 @@ public class SdfcliDeployHandler extends AbstractHandler {
 			IPath path = getCurrentProject(window).getLocation();
 			DeployDialog deployDialog = new DeployDialog(window.getShell());
 			deployDialog.setWorkbenchWindow(window);
+			deployDialog.setProject(getCurrentProject(window));
 			deployDialog.setProjectPath(path.toPortableString());
+			deployDialog.setScriptIDs(getScripIds(window));
 			deployDialog.open();
 			IViewPart viewPart = null;
 			try {
@@ -108,7 +113,7 @@ public class SdfcliDeployHandler extends AbstractHandler {
 		return null;
 	}
 
-	public static IProject getCurrentProject(IWorkbenchWindow window) {
+	private static IProject getCurrentProject(IWorkbenchWindow window) {
 		ISelectionService selectionService = window.getSelectionService();
 		ISelection selection = selectionService.getSelection();
 		IProject project = null;
@@ -126,5 +131,39 @@ public class SdfcliDeployHandler extends AbstractHandler {
 		}
 		return project;
 	}
+	
+	private List<String> getScripIds(IWorkbenchWindow window) {
+		List<String> scriptIds = new ArrayList<String>();
+		ISelectionService selectionService = window.getSelectionService();
+		ISelection selection = selectionService.getSelection();
+		IProject project = null;
+		if (selection instanceof IStructuredSelection) {
+			Object element = ((IStructuredSelection) selection).getFirstElement();
+			if (element instanceof IResource) {
+				project = ((IResource) element).getProject();
+			} else if (element instanceof PackageFragmentRoot) {
+				IJavaProject jProject = ((PackageFragmentRoot) element).getJavaProject();
+				project = jProject.getProject();
+			} else if (element instanceof IJavaElement) {
+				IJavaProject jProject = ((IJavaElement) element).getJavaProject();
+				project = jProject.getProject();
+			}
+		}
+		IPath path = project.getRawLocation();
+		IContainer container = project.getWorkspace().getRoot().getContainerForLocation(path);
+		try {
+			IContainer con = (IContainer) container.findMember("Objects");
+			for (IResource res : con.members()) {
+				if (res.getFileExtension().equalsIgnoreCase("xml")) {
+					String id = res.getName().substring(0, res.getName().indexOf("."));
+					scriptIds.add(id);
+				}
+			}
+		} catch (CoreException e) {
+			e.printStackTrace();
+		}
+
+		return scriptIds;
+	}	
 
 }

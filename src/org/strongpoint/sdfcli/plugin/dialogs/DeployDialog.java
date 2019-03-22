@@ -76,6 +76,10 @@ public class DeployDialog extends TitleAreaDialog {
 	private boolean isApproved;
 	
 	private boolean cancelButtonPressed;
+	
+	private List<String> scriptIDs;
+	
+	private IProject project;
 
 	public DeployDialog(Shell parentShell) {
 		super(parentShell);
@@ -120,6 +124,14 @@ public class DeployDialog extends TitleAreaDialog {
 	
 	public boolean isCancelButtonPressed() {
 		return this.cancelButtonPressed;
+	}
+	
+	public void setScriptIDs(List<String> scriptIds) {
+		this.scriptIDs = scriptIds;
+	}
+	
+	public void setProject(IProject project) {
+		this.project = project;
 	}
 	
 	@Override
@@ -174,7 +186,7 @@ public class DeployDialog extends TitleAreaDialog {
 	}
 
 	private void processDeploy() {
-		List<String> scriptIds = getScripIds(this.window);
+		List<String> scriptIds = this.scriptIDs;
 		JSONObject creds = Credentials.getCredentialsFromFile();
 		String emailCred = "";
 		String passwordCred = "";
@@ -190,9 +202,9 @@ public class DeployDialog extends TitleAreaDialog {
 						"Please set user credentials in Strongpoint > Credentials Settings menu");
 			}
 		}
-		System.out.println("WINDOW: " + getCurrentProject(this.window));
-		String crId = getCurrentProject(this.window).getName().substring(0,
-				getCurrentProject(this.window).getName().indexOf("_"));
+		System.out.println("WINDOW: " + this.project);
+		String crId = this.project.getName().substring(0,
+				this.project.getName().indexOf("_"));
 		if (crId != null && !crId.isEmpty()) {
 			params = crId;
 		} else {
@@ -201,7 +213,7 @@ public class DeployDialog extends TitleAreaDialog {
 		}
 		String accountId = selectedValue.substring(selectedValue.indexOf("(") + 1, selectedValue.indexOf(")"));
 		JSONObject approveResult = DeployCliService.newInstance().isApprovedDeployment(parentShell, accountId,
-				emailCred, passwordCred, String.join(",", getScripIds(this.window)));
+				emailCred, passwordCred, String.join(",", this.scriptIDs));
 //		JSONObject targetUpdates = TargetUpdatesService.newInstance().localUpdatedWithTarget(accountId,
 //				this.projectPath, scriptIds);
 		System.out.println("Deploy Approve results: " + approveResult.toJSONString());
@@ -336,58 +348,58 @@ public class DeployDialog extends TitleAreaDialog {
 		accountIDText.setLayoutData(accountIDGridData);
 	}
 
-	public static IProject getCurrentProject(IWorkbenchWindow window) {
-		ISelectionService selectionService = window.getSelectionService();
-		ISelection selection = selectionService.getSelection();
-		IProject project = null;
-		if (selection instanceof IStructuredSelection) {
-			Object element = ((IStructuredSelection) selection).getFirstElement();
-			if (element instanceof IResource) {
-				project = ((IResource) element).getProject();
-			} else if (element instanceof PackageFragmentRoot) {
-				IJavaProject jProject = ((PackageFragmentRoot) element).getJavaProject();
-				project = jProject.getProject();
-			} else if (element instanceof IJavaElement) {
-				IJavaProject jProject = ((IJavaElement) element).getJavaProject();
-				project = jProject.getProject();
-			}
-		}
-		return project;
-	}
+//	public static IProject getCurrentProject(IWorkbenchWindow window) {
+//		ISelectionService selectionService = window.getSelectionService();
+//		ISelection selection = selectionService.getSelection();
+//		IProject project = null;
+//		if (selection instanceof IStructuredSelection) {
+//			Object element = ((IStructuredSelection) selection).getFirstElement();
+//			if (element instanceof IResource) {
+//				project = ((IResource) element).getProject();
+//			} else if (element instanceof PackageFragmentRoot) {
+//				IJavaProject jProject = ((PackageFragmentRoot) element).getJavaProject();
+//				project = jProject.getProject();
+//			} else if (element instanceof IJavaElement) {
+//				IJavaProject jProject = ((IJavaElement) element).getJavaProject();
+//				project = jProject.getProject();
+//			}
+//		}
+//		return project;
+//	}
 
-	public List<String> getScripIds(IWorkbenchWindow window) {
-		List<String> scriptIds = new ArrayList<String>();
-		ISelectionService selectionService = this.window.getSelectionService();
-		ISelection selection = selectionService.getSelection();
-		IProject project = null;
-		if (selection instanceof IStructuredSelection) {
-			Object element = ((IStructuredSelection) selection).getFirstElement();
-			if (element instanceof IResource) {
-				project = ((IResource) element).getProject();
-			} else if (element instanceof PackageFragmentRoot) {
-				IJavaProject jProject = ((PackageFragmentRoot) element).getJavaProject();
-				project = jProject.getProject();
-			} else if (element instanceof IJavaElement) {
-				IJavaProject jProject = ((IJavaElement) element).getJavaProject();
-				project = jProject.getProject();
-			}
-		}
-		IPath path = project.getRawLocation();
-		IContainer container = project.getWorkspace().getRoot().getContainerForLocation(path);
-		try {
-			IContainer con = (IContainer) container.findMember("Objects");
-			for (IResource res : con.members()) {
-				if (res.getFileExtension().equalsIgnoreCase("xml")) {
-					String id = res.getName().substring(0, res.getName().indexOf("."));
-					scriptIds.add(id);
-				}
-			}
-		} catch (CoreException e) {
-			e.printStackTrace();
-		}
-
-		return scriptIds;
-	}
+//	public List<String> getScripIds(IWorkbenchWindow window) {
+//		List<String> scriptIds = new ArrayList<String>();
+//		ISelectionService selectionService = this.window.getSelectionService();
+//		ISelection selection = selectionService.getSelection();
+//		IProject project = null;
+//		if (selection instanceof IStructuredSelection) {
+//			Object element = ((IStructuredSelection) selection).getFirstElement();
+//			if (element instanceof IResource) {
+//				project = ((IResource) element).getProject();
+//			} else if (element instanceof PackageFragmentRoot) {
+//				IJavaProject jProject = ((PackageFragmentRoot) element).getJavaProject();
+//				project = jProject.getProject();
+//			} else if (element instanceof IJavaElement) {
+//				IJavaProject jProject = ((IJavaElement) element).getJavaProject();
+//				project = jProject.getProject();
+//			}
+//		}
+//		IPath path = project.getRawLocation();
+//		IContainer container = project.getWorkspace().getRoot().getContainerForLocation(path);
+//		try {
+//			IContainer con = (IContainer) container.findMember("Objects");
+//			for (IResource res : con.members()) {
+//				if (res.getFileExtension().equalsIgnoreCase("xml")) {
+//					String id = res.getName().substring(0, res.getName().indexOf("."));
+//					scriptIds.add(id);
+//				}
+//			}
+//		} catch (CoreException e) {
+//			e.printStackTrace();
+//		}
+//
+//		return scriptIds;
+//	}
 
 	private boolean hasUnsupportedObjects(List<String> scriptIds, JSONObject supportedObjects) {
 		boolean hasUnsupportedObj = false;

@@ -50,6 +50,7 @@ public class ImpactAnalysisDialog extends TitleAreaDialog {
 	private String jobType;
 	private String timestamp;
 	private boolean cancelButtonPressed;
+	private List<String> scriptIDs;
 
 	public ImpactAnalysisDialog(Shell parentShell) {
 		super(parentShell);
@@ -86,6 +87,10 @@ public class ImpactAnalysisDialog extends TitleAreaDialog {
 	
 	public boolean isCancelButtonPressed() {
 		return this.cancelButtonPressed;
+	}
+	
+	public void setScriptIDs(List<String> scriptIds) {
+		this.scriptIDs = scriptIds;
 	}
 
 	@Override
@@ -147,14 +152,14 @@ public class ImpactAnalysisDialog extends TitleAreaDialog {
 			}
 		});
 		impactAnalysisThread.start();
-		diffResults = HttpImpactAnalysisService.newInstance().getDiff(this.parentShell, getScripIds(this.window),
+		diffResults = HttpImpactAnalysisService.newInstance().getDiff(this.parentShell, this.scriptIDs,
 				sourceAccountIdText.getText(), accountID);
 		super.okPressed();
 	}
 
 	private void processImpactAnalysis(String crID, String accountID) {
 		results = HttpImpactAnalysisService.newInstance().getImpactAnalysis(crID, this.parentShell,
-				getScripIds(this.window), accountID, this.jobType, this.timestamp);
+				this.scriptIDs, accountID, this.jobType, this.timestamp);
 	}
 
 	private void createAccountIDElement(Composite container) {
@@ -212,38 +217,38 @@ public class ImpactAnalysisDialog extends TitleAreaDialog {
 		changeRequestIDText.setLayoutData(changeRequestIDGridData);
 	}
 
-	public List<String> getScripIds(IWorkbenchWindow window) {
-		List<String> scriptIds = new ArrayList<String>();
-		ISelectionService selectionService = window.getSelectionService();
-		ISelection selection = selectionService.getSelection();
-		IProject project = null;
-		if (selection instanceof IStructuredSelection) {
-			Object element = ((IStructuredSelection) selection).getFirstElement();
-			if (element instanceof IResource) {
-				project = ((IResource) element).getProject();
-			} else if (element instanceof PackageFragmentRoot) {
-				IJavaProject jProject = ((PackageFragmentRoot) element).getJavaProject();
-				project = jProject.getProject();
-			} else if (element instanceof IJavaElement) {
-				IJavaProject jProject = ((IJavaElement) element).getJavaProject();
-				project = jProject.getProject();
-			}
-		}
-		IPath path = project.getRawLocation();
-		IContainer container = project.getWorkspace().getRoot().getContainerForLocation(path);
-		try {
-			IContainer con = (IContainer) container.findMember("Objects");
-			for (IResource res : con.members()) {
-				if (res.getFileExtension().equalsIgnoreCase("xml")) {
-					String id = res.getName().substring(0, res.getName().indexOf("."));
-					scriptIds.add(id);
-				}
-			}
-		} catch (CoreException e) {
-			e.printStackTrace();
-		}
-
-		return scriptIds;
-	}   
+//	public List<String> getScripIds(IWorkbenchWindow window) {
+//		List<String> scriptIds = new ArrayList<String>();
+//		ISelectionService selectionService = window.getSelectionService();
+//		ISelection selection = selectionService.getSelection();
+//		IProject project = null;
+//		if (selection instanceof IStructuredSelection) {
+//			Object element = ((IStructuredSelection) selection).getFirstElement();
+//			if (element instanceof IResource) {
+//				project = ((IResource) element).getProject();
+//			} else if (element instanceof PackageFragmentRoot) {
+//				IJavaProject jProject = ((PackageFragmentRoot) element).getJavaProject();
+//				project = jProject.getProject();
+//			} else if (element instanceof IJavaElement) {
+//				IJavaProject jProject = ((IJavaElement) element).getJavaProject();
+//				project = jProject.getProject();
+//			}
+//		}
+//		IPath path = project.getRawLocation();
+//		IContainer container = project.getWorkspace().getRoot().getContainerForLocation(path);
+//		try {
+//			IContainer con = (IContainer) container.findMember("Objects");
+//			for (IResource res : con.members()) {
+//				if (res.getFileExtension().equalsIgnoreCase("xml")) {
+//					String id = res.getName().substring(0, res.getName().indexOf("."));
+//					scriptIds.add(id);
+//				}
+//			}
+//		} catch (CoreException e) {
+//			e.printStackTrace();
+//		}
+//
+//		return scriptIds;
+//	}   
 
 }
