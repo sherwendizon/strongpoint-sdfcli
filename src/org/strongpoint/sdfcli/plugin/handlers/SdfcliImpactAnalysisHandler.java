@@ -79,10 +79,10 @@ public class SdfcliImpactAnalysisHandler extends AbstractHandler {
 				strongpointView.setTargetAccountId(impactAnalysisDialog.getTargetAccountId());
 				strongpointView.setTimestamp(timestamp.toString());
 				String statusStr = "";
-				if(impactAnalysisDialog.isCancelButtonPressed() && impactAnalysisDialog.close()) {
-					statusStr = "Cancelled";
-				} else {
+				if(impactAnalysisDialog.isOkButtonPressed()) {
 					statusStr = "In Progress";
+				} else {
+					statusStr = "Cancelled";
 				}
 				strongpointView.setStatus(statusStr);
 				strongpointView.populateTable(JobTypes.impact_analysis.getJobType());

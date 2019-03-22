@@ -45,7 +45,7 @@ public class TestConnectionDialog extends TitleAreaDialog{
 	private IWorkbenchWindow window;
 	private String selectedValue = "";
 	private Shell parentShell;
-	private boolean cancelButtonPressed;
+	private boolean okButtonPressed;
 
 	public TestConnectionDialog(Shell parentShell) {
 		super(parentShell);
@@ -64,8 +64,8 @@ public class TestConnectionDialog extends TitleAreaDialog{
 		return selectedValue;
 	}
 	
-	public boolean isCancelButtonPressed() {
-		return this.cancelButtonPressed;
+	public boolean isOkButtonPressed() {
+		return this.okButtonPressed;
 	}
 	
 	@Override
@@ -100,12 +100,6 @@ public class TestConnectionDialog extends TitleAreaDialog{
 	}
 	
 	@Override
-	protected void cancelPressed() {
-		this.cancelButtonPressed = true;
-		super.cancelPressed();
-	}
-	
-	@Override
 	protected void okPressed() {
 		System.out.println("[Logger] --- Test Connection Dialog OK button is pressed");
 		String accountID = "";
@@ -116,6 +110,7 @@ public class TestConnectionDialog extends TitleAreaDialog{
 			MessageDialog.openError(this.parentShell, "No user credentials found", "Please set user credentials in Strongpoint > Credentials Settings menu");
 		}		
 		results = HttpTestConnectionService.newInstance().getConnectionResults(accountID);
+		this.okButtonPressed = true;
 		super.okPressed();
 	}
 	

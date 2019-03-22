@@ -75,7 +75,7 @@ public class DeployDialog extends TitleAreaDialog {
 
 	private boolean isApproved;
 	
-	private boolean cancelButtonPressed;
+	private boolean okButtonPressed;
 	
 	private List<String> scriptIDs;
 	
@@ -122,8 +122,8 @@ public class DeployDialog extends TitleAreaDialog {
 		return this.isApproved;
 	}
 	
-	public boolean isCancelButtonPressed() {
-		return this.cancelButtonPressed;
+	public boolean isOkButtonPressed() {
+		return this.okButtonPressed;
 	}
 	
 	public void setScriptIDs(List<String> scriptIds) {
@@ -164,12 +164,6 @@ public class DeployDialog extends TitleAreaDialog {
 	protected Point getInitialSize() {
 		return new Point(450, 210);
 	}
-	
-	@Override
-	protected void cancelPressed() {
-		this.cancelButtonPressed = true;
-		super.cancelPressed();
-	}
 
 	@Override
 	protected void okPressed() {
@@ -182,6 +176,7 @@ public class DeployDialog extends TitleAreaDialog {
 			}
 		});
 		thread.start();
+		this.okButtonPressed = true;
 		super.okPressed();
 	}
 

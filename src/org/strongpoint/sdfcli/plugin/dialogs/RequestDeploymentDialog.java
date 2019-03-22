@@ -48,7 +48,7 @@ public class RequestDeploymentDialog extends TitleAreaDialog {
 	private String projectPath;
 	private String timestamp;
 	private JSONObject results;
-	private boolean cancelButtonPressed;
+	private boolean okButtonPressed;
 	private List<String> scriptIDs;
 	
 	public RequestDeploymentDialog(Shell parentShell) {
@@ -71,8 +71,8 @@ public class RequestDeploymentDialog extends TitleAreaDialog {
 		this.timestamp = timestamp;
 	}
 	
-	public boolean isCancelButtonPressed() {
-		return this.cancelButtonPressed;
+	public boolean isOkButtonPressed() {
+		return this.okButtonPressed;
 	}
 	
 	public void setScriptIDs(List<String> scriptIds) {
@@ -113,12 +113,6 @@ public class RequestDeploymentDialog extends TitleAreaDialog {
 	}
 	
 	@Override
-	protected void cancelPressed() {
-		this.cancelButtonPressed = true;
-		super.cancelPressed();
-	}
-	
-	@Override
 	protected void okPressed() {
 		System.out.println("[Logger] --- Request Deployment OK button is pressed");
 		int changeTypeInt = 0;
@@ -142,6 +136,7 @@ public class RequestDeploymentDialog extends TitleAreaDialog {
 			}
 		});
 		requestDeploymentThread.start();
+		this.okButtonPressed = true;
 		super.okPressed();
 	}
 	

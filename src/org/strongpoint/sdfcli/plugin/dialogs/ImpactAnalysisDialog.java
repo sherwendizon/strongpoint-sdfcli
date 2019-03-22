@@ -49,7 +49,7 @@ public class ImpactAnalysisDialog extends TitleAreaDialog {
 	private String projectPath;
 	private String jobType;
 	private String timestamp;
-	private boolean cancelButtonPressed;
+	private boolean okButtonPressed;
 	private List<String> scriptIDs;
 
 	public ImpactAnalysisDialog(Shell parentShell) {
@@ -85,8 +85,8 @@ public class ImpactAnalysisDialog extends TitleAreaDialog {
 		return selectedValue;
 	}
 	
-	public boolean isCancelButtonPressed() {
-		return this.cancelButtonPressed;
+	public boolean isOkButtonPressed() {
+		return this.okButtonPressed;
 	}
 	
 	public void setScriptIDs(List<String> scriptIds) {
@@ -127,12 +127,6 @@ public class ImpactAnalysisDialog extends TitleAreaDialog {
 	}
 	
 	@Override
-	protected void cancelPressed() {
-		this.cancelButtonPressed = true;
-		super.cancelPressed();
-	}
-
-	@Override
 	protected void okPressed() {
 		System.out.println("[Logger] --- Impact Analysis Dialog OK button is pressed");
 		final String crID = (changeRequestIDText.getText() != null) ? changeRequestIDText.getText() : "";
@@ -154,6 +148,7 @@ public class ImpactAnalysisDialog extends TitleAreaDialog {
 		impactAnalysisThread.start();
 		diffResults = HttpImpactAnalysisService.newInstance().getDiff(this.parentShell, this.scriptIDs,
 				sourceAccountIdText.getText(), accountID);
+		this.okButtonPressed = true;
 		super.okPressed();
 	}
 

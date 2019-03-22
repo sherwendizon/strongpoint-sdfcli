@@ -49,7 +49,7 @@ public class CredentialsDialog extends TitleAreaDialog{
 	
 	private Shell parentShell;
 	
-	private boolean cancelButtonPressed;
+	private boolean okButtonPressed;
 
 	public CredentialsDialog(Shell parentShell) {
 		super(parentShell);
@@ -60,8 +60,8 @@ public class CredentialsDialog extends TitleAreaDialog{
 		this.window = window;
 	}
 	
-	public boolean isCancelButtonPressed() {
-		return this.cancelButtonPressed;
+	public boolean isOkButtonPressed() {
+		return this.okButtonPressed;
 	}
 	
 	@Override
@@ -102,18 +102,13 @@ public class CredentialsDialog extends TitleAreaDialog{
 	}
 	
 	@Override
-	protected void cancelPressed() {
-		this.cancelButtonPressed = true;
-		super.cancelPressed();
-	}
-	
-	@Override
 	protected void okPressed() {
 		System.out.println("[Logger] --- Credentials Dialog OK button is pressed");
 		AddEditCredentialsService addEditCredentialsService = new AddEditCredentialsService();
 		addEditCredentialsService.setEmailStr(emailText.getText());
 		addEditCredentialsService.setPasswordStr(passwordText.getText());
 		addEditCredentialsService.writeToJSONFile();
+		this.okButtonPressed = true;
 		super.okPressed();
 	}
 	

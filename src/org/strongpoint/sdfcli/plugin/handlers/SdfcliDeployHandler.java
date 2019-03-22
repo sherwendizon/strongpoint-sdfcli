@@ -63,10 +63,10 @@ public class SdfcliDeployHandler extends AbstractHandler {
 			strongpointView.setTargetAccountId(deployDialog.getTargetAccountId());
 			strongpointView.setTimestamp(timestamp.toString());
 			String statusStr = "";
-			if(deployDialog.isCancelButtonPressed() && deployDialog.close()) {
-				statusStr = "Cancelled";
-			} else {
+			if(deployDialog.isOkButtonPressed()) {
 				statusStr = "In Progress";
+			} else {
+				statusStr = "Cancelled";
 			}
 //			if (deployDialog.getResults() != null && !deployDialog.getResults().get("code").toString().equalsIgnoreCase("200")) {
 //				statusStr = "Failed";
@@ -92,10 +92,10 @@ public class SdfcliDeployHandler extends AbstractHandler {
 					strongpointView.setTargetAccountId(deployDialog.getTargetAccountId());
 					strongpointView.setTimestamp(savedSearchTimestamp.toString());
 					String savedSearchStatusStr = "";
-					if(deployDialog.isCancelButtonPressed()) {
-						savedSearchStatusStr = "Cancelled";
-					} else {
+					if(deployDialog.isOkButtonPressed()) {
 						savedSearchStatusStr = "In Progress";
+					} else {
+						savedSearchStatusStr = "Cancelled";
 					}
 //					if (!obj.get("code").toString().equalsIgnoreCase("200")) {
 //						savedSearchStatusStr = "Failed";

@@ -40,7 +40,7 @@ public class AccountDialog extends TitleAreaDialog{
 	
 	private Shell parentShell;
 	
-	private boolean cancelButtonPressed;
+	private boolean okButtonPressed;
 
 	public AccountDialog(Shell parentShell) {
 		super(parentShell);
@@ -59,8 +59,8 @@ public class AccountDialog extends TitleAreaDialog{
 		return this.results;
 	}
 	
-	public boolean isCancelButtonPressed() {
-		return this.cancelButtonPressed;
+	public boolean isOkButtonPressed() {
+		return this.okButtonPressed;
 	}
 	
 	@Override
@@ -96,14 +96,9 @@ public class AccountDialog extends TitleAreaDialog{
 	}
 	
 	@Override
-	protected void cancelPressed() {
-		this.cancelButtonPressed = true;
-		super.cancelPressed();
-	}
-	
-	@Override
 	protected void okPressed() {
-		System.out.println("[Logger] --- Deploy Dialog OK button is pressed");	
+		System.out.println("[Logger] --- Account Dialog OK button is pressed");
+		this.okButtonPressed = true;
 		super.okPressed();
 	}
 	

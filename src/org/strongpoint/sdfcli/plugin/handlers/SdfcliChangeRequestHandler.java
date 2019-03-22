@@ -69,10 +69,10 @@ public class SdfcliChangeRequestHandler extends AbstractHandler{
 				strongpointView.setTargetAccountId(accountId);
 				strongpointView.setTimestamp(timestamp.toString());
 				String statusStr = "";
-				if (requestDeploymentDialog.isCancelButtonPressed() && requestDeploymentDialog.close()) {
-					statusStr = "Cancelled";
-				} else {
+				if (requestDeploymentDialog.isOkButtonPressed()) {
 					statusStr = "In Progress";
+				} else {
+					statusStr = "Cancelled";
 				}
 				strongpointView.setStatus(statusStr);
 				strongpointView.populateTable(JobTypes.request_deployment.getJobType());
