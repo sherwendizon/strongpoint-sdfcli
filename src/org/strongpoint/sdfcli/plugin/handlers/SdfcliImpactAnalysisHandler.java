@@ -99,7 +99,7 @@ public class SdfcliImpactAnalysisHandler extends AbstractHandler {
 	}
 	
 	private void launchDiff(JSONObject diffObj) {
-		if (diffObj != null) {
+		if (diffObj != null && !diffObj.get("message").toString().equalsIgnoreCase("failed")) {
 			JSONObject diffDataObj = (JSONObject) diffObj.get("data");
 			String diffUrl = "";
 			if (diffDataObj != null) {
@@ -149,7 +149,8 @@ public class SdfcliImpactAnalysisHandler extends AbstractHandler {
 					e.printStackTrace();
 				}
 			}
-		}		
+		}
+		
 	}
 
 	public static IProject getCurrentProject(IWorkbenchWindow window) {

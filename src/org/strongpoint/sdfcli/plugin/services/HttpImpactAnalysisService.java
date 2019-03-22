@@ -9,6 +9,7 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
 import org.eclipse.swt.widgets.Shell;
+import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
 import org.strongpoint.sdfcli.plugin.utils.Credentials;
@@ -31,49 +32,59 @@ public class HttpImpactAnalysisService {
 		JSONObject results = new JSONObject();
 //		ArrayList<String> list = new ArrayList<String>(getScripIds);
 //		String removeWhitespaces = list.toString().substring(1,list.toString().length()-1).replace(" ", "");
-		String removeWhitespaces = String.join(",",getScripIds);
-//		String strongpointURL = "https://rest.netsuite.com/app/site/hosting/restlet.nl?script=customscript_flo_impact_analysis_ext_res&deploy=customdeploy_flo_impact_analysis_ext_res&crId=" + changeRequestId/* + "&scriptIds=" + removeWhitespaces*/;
-		String strongpointURL = "";
-		if(changeRequestId != null && !changeRequestId.isEmpty()) {
-			strongpointURL = "https://rest.netsuite.com/app/site/hosting/restlet.nl?script=customscript_flo_impact_analysis_ext_res&deploy=customdeploy_flo_impact_analysis_ext_res&crId=" + changeRequestId;
-		} else {
-			strongpointURL = "https://rest.netsuite.com/app/site/hosting/restlet.nl?script=customscript_flo_impact_analysis_ext_res&deploy=customdeploy_flo_impact_analysis_ext_res&scriptIds=" + removeWhitespaces;
-			System.out.println("IMPACT ANALYSIS SCRIPT ID URL: " +strongpointURL);		
-		}
- 		System.out.println(strongpointURL);
-		HttpGet httpGet = null;
-		int statusCode;
-		String responseBodyStr;
-		CloseableHttpResponse response = null;
-		try {
-        	CloseableHttpClient client = HttpClients.createDefault();
-            httpGet = new HttpGet(strongpointURL);
-            httpGet.addHeader("Authorization", "NLAuth nlauth_account=" + accountID + ", nlauth_email=" + email + ", nlauth_signature=" + password + ", nlauth_role=3");
-            response = client.execute(httpGet);
-            HttpEntity entity = response.getEntity();
-            statusCode = response.getStatusLine().getStatusCode();
-            responseBodyStr = EntityUtils.toString(entity);
+		if(getScripIds.isEmpty()) {
+			results.put("code", 300);
+			results.put("accountId", accountID);
+			results.put("message", "Error: Please sync before doing Impact Analysis. \n - Project is not yet sync'd to Netsuite. \n - Environment copmpare will also not launch.");	
 			
-			if(statusCode >= 400) {
+			System.out.println("Writing to Impact Analysis error file...");
+			StrongpointDirectoryGeneralUtility.newInstance().writeToFile(results, jobType, accountID, timestamp);
+			System.out.println("Finished writing Impact Analysis error file...");	
+		} else {
+			String removeWhitespaces = String.join(",",getScripIds);
+//			String strongpointURL = "https://rest.netsuite.com/app/site/hosting/restlet.nl?script=customscript_flo_impact_analysis_ext_res&deploy=customdeploy_flo_impact_analysis_ext_res&crId=" + changeRequestId/* + "&scriptIds=" + removeWhitespaces*/;
+			String strongpointURL = "";
+			if(changeRequestId != null && !changeRequestId.isEmpty()) {
+				strongpointURL = "https://rest.netsuite.com/app/site/hosting/restlet.nl?script=customscript_flo_impact_analysis_ext_res&deploy=customdeploy_flo_impact_analysis_ext_res&crId=" + changeRequestId;
+			} else {
+				strongpointURL = "https://rest.netsuite.com/app/site/hosting/restlet.nl?script=customscript_flo_impact_analysis_ext_res&deploy=customdeploy_flo_impact_analysis_ext_res&scriptIds=" + removeWhitespaces;
+				System.out.println("IMPACT ANALYSIS SCRIPT ID URL: " +strongpointURL);		
+			}
+	 		System.out.println(strongpointURL);
+			HttpGet httpGet = null;
+			int statusCode;
+			String responseBodyStr;
+			CloseableHttpResponse response = null;
+			try {
+	        	CloseableHttpClient client = HttpClients.createDefault();
+	            httpGet = new HttpGet(strongpointURL);
+	            httpGet.addHeader("Authorization", "NLAuth nlauth_account=" + accountID + ", nlauth_email=" + email + ", nlauth_signature=" + password + ", nlauth_role=3");
+	            response = client.execute(httpGet);
+	            HttpEntity entity = response.getEntity();
+	            statusCode = response.getStatusLine().getStatusCode();
+	            responseBodyStr = EntityUtils.toString(entity);
+				
+				if(statusCode >= 400) {
+					results = new JSONObject();
+					results.put("error", statusCode);
+					throw new RuntimeException("HTTP Request returns a " +statusCode);
+				}
+				results = (JSONObject) JSONValue.parse(responseBodyStr);
+			} catch (Exception exception) {
+//				System.out.println("Request Deployment call error: " +exception.getMessage());
 				results = new JSONObject();
-				results.put("error", statusCode);
-				throw new RuntimeException("HTTP Request returns a " +statusCode);
+				results.put("error", exception.getMessage());
+//				throw new RuntimeException("Request Deployment call error: " +exception.getMessage());
+			} finally {
+				if (httpGet != null) {
+					httpGet.reset();
+				}
 			}
-			results = (JSONObject) JSONValue.parse(responseBodyStr);
-		} catch (Exception exception) {
-//			System.out.println("Request Deployment call error: " +exception.getMessage());
-			results = new JSONObject();
-			results.put("error", exception.getMessage());
-//			throw new RuntimeException("Request Deployment call error: " +exception.getMessage());
-		} finally {
-			if (httpGet != null) {
-				httpGet.reset();
-			}
+			
+			System.out.println("Writing to Impact Analysis file...");
+			StrongpointDirectoryGeneralUtility.newInstance().writeToFileImpactAnalysis(results, jobType, accountID, timestamp);
+			System.out.println("Finished writing Impact Analysis file...");			
 		}
-		
-		System.out.println("Writing to Impact Analysis file...");
-		StrongpointDirectoryGeneralUtility.newInstance().writeToFileImpactAnalysis(results, jobType, accountID, timestamp);
-		System.out.println("Finished writing Impact Analysis file...");
 		
 		return results;
 	}
@@ -87,42 +98,77 @@ public class HttpImpactAnalysisService {
 			password = creds.get("password").toString();
 		}
 		JSONObject results = new JSONObject();
-		String removeWhitespaces = String.join(",",getScripIds);
-		String strongpointURL = "";
-		strongpointURL = "https://rest.netsuite.com/app/site/hosting/restlet.nl?script=customscript_flo_get_diff_restlet&deploy=customdeploy_flo_get_diff_restlet&scriptIds=" + removeWhitespaces + "&target=" +targetAccountID;
-		System.out.println("DIFF SCRIPT ID URL: " +strongpointURL);		
- 		System.out.println(strongpointURL);
-		HttpGet httpGet = null;
-		int statusCode;
-		String responseBodyStr;
-		CloseableHttpResponse response = null;
-		try {
-        	CloseableHttpClient client = HttpClients.createDefault();
-            httpGet = new HttpGet(strongpointURL);
-            httpGet.addHeader("Authorization", "NLAuth nlauth_account=" + sourceAccountID + ", nlauth_email=" + email + ", nlauth_signature=" + password + ", nlauth_role=3");
-            response = client.execute(httpGet);
-            HttpEntity entity = response.getEntity();
-            statusCode = response.getStatusLine().getStatusCode();
-            responseBodyStr = EntityUtils.toString(entity);
+		if(getScripIds.isEmpty()) {
+			results.put("code", 300);
+			results.put("message", "Failed");
+			results.put("targetAccountId", targetAccountID);
+			JSONObject dataObj = new JSONObject();
+			dataObj.put("url", "Project is not yet sync'd to Netsuite. Please sync before doing Impact Analysis.");
+			results.put("data", dataObj);
 			
-			if(statusCode >= 400) {
+		} else {
+			String removeWhitespaces = String.join(",",getScripIds);
+			String strongpointURL = "";
+			strongpointURL = "https://rest.netsuite.com/app/site/hosting/restlet.nl?script=customscript_flo_get_diff_restlet&deploy=customdeploy_flo_get_diff_restlet&scriptIds=" + removeWhitespaces + "&target=" +targetAccountID;
+			System.out.println("DIFF SCRIPT ID URL: " +strongpointURL);		
+	 		System.out.println(strongpointURL);
+			HttpGet httpGet = null;
+			int statusCode;
+			String responseBodyStr;
+			CloseableHttpResponse response = null;
+			try {
+	        	CloseableHttpClient client = HttpClients.createDefault();
+	            httpGet = new HttpGet(strongpointURL);
+	            httpGet.addHeader("Authorization", "NLAuth nlauth_account=" + sourceAccountID + ", nlauth_email=" + email + ", nlauth_signature=" + password + ", nlauth_role=3");
+	            response = client.execute(httpGet);
+	            HttpEntity entity = response.getEntity();
+	            statusCode = response.getStatusLine().getStatusCode();
+	            responseBodyStr = EntityUtils.toString(entity);
+				
+				if(statusCode >= 400) {
+					results = new JSONObject();
+					results.put("error", statusCode);
+				}
+				results = (JSONObject) JSONValue.parse(responseBodyStr);
+			} catch (Exception exception) {
 				results = new JSONObject();
-				results.put("error", statusCode);
-				throw new RuntimeException("HTTP Request returns a " +statusCode);
+				results.put("error", exception.getMessage());
+			} finally {
+				if (httpGet != null) {
+					httpGet.reset();
+				}
 			}
-			results = (JSONObject) JSONValue.parse(responseBodyStr);
-		} catch (Exception exception) {
-			results = new JSONObject();
-			results.put("error", exception.getMessage());
-		} finally {
-			if (httpGet != null) {
-				httpGet.reset();
-			}
+			
+			results.put("targetAccountId", targetAccountID);
+			
 		}
-		
-		results.put("targetAccountId", targetAccountID);
 		
 		return results;
 	}
+	
+	private JSONArray errorMessages(String accountID, String action) {
+		JSONArray jsonArray = new JSONArray();
+		JSONObject errorObject1 = new JSONObject();
+		errorObject1.put("accountId", accountID);
+		errorObject1.put("message", "There was an error during "+action+". Please check the following: ");
+		jsonArray.add(errorObject1);
+
+		JSONObject errorObject2 = new JSONObject();
+		errorObject2.put("accountId", accountID);
+		errorObject2.put("message", " - Make sure your credentials are correct.");
+		jsonArray.add(errorObject2);
+
+		JSONObject errorObject3 = new JSONObject();
+		errorObject3.put("accountId", accountID);
+		errorObject3.put("message", " - Make sure the account ID is correct.");
+		jsonArray.add(errorObject3);
+		
+		JSONObject errorObject4 = new JSONObject();
+		errorObject4.put("accountId", accountID);
+		errorObject4.put("message", " - Make sure your filename and/or file path has no special characters(&, $, etc.).");
+		jsonArray.add(errorObject4);
+
+		return jsonArray;
+	}	
 	
 }
