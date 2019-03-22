@@ -39,7 +39,7 @@ public class SdfcliCredentialsHandler extends AbstractHandler {
 			strongpointView.setTargetAccountId(not_available);
 			strongpointView.setTimestamp(timestamp.toString());
 			String statusStr = "";
-			if(credentialsDialog.isCancelButtonPressed()) {
+			if(credentialsDialog.isCancelButtonPressed() && credentialsDialog.close()) {
 				statusStr = "Cancelled";
 			} else {
 				statusStr = "In Progress";
@@ -47,7 +47,7 @@ public class SdfcliCredentialsHandler extends AbstractHandler {
 			strongpointView.setStatus(statusStr);
 //			strongpointView.setProgressStatus(Integer.toString(100) + "%");
 			strongpointView.populateTable(JobTypes.credentials.getJobType());
-			if(!credentialsDialog.isCancelButtonPressed()) {
+			if(!credentialsDialog.isCancelButtonPressed() && !credentialsDialog.close()) {
 				StrongpointDirectoryGeneralUtility.newInstance().writeToFile(JobTypes.credentials.getJobType(), timestamp.toString());	
 			}
 		} catch (PartInitException e1) {

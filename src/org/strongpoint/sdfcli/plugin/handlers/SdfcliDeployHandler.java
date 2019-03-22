@@ -58,7 +58,7 @@ public class SdfcliDeployHandler extends AbstractHandler {
 			strongpointView.setTargetAccountId(deployDialog.getTargetAccountId());
 			strongpointView.setTimestamp(timestamp.toString());
 			String statusStr = "";
-			if(deployDialog.isCancelButtonPressed()) {
+			if(deployDialog.isCancelButtonPressed() && deployDialog.close()) {
 				statusStr = "Cancelled";
 			} else {
 				statusStr = "In Progress";

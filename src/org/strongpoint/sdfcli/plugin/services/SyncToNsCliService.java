@@ -82,7 +82,11 @@ public class SyncToNsCliService {
 			@Override
 			public void run() {
 				importObjectsCliResult(projectPath, JobTypes.import_objects.getJobType(), timestamp);
-				importFilesCliResult(projectPath, JobTypes.import_files.getJobType(), timestamp);
+				JSONObject importObj = StrongpointDirectoryGeneralUtility.newInstance().readImportJsonFile(projectPath);
+				JSONArray objs = (JSONArray) importObj.get("files");
+				if(!objs.isEmpty()) {
+					importFilesCliResult(projectPath, JobTypes.import_files.getJobType(), timestamp);
+				}
 				addDependenciesCliResult(projectPath, JobTypes.add_dependencies.getJobType(), timestamp);
 			}
 		});
@@ -389,9 +393,9 @@ public class SyncToNsCliService {
 					jsonArray.add(obj);
 				}
 
-				if (!this.isImportFileProcessDone.get()) {
-					jsonArray = errorMessages(accountID, "adding dependencies");
-				}
+//				if (!this.isImportFileProcessDone.get()) {
+//					jsonArray = errorMessages(accountID, "adding dependencies");
+//				}
 
 			} catch (IOException e) {
 				jsonArray = errorMessages(accountID, "adding dependencies");

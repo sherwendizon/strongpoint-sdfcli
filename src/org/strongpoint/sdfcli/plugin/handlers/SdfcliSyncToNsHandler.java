@@ -22,7 +22,10 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.handlers.HandlerUtil;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
 import org.strongpoint.sdfcli.plugin.services.SyncToNsCliService;
+import org.strongpoint.sdfcli.plugin.utils.StrongpointDirectoryGeneralUtility;
 import org.strongpoint.sdfcli.plugin.utils.enums.JobTypes;
 import org.strongpoint.sdfcli.plugin.views.StrongpointView;
 
@@ -51,7 +54,12 @@ public class SdfcliSyncToNsHandler extends AbstractHandler {
 			String projectPath = path.toPortableString();
 			syncToNsCliService.syncToNetsuiteOperation(projectPath, timestamp.toString());
 			createViewItem(viewPart, JobTypes.import_objects.getJobType(), syncToNsCliService.getAccountId(projectPath), timestamp.toString());
-			createViewItem(viewPart, JobTypes.import_files.getJobType(), syncToNsCliService.getAccountId(projectPath), timestamp.toString());
+			JSONObject importObj = StrongpointDirectoryGeneralUtility.newInstance().readImportJsonFile(projectPath);
+			JSONArray objs = (JSONArray) importObj.get("files");
+			System.out.println("Files size: " +objs.size());
+			if(!objs.isEmpty()) {
+				createViewItem(viewPart, JobTypes.import_files.getJobType(), syncToNsCliService.getAccountId(projectPath), timestamp.toString());	
+			}
 			createViewItem(viewPart, JobTypes.add_dependencies.getJobType(), syncToNsCliService.getAccountId(projectPath), timestamp.toString());
 		} else {
 			MessageDialog.openWarning(window.getShell(), "Warning", "Please select a project you would like to sync.");

@@ -121,7 +121,7 @@ public class DeployDialog extends TitleAreaDialog {
 	public boolean isCancelButtonPressed() {
 		return this.cancelButtonPressed;
 	}
-
+	
 	@Override
 	public void create() {
 		super.create();
