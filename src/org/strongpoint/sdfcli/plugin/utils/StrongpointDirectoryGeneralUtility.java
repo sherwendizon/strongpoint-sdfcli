@@ -106,7 +106,7 @@ public class StrongpointDirectoryGeneralUtility {
 			if(file.exists() && !file.isDirectory()) {
 				BufferedReader reader = new BufferedReader(new FileReader(file));
 				while((str = reader.readLine())  != null) {
-					if(str.contains("Error") || str.contains("error") || str.contains("No approved deployment") || str.contains("Account's Change Policy")) {
+					if(str.contains("Failed") || str.contains("Error") || str.contains("error") || str.contains("No approved deployment") || str.contains("Account's Change Policy")) {
 						isError = true;
 					}
 				}
@@ -260,7 +260,7 @@ public class StrongpointDirectoryGeneralUtility {
 			if (obj.get("code") == null) {
 				printWriter.println("An error occured while running Impact Analysis, user may not have access to account: " +targetAccountId);
 			} else if (obj != null && obj.get("code").toString().equals("300"))  {
-				printWriter.println("An error occured while running Impact Analysis." + obj.get("data").toString());
+				printWriter.println(obj.get("message").toString());
 			} else {
 				JSONObject dataObj = (JSONObject) obj.get("data");
 				printWriter.println("========================================================");
@@ -271,20 +271,24 @@ public class StrongpointDirectoryGeneralUtility {
 				printWriter.println("===============================================");
 				printWriter.println("|    CANNOT BE SAFELY DELETED OR MODIFIED     | ");
 				printWriter.println("===============================================");
-				for (int i = 0; i < notSafeArray.size(); i++) {
-					JSONObject impactedObject = (JSONObject) notSafeArray.get(i);
-					JSONArray impactedArray = (JSONArray) impactedObject.get("impacted");
-					JSONObject objectObject = (JSONObject) notSafeArray.get(i);
-					printWriter.println("Object: " + objectObject.get("object").toString());
-					JSONObject warningObject = (JSONObject) notSafeArray.get(i);
-					printWriter.println("Warning: " + warningObject.get("warning").toString());
-					printWriter.println("Impacted:");
-					for (int j = 0; j < impactedArray.size(); j++) {
-						JSONObject object = (JSONObject) impactedArray.get(j);
-						printWriter.println("    - Name: " + object.get("name").toString());
-						printWriter.println("    - ID: " + object.get("id").toString());
-					}
-					printWriter.println("===============================================");
+				if(notSafeArray.isEmpty()) {
+					printWriter.println("No impacted objects that cannot be safely deleted or modified.");
+				} else {
+					for (int i = 0; i < notSafeArray.size(); i++) {
+						JSONObject impactedObject = (JSONObject) notSafeArray.get(i);
+						JSONArray impactedArray = (JSONArray) impactedObject.get("impacted");
+						JSONObject objectObject = (JSONObject) notSafeArray.get(i);
+						printWriter.println("Object: " + objectObject.get("object").toString());
+						JSONObject warningObject = (JSONObject) notSafeArray.get(i);
+						printWriter.println("Warning: " + warningObject.get("warning").toString());
+						printWriter.println("Impacted:");
+						for (int j = 0; j < impactedArray.size(); j++) {
+							JSONObject object = (JSONObject) impactedArray.get(j);
+							printWriter.println("    - Name: " + object.get("name").toString());
+							printWriter.println("    - ID: " + object.get("id").toString());
+						}
+						printWriter.println("===============================================");
+					}	
 				}
 				// End NOT SAFE data display
 				// Start SAFE data display
@@ -292,10 +296,14 @@ public class StrongpointDirectoryGeneralUtility {
 				printWriter.println("===============================================");
 				printWriter.println("|      CAN BE SAFELY DELETED OR MODIFIED      | ");
 				printWriter.println("===============================================");
-				for (int i = 0; i < safeArray.size(); i++) {
-					JSONObject safeObject = (JSONObject) safeArray.get(i);
-					printWriter.println("Name: " + safeObject.get("name").toString());
-					printWriter.println("ID: " + safeObject.get("id").toString());
+				if(safeArray.isEmpty()) {
+					printWriter.println("No impacted objects that can be safely deleted or modified.");
+				} else {
+					for (int i = 0; i < safeArray.size(); i++) {
+						JSONObject safeObject = (JSONObject) safeArray.get(i);
+						printWriter.println("Name: " + safeObject.get("name").toString());
+						printWriter.println("ID: " + safeObject.get("id").toString());
+					}	
 				}
 				printWriter.println("===============================================");
 				// End SAFE data display
@@ -304,19 +312,23 @@ public class StrongpointDirectoryGeneralUtility {
 				printWriter.println("===============================================");
 				printWriter.println("|  INACTIVE CUSTOMIZATIONS (ALREADY DELETED)  | ");
 				printWriter.println("===============================================");
-				for (int i = 0; i < notActiveArray.size(); i++) {
-					JSONObject notActiveObject = (JSONObject) notActiveArray.get(i);
-					printWriter.println("Name: " + notActiveObject.get("name").toString());
-					String scriptId = "";
-					if (notActiveObject.get("scriptId") != null) {
-						scriptId = notActiveObject.get("scriptid").toString();
+				if(notActiveArray.isEmpty()) {
+					printWriter.println("No impacted objects that are inactive customizations.");
+				} else {
+					for (int i = 0; i < notActiveArray.size(); i++) {
+						JSONObject notActiveObject = (JSONObject) notActiveArray.get(i);
+						printWriter.println("Name: " + notActiveObject.get("name").toString());
+						String scriptId = "";
+						if (notActiveObject.get("scriptId") != null) {
+							scriptId = notActiveObject.get("scriptid").toString();
+						}
+						printWriter.println("Script ID: " + scriptId);
 					}
-					printWriter.println("Script ID: " + scriptId);
+					printWriter.println("===============================================");	
 				}
-				printWriter.println("===============================================");
 				// End NOT ACTIVE data display
-				printWriter.close();
 			}
+			printWriter.close();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}

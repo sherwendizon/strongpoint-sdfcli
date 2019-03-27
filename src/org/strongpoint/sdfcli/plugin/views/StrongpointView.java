@@ -87,6 +87,10 @@ public class StrongpointView extends ViewPart {
 	public void setProgressStatus(String progressStatus) {
 		this.progressStatus = progressStatus;
 	}
+	
+	public Table getTable() {
+		return this.table;
+	}
 
 	@Override
 	public void createPartControl(Composite parent) {

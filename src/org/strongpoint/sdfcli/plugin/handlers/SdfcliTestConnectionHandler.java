@@ -1,35 +1,17 @@
 package org.strongpoint.sdfcli.plugin.handlers;
 
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.sql.Timestamp;
 import java.util.Date;
 
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
-import org.eclipse.core.runtime.IPath;
-import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.ui.IViewPart;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
-import org.eclipse.ui.console.ConsolePlugin;
-import org.eclipse.ui.console.IConsole;
-import org.eclipse.ui.console.IConsoleConstants;
-import org.eclipse.ui.console.IConsoleManager;
-import org.eclipse.ui.console.IConsoleView;
-import org.eclipse.ui.console.MessageConsole;
-import org.eclipse.ui.console.MessageConsoleStream;
 import org.eclipse.ui.handlers.HandlerUtil;
-import org.json.simple.JSONArray;
-import org.json.simple.JSONObject;
-import org.strongpoint.sdfcli.plugin.dialogs.DeployDialog;
 import org.strongpoint.sdfcli.plugin.dialogs.TestConnectionDialog;
 import org.strongpoint.sdfcli.plugin.utils.StrongpointDirectoryGeneralUtility;
 import org.strongpoint.sdfcli.plugin.utils.enums.JobTypes;
@@ -64,7 +46,7 @@ public class SdfcliTestConnectionHandler extends AbstractHandler{
 			strongpointView.populateTable(JobTypes.test_connection.getJobType());
 			if(testConnectionDialog.isOkButtonPressed()) {
 				StrongpointDirectoryGeneralUtility.newInstance().writeToFile(testConnectionDialog.getResults(), JobTypes.test_connection.getJobType(),
-						testConnectionDialog.getTargetAccountId(), timestamp.toString());	
+						testConnectionDialog.getTargetAccountId(), timestamp.toString());
 			}
 		} catch (PartInitException e1) {
 			e1.printStackTrace();
