@@ -117,6 +117,8 @@ public class SyncToNsCliService {
 		if (importObj != null) {
 			String accountID = importObj.get("accountId").toString();
 			this.accountId = accountID;
+			String role = Credentials.getSDFRoleIdParam(accountID, true);
+			String roleMessage = Credentials.getSDFRoleIdParam(accountID, false);
 			JSONArray objs = (JSONArray) importObj.get("objects");
 			String[] objsStr = new String[objs.size()];
 			System.out.println("IMPORT OBJECTS: " + objs.toJSONString());
@@ -134,7 +136,7 @@ public class SyncToNsCliService {
 			System.out.println("Project Path: " + projectPath);
 			String importobjectsCommand = "(echo " + "\"" + password + "\"" + " ; yes | awk '{print \"YES\"}') | "
 					+ "sdfcli importobjects -account " + accountID + " -destinationfolder /Objects/ -email " + email
-					+ " -p " + projectPath + " -role 3 -scriptid "
+					+ " -p " + projectPath + " -role "+role+" -scriptid "
 					+ String.join(" ", objsStr).toString().replaceAll("null", "")
 					+ " -type ALL -url system.netsuite.com";
 			System.out.println(importobjectsCommand);
@@ -147,7 +149,7 @@ public class SyncToNsCliService {
 					String windowsImportObjectsCommand = "(echo " + password
 							+ " && (FOR /L %G IN (1,1,1500) DO @ECHO YES)) | " + "sdfcli importobjects -account "
 							+ accountID + " -destinationfolder /Objects/ -email " + email + " -p "
-							+ projectPath/* .replace("\\", "/") */ + " -role 3 -scriptid "
+							+ projectPath/* .replace("\\", "/") */ + " -role "+role+" -scriptid "
 							+ String.join(" ", objsStr).toString().replaceAll("null", "")
 							+ " -type ALL -url system.netsuite.com";
 					String[] windowsCommands = { "cmd.exe", "/c", "cd " + projectPath + " && cd " + projectPath,
@@ -163,7 +165,7 @@ public class SyncToNsCliService {
 					System.out.println("Windows: " + "(echo " + password
 							+ " && (FOR /L %G IN (1,1,1500) DO @ECHO YES)) | " + "sdfcli importobjects -account "
 							+ accountID + " -destinationfolder /Objects/ -email " + email + " -p "
-							+ projectPath/* .replace("\\", "/") */ + " -role 3 -scriptid "
+							+ projectPath/* .replace("\\", "/") */ + " -role "+role+" -scriptid "
 							+ String.join(" ", objsStr).toString().replaceAll("null", "")
 							+ " -type ALL -url system.netsuite.com");
 					changeRootDirectoryProcess = changeRootDirectory.exec(commands);
@@ -225,6 +227,8 @@ public class SyncToNsCliService {
 		JSONObject importObj = StrongpointDirectoryGeneralUtility.newInstance().readImportJsonFile(projectPath);
 		if (importObj != null) {
 			String accountID = importObj.get("accountId").toString();
+			String role = Credentials.getSDFRoleIdParam(accountID, true);
+			String roleMessage = Credentials.getSDFRoleIdParam(accountID, false);
 			JSONArray objs = (JSONArray) importObj.get("files");
 			String[] objsStr = new String[objs.size()];
 			String[] objsStrForWindows = new String[objs.size()];
@@ -247,7 +251,7 @@ public class SyncToNsCliService {
 			String importFilesCommand = "(echo " + "\"" + password + "\"" + " ; yes | awk '{print \"YES\"}') | "
 					+ "sdfcli importfiles -paths " + String.join(" ", objsStr).toString().replaceAll("null", "")
 					+ " -account " + accountID + " -email " + email + " -p " + projectPath
-					+ " -role 3 -url system.netsuite.com";
+					+ " -role "+role+" -url system.netsuite.com";
 			System.out.println("IMPORT FILES CMD: " + importFilesCommand);
 			String[] commands = { "/bin/bash", "-c", "cd ~ && cd " + projectPath + "/ && " + importFilesCommand };
 			Runtime changeRootDirectory = Runtime.getRuntime();
@@ -258,7 +262,7 @@ public class SyncToNsCliService {
 					String windowsImportFilesCommand = "(echo " + password
 							+ " && (FOR /L %G IN (1,1,1500) DO @ECHO YES)) | " + "sdfcli importfiles -paths "
 							+ String.join(" ", objsStrForWindows).toString().replaceAll("null", "") + " -account " + accountID
-							+ " -email " + email + " -p " + projectPath + " -role 3 -url system.netsuite.com";
+							+ " -email " + email + " -p " + projectPath + " -role "+role+" -url system.netsuite.com";
 					String[] windowsCommands = { "cmd.exe", "/c", "cd " + projectPath + " && cd " + projectPath,
 							" && " + windowsImportFilesCommand };
 					System.out.println("Windows: " + windowsImportFilesCommand);
@@ -272,7 +276,7 @@ public class SyncToNsCliService {
 					System.out.println("Windows: " + "(echo " + password
 							+ " && (FOR /L %G IN (1,1,1500) DO @ECHO YES)) | " + "sdfcli importfiles -paths "
 							+ String.join(" ", objsStrForWindows).toString().replaceAll("null", "") + " -account " + accountID
-							+ " -email " + email + " -p " + projectPath + " -role 3 -url system.netsuite.com");
+							+ " -email " + email + " -p " + projectPath + " -role "+role+" -url system.netsuite.com");
 					changeRootDirectoryProcess = changeRootDirectory.exec(commands);
 				}
 				changeRootDirectoryProcess.waitFor();
@@ -342,6 +346,8 @@ public class SyncToNsCliService {
 		JSONObject importObj = StrongpointDirectoryGeneralUtility.newInstance().readImportJsonFile(projectPath);
 		if (importObj != null) {
 			String accountID = importObj.get("accountId").toString();
+			String role = Credentials.getSDFRoleIdParam(accountID, true);
+			String roleMessage = Credentials.getSDFRoleIdParam(accountID, false);
 			JSONArray objs = (JSONArray) importObj.get("files");
 			String[] objsStr = new String[objs.size()];
 			System.out.println("IMPORT FILES: " + objs.toJSONString());
@@ -358,7 +364,7 @@ public class SyncToNsCliService {
 			StringBuffer cmdOutput = new StringBuffer();
 			System.out.println("Project Path: " + projectPath);
 			String addDependenciesCommand = "(yes | awk '{print \"YES\"}') | " + "sdfcli adddependencies -account "
-					+ accountID + " -all -email " + email + " -p " + projectPath + " -role 3 -url system.netsuite.com";
+					+ accountID + " -all -email " + email + " -p " + projectPath + " -role "+role+" -url system.netsuite.com";
 			System.out.println("ADD DEPENDENCIES CMD: " + addDependenciesCommand);
 			String[] commands = { "/bin/bash", "-c", "cd ~ && cd " + projectPath + "/ && " + addDependenciesCommand };
 			Runtime changeRootDirectory = Runtime.getRuntime();
@@ -368,7 +374,7 @@ public class SyncToNsCliService {
 				if (osName.indexOf("win") >= 0) {
 					String windowsAddDependenciesCommand = "((FOR /L %G IN (1,1,1000) DO @ECHO YES)) | "
 							+ "sdfcli adddependencies -account " + accountID + " -all -email " + email + " -p "
-							+ projectPath + " -role 3 -url system.netsuite.com";
+							+ projectPath + " -role "+role+" -url system.netsuite.com";
 					String[] windowsCommands = { "cmd.exe", "/c", "cd " + projectPath + " && cd " + projectPath,
 							" && " + windowsAddDependenciesCommand };
 					System.out.println("Windows: " + windowsAddDependenciesCommand);
@@ -381,7 +387,7 @@ public class SyncToNsCliService {
 					System.out.println("Linux or MacOS: " + addDependenciesCommand);
 					System.out.println("Windows: " + "((FOR /L %G IN (1,1,1000) DO @ECHO YES)) | "
 							+ "sdfcli adddependencies -account " + accountID + " -all -email " + email + " -p "
-							+ projectPath + " -role 3 -url system.netsuite.com");
+							+ projectPath + " -role "+role+" -url system.netsuite.com");
 					changeRootDirectoryProcess = changeRootDirectory.exec(commands);
 				}
 				changeRootDirectoryProcess.waitFor();

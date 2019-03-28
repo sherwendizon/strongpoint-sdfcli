@@ -47,6 +47,8 @@ public class HttpRequestDeploymentService {
         	accountId = importObj.get("accountId").toString();
         	parameters.put("parentCrId", importObj.get("parentCrId").toString());
         }
+		String role = Credentials.getSDFRoleIdParam(accountId, true);
+		String roleMessage = Credentials.getSDFRoleIdParam(accountId, false);
 		String strongpointURL = "https://rest.netsuite.com/app/site/hosting/restlet.nl?script=customscript_flo_create_cr_restlet&deploy=customdeploy_flo_create_cr_restlet";
 		
 		HttpPost httpPost = null;
@@ -56,7 +58,7 @@ public class HttpRequestDeploymentService {
 		try {
 			CloseableHttpClient client = HttpClients.createDefault();
 			httpPost = new HttpPost(strongpointURL);
-			httpPost.addHeader("Authorization", "NLAuth nlauth_account="+accountId+", nlauth_email="+emailCred+", nlauth_signature="+passwordCred+", nlauth_role=3");
+			httpPost.addHeader("Authorization", "NLAuth nlauth_account="+accountId+", nlauth_email="+emailCred+", nlauth_signature="+passwordCred+", nlauth_role="+role);
 			System.out.println("PARAMETERS: " +parameters.toJSONString());
 			httpPost.addHeader("Content-type", "application/json");
 			StringEntity stringEntity = new StringEntity(parameters.toJSONString(), ContentType.APPLICATION_JSON);
@@ -66,14 +68,32 @@ public class HttpRequestDeploymentService {
 			statusCode = httpResponse.getStatusLine().getStatusCode();
 			responseBodyStr = EntityUtils.toString(entity);
 			
-			if(statusCode >= 400) {
-				throw new RuntimeException("HTTP Request returns a " +statusCode);
+			JSONObject resultObj = (JSONObject) JSONValue.parse(responseBodyStr);
+			System.out.println("CR results: " +responseBodyStr);
+			if(!resultObj.get("code").toString().equalsIgnoreCase("200")) {
+				if(role.equals("")) {
+					results.put("code", 300);
+					results.put("accountId", accountId);
+					results.put("message", "Error: " +roleMessage);	
+				} else {
+					results.put("code", 300);
+					results.put("accountId", accountId);
+					results.put("message", "Error: " +resultObj.get("message").toString());					
+				}
+			} else {
+				results = (JSONObject) JSONValue.parse(responseBodyStr);	
 			}
-			results = (JSONObject) JSONValue.parse(responseBodyStr);
 		} catch (Exception exception) {
-			results.put("code", 404);
-			results.put("message", "Error. HTTP Request returns a 404. Cannot reach NS endpoint");
-			results.put("data", null);
+			if(role.equals("")) {
+				results.put("code", 300);
+				results.put("accountId", accountId);
+				results.put("message", "Error: " +roleMessage);	
+			} else {
+				results.put("code", 404);
+				results.put("accountId", accountId);
+				results.put("message", "Error. HTTP Request returns a 404. Cannot reach NS endpoint");
+				results.put("data", null);					
+			}
 		} finally {
 			if (httpPost != null) {
 				httpPost.reset();
@@ -102,7 +122,9 @@ public class HttpRequestDeploymentService {
         JSONObject importObj = StrongpointDirectoryGeneralUtility.newInstance().readImportJsonFile(projectPath);
         if(importObj != null) {
         	accountId = importObj.get("accountId").toString();
-        }		
+        }
+		String role = Credentials.getSDFRoleIdParam(accountId, true);
+		String roleMessage = Credentials.getSDFRoleIdParam(accountId, false);
 		String urlString = "https://rest.netsuite.com/app/site/hosting/restlet.nl?script=customscript_flo_create_cr_restlet&deploy=customdeploy_flo_create_cr_restlet";
         int statusCode;
         String strRespBody;
@@ -111,20 +133,36 @@ public class HttpRequestDeploymentService {
         try {
         	CloseableHttpClient client = HttpClients.createDefault();
             httpGet = new HttpGet(urlString);
-            httpGet.addHeader("Authorization", "NLAuth nlauth_account="+accountId+", nlauth_email="+emailCred+", nlauth_signature="+passwordCred+", nlauth_role=3");
+            httpGet.addHeader("Authorization", "NLAuth nlauth_account="+accountId+", nlauth_email="+emailCred+", nlauth_signature="+passwordCred+", nlauth_role="+role);
             response = client.execute(httpGet);
             HttpEntity entity = response.getEntity();
             statusCode = response.getStatusLine().getStatusCode();
             strRespBody = EntityUtils.toString(entity);
-            if (statusCode >= 400) {
-            	throw new RuntimeException("HTTP Request returns a " +statusCode);
-            } else {
+			JSONObject resultObj = (JSONObject) JSONValue.parse(strRespBody);
+			if(!resultObj.get("code").toString().equalsIgnoreCase("200")) {
+				if(role.equals("")) {
+					results.put("code", 300);
+					results.put("accountId", accountId);
+					results.put("message", "Error: " +roleMessage);	
+				} else {
+					results.put("code", 300);
+					results.put("accountId", accountId);
+					results.put("message", "Error: " +resultObj.get("message").toString());					
+				}
+			} else {
                 results = (JSONObject) JSONValue.parse(strRespBody);
             }
         } catch (Exception exception) {
-			results.put("code", 404);
-			results.put("message", "Error. HTTP Request returns a 404. Cannot reach NS endpoint");
-			results.put("data", null);;
+			if(role.equals("")) {
+				results.put("code", 300);
+				results.put("accountId", accountId);
+				results.put("message", "Error: " +roleMessage);	
+			} else {
+				results.put("code", 404);
+				results.put("accountId", accountId);
+				results.put("message", "Error. HTTP Request returns a 404. Cannot reach NS endpoint");
+				results.put("data", null);					
+			}
         } finally {
 			if (httpGet != null) {
 				httpGet.reset();

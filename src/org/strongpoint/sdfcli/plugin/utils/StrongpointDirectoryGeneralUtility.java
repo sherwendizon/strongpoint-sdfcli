@@ -223,7 +223,11 @@ public class StrongpointDirectoryGeneralUtility {
 	            	printWriter.println("Account ID: " + importObj.get("accountId").toString());
 	            }
 	            System.out.println("REQUEST DEPLOYMENT RESULT: " +obj.toJSONString());
-	            printWriter.println("Deployment Record ID: " + obj.get("id").toString());
+	            if(obj.get("id") == null) {
+	            	printWriter.println(obj.get("message").toString());
+	            } else {
+	            	printWriter.println("Deployment Record ID: " + obj.get("id").toString());	
+	            }
 				printWriter.close();
 			}
 		} catch (IOException e) {

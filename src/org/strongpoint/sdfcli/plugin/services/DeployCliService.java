@@ -32,6 +32,7 @@ public class DeployCliService {
 
 	public JSONObject deployCliResult(String accountID, String email, String password, String sdfcliPath,
 			String projectPath, Shell parentShell, String jobType, String timestamp) {
+		String role = Credentials.getSDFRoleIdParam(accountID, true);
 		JSONObject results = new JSONObject();
 		JSONArray jsonArray = new JSONArray();
 		StringBuffer cmdOutput = new StringBuffer();
@@ -40,7 +41,7 @@ public class DeployCliService {
 		System.out.println("SDFCLI Path: " + sdfcliPath);
 		String deployCommand = "(echo " + "\"" + password + "\""
 				+ " ; yes | awk '{print \"YES\"}' ; yes | awk '{print \"YES\"}') | " + "sdfcli deploy -account " + accountID + " -email " + email + " -p " + projectPath
-				+ " -role 3 -url system.netsuite.com -l /webdev/sdf/sdk/test.log";
+				+ " -role "+role+" -url system.netsuite.com -l /webdev/sdf/sdk/test.log";
 //		String deployCommand = sdfcliPath +"sdfcli deploy";
 		String[] commands = { "/bin/bash", "-c", "cd ~ && cd " + projectPath + "/ && " + deployCommand };
 		Runtime changeRootDirectory = Runtime.getRuntime();
@@ -51,7 +52,7 @@ public class DeployCliService {
 				String windowsDeployCommand = "(echo " + password
 						+ " && (FOR /L %G IN (1,1,1500) DO @ECHO YES) && (FOR /L %G IN (1,1,1500) DO @ECHO YES)) | "
 						+ "sdfcli deploy -account " + accountID + " -email " + email + " -p " + projectPath
-						+ " -role 3 -url system.netsuite.com";
+						+ " -role "+role+" -url system.netsuite.com";
 				String[] windowsCommands = { "cmd.exe", "/c", "cd " + projectPath + " && cd " + projectPath,
 						" && " + windowsDeployCommand };
 				System.out.println("Windows: " + windowsDeployCommand);
@@ -101,6 +102,8 @@ public class DeployCliService {
 
 	public JSONObject isApprovedDeployment(Shell shell, String accountID, String email, String password,
 			String params) {
+		String role = Credentials.getSDFRoleIdParam(accountID, true);
+		String roleMessage = Credentials.getSDFRoleIdParam(accountID, false);
 		JSONObject results = new JSONObject();
 		String strongpointURL = "";
 //		if(params.contains(",")) {
@@ -121,15 +124,20 @@ public class DeployCliService {
 			System.out.println("Email: " + email);
 			System.out.println("password: " + password);
 			httpGet.addHeader("Authorization", "NLAuth nlauth_account=" + accountID + ", nlauth_email=" + email
-					+ ", nlauth_signature=" + password + ", nlauth_role=3");
+					+ ", nlauth_signature=" + password + ", nlauth_role="+role);
 			response = client.execute(httpGet);
 			HttpEntity entity = response.getEntity();
 			statusCode = response.getStatusLine().getStatusCode();
 			responseBodyStr = EntityUtils.toString(entity);
 			System.out.println("IS APPROVE RESPONSE: " + responseBodyStr);
-			if (statusCode >= 400) {
+			JSONObject resultObj = (JSONObject) JSONValue.parse(responseBodyStr);
+			if (!resultObj.get("code").toString().equalsIgnoreCase("200")) {
 				results = new JSONObject();
-				results.put("message", responseBodyStr);
+				if(role.equals("")) {
+					results.put("message", roleMessage);
+				} else {
+					results.put("message", responseBodyStr);	
+				}
 				JSONObject result = new JSONObject();
 				result.put("result", false);
 				results.put("data", result);
@@ -157,6 +165,8 @@ public class DeployCliService {
 	}
 
 	public JSONObject getSupportedObjects(String accountID, String email, String password) {
+		String role = Credentials.getSDFRoleIdParam(accountID, true);
+		String roleMessage = Credentials.getSDFRoleIdParam(accountID, false);
 		JSONObject results = new JSONObject();
 		String strongpointURL = "https://rest.netsuite.com/app/site/hosting/restlet.nl?script=customscript_flo_get_supported_objects&deploy=customdeploy_flo_get_supported_objects";
 		System.out.println(strongpointURL);
@@ -168,15 +178,19 @@ public class DeployCliService {
 			CloseableHttpClient client = HttpClients.createDefault();
 			httpGet = new HttpGet(strongpointURL);
 			httpGet.addHeader("Authorization", "NLAuth nlauth_account=" + accountID + ", nlauth_email=" + email
-					+ ", nlauth_signature=" + password + ", nlauth_role=3");
+					+ ", nlauth_signature=" + password + ", nlauth_role="+role);
 			response = client.execute(httpGet);
 			HttpEntity entity = response.getEntity();
 			statusCode = response.getStatusLine().getStatusCode();
 			responseBodyStr = EntityUtils.toString(entity);
-
-			if (statusCode >= 400) {
+			JSONObject resultObj = (JSONObject) JSONValue.parse(responseBodyStr);
+			if (!resultObj.get("code").toString().equalsIgnoreCase("200")) {
 				results = new JSONObject();
-				results.put("message", responseBodyStr);
+				if(role.equals("")) {
+					results.put("message", roleMessage);	
+				} else {
+					results.put("message", responseBodyStr);
+				}
 				JSONObject result = new JSONObject();
 				results.put("data", null);
 				results.put("code", statusCode);
@@ -199,6 +213,8 @@ public class DeployCliService {
 
 	public JSONArray deploySavedSearches(String accountID, String email, String password, String sdfcliPath,
 			String projectPath, Shell parentShell, String jobType, Map<String, String> ssTimestamps, boolean isApproved, String message) {
+		String role = Credentials.getSDFRoleIdParam(accountID, true);
+		String roleMessage = Credentials.getSDFRoleIdParam(accountID, false);
 		JSONArray results = new JSONArray();
 		JSONObject creds = Credentials.getCredentialsFromFile();
 		String emailCred = "";
@@ -231,7 +247,7 @@ public class DeployCliService {
 						CloseableHttpClient client = HttpClients.createDefault();
 						httpPost = new HttpPost(strongpointURL);
 						httpPost.addHeader("Authorization", "NLAuth nlauth_account=" + accountID + ", nlauth_email="
-								+ emailCred + ", nlauth_signature=" + passwordCred + ", nlauth_role=3");
+								+ emailCred + ", nlauth_signature=" + passwordCred + ", nlauth_role="+role);
 						System.out.println("PARAMETERS: " + obj.toJSONString());
 						httpPost.addHeader("Content-type", "application/json");
 						StringEntity stringEntity = new StringEntity(obj.toJSONString(), ContentType.APPLICATION_JSON);
@@ -241,17 +257,23 @@ public class DeployCliService {
 						statusCode = httpResponse.getStatusLine().getStatusCode();
 						responseBodyStr = EntityUtils.toString(entity);
 
-						if (statusCode >= 400) {
+						JSONObject resultObject = (JSONObject) JSONValue.parse(responseBodyStr);
+						if (!resultObject.get("code").toString().equalsIgnoreCase("200")) {
 							JSONObject httpErrorMessage = new JSONObject();
+							if(role.equals("")) {
+								httpErrorMessage.put("message", "Error. " +roleMessage);
+							} else {
+								httpErrorMessage.put("message", "Error. HTTP Request has an error.");
+							}
 							httpErrorMessage.put("code", statusCode);
-							httpErrorMessage.put("message", "Error. HTTP Request has an error.");
 							httpErrorMessage.put("data", null);
 							httpErrorMessage.put("filename", filename);
 							results.add(httpErrorMessage);
+						} else {
+							JSONObject resultObj = (JSONObject) JSONValue.parse(responseBodyStr);
+							resultObj.put("filename", filename);
+							results.add(resultObj);	
 						}
-						JSONObject resultObj = (JSONObject) JSONValue.parse(responseBodyStr);
-						resultObj.put("filename", filename);
-						results.add(resultObj);
 					} catch (Exception exception) {
 						JSONObject httpErrorMessage = new JSONObject();
 						httpErrorMessage.put("code", 404);

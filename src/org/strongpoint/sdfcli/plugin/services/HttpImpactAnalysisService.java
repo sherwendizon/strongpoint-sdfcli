@@ -24,6 +24,8 @@ public class HttpImpactAnalysisService {
 	public JSONObject getImpactAnalysis(String changeRequestId, Shell shell, List<String> getScripIds, String accountID, String jobType, String timestamp) {
 		String email = "";
 		String password = "";
+		String role = Credentials.getSDFRoleIdParam(accountID, true);
+		String roleMessage = Credentials.getSDFRoleIdParam(accountID, false);
 		JSONObject creds = Credentials.getCredentialsFromFile();
 		if(creds != null) {
 			email = creds.get("email").toString();
@@ -58,22 +60,29 @@ public class HttpImpactAnalysisService {
 			try {
 	        	CloseableHttpClient client = HttpClients.createDefault();
 	            httpGet = new HttpGet(strongpointURL);
-	            httpGet.addHeader("Authorization", "NLAuth nlauth_account=" + accountID + ", nlauth_email=" + email + ", nlauth_signature=" + password + ", nlauth_role=3");
+	            httpGet.addHeader("Authorization", "NLAuth nlauth_account=" + accountID + ", nlauth_email=" + email + ", nlauth_signature=" + password + ", nlauth_role="+role);
 	            response = client.execute(httpGet);
 	            HttpEntity entity = response.getEntity();
 	            statusCode = response.getStatusLine().getStatusCode();
 	            responseBodyStr = EntityUtils.toString(entity);
-				
-				if(statusCode >= 400) {
-					results = new JSONObject();
-					results.put("error", statusCode);
-					throw new RuntimeException("HTTP Request returns a " +statusCode);
+
+				JSONObject resultObj = (JSONObject) JSONValue.parse(responseBodyStr);
+				if(!resultObj.get("code").toString().equalsIgnoreCase("200")) {
+					if(role.equals("")) {
+						results.put("code", 300);
+						results.put("accountId", accountID);
+						results.put("message", "Error: " +roleMessage);	
+					}
+				} else {
+					results = (JSONObject) JSONValue.parse(responseBodyStr);	
 				}
-				results = (JSONObject) JSONValue.parse(responseBodyStr);
 			} catch (Exception exception) {
 //				System.out.println("Request Deployment call error: " +exception.getMessage());
-				results = new JSONObject();
-				results.put("error", exception.getMessage());
+				if(role.equals("")) {
+					results.put("code", 300);
+					results.put("accountId", accountID);
+					results.put("message", "Error: " +roleMessage);	
+				}
 //				throw new RuntimeException("Request Deployment call error: " +exception.getMessage());
 			} finally {
 				if (httpGet != null) {
@@ -92,6 +101,8 @@ public class HttpImpactAnalysisService {
 	public JSONObject getDiff(Shell shell, List<String> getScripIds, String sourceAccountID, String targetAccountID) {
 		String email = "";
 		String password = "";
+		String role = Credentials.getSDFRoleIdParam(sourceAccountID, true);
+		String roleMessage = Credentials.getSDFRoleIdParam(sourceAccountID, false);
 		JSONObject creds = Credentials.getCredentialsFromFile();
 		if(creds != null) {
 			email = creds.get("email").toString();
@@ -119,20 +130,28 @@ public class HttpImpactAnalysisService {
 			try {
 	        	CloseableHttpClient client = HttpClients.createDefault();
 	            httpGet = new HttpGet(strongpointURL);
-	            httpGet.addHeader("Authorization", "NLAuth nlauth_account=" + sourceAccountID + ", nlauth_email=" + email + ", nlauth_signature=" + password + ", nlauth_role=3");
+	            httpGet.addHeader("Authorization", "NLAuth nlauth_account=" + sourceAccountID + ", nlauth_email=" + email + ", nlauth_signature=" + password + ", nlauth_role="+role);
 	            response = client.execute(httpGet);
 	            HttpEntity entity = response.getEntity();
 	            statusCode = response.getStatusLine().getStatusCode();
 	            responseBodyStr = EntityUtils.toString(entity);
 				
-				if(statusCode >= 400) {
-					results = new JSONObject();
-					results.put("error", statusCode);
+	            JSONObject resultObj = (JSONObject) JSONValue.parse(responseBodyStr);
+				if(!resultObj.get("code").toString().equalsIgnoreCase("200")) {
+					if(role.equals("")) {
+						results.put("code", 300);
+						results.put("accountId", sourceAccountID);
+						results.put("message", "Error: " +roleMessage);	
+					}
+				} else {
+					results = (JSONObject) JSONValue.parse(responseBodyStr);	
 				}
-				results = (JSONObject) JSONValue.parse(responseBodyStr);
 			} catch (Exception exception) {
-				results = new JSONObject();
-				results.put("error", exception.getMessage());
+				if(role.equals("")) {
+					results.put("code", 300);
+					results.put("accountId", sourceAccountID);
+					results.put("message", "Error: " +roleMessage);	
+				}
 			} finally {
 				if (httpGet != null) {
 					httpGet.reset();
