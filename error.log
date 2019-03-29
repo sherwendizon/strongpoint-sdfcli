@@ -13,3 +13,4 @@
 2019-03-21 20:44:38,401 - The file cabinet path(s) "Mfg/AddOppItem_Client.js" are invalid. The file cabinet path must start with either of the following: "/SuiteScripts,/Templates/E-mail Templates,/Templates/Marketing Templates".
 2019-03-21 20:45:20,514 - The file cabinet path(s) "Mfg/AddOppItem_Client.js" are invalid. The file cabinet path must start with either of the following: "/SuiteScripts,/Templates/E-mail Templates,/Templates/Marketing Templates".
 2019-03-21 20:46:09,088 - The file cabinet path(s) "Mfg/AddOppItem_Client.js" are invalid. The file cabinet path must start with either of the following: "/SuiteScripts,/Templates/E-mail Templates,/Templates/Marketing Templates".
+2019-03-29 20:02:08,154 - Value is expected here instead of "-type".

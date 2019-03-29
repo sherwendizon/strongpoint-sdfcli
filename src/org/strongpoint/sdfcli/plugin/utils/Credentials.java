@@ -51,7 +51,7 @@ public class Credentials {
 	public static final String getSDFRoleIdParam(String accountId, boolean isUsedForParameter) {
 		String role = "";
 		if(!isUsedForParameter) {
-			role = " - User has no Strongpoint Developer Role for this account: " + accountId;
+			role = " - User has no Strongpoint SDF Developer Role for this account: " + accountId;
 		}
 		JSONObject credentials = getCredentialsFromFile();
 		JSONArray roles = (JSONArray) credentials.get("roles");

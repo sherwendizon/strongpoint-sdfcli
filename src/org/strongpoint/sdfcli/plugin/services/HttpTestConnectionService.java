@@ -19,8 +19,8 @@ public class HttpTestConnectionService {
 
 	public JSONObject getConnectionResults(String accountID) {
 		String errorMessage = "Error during test connection. These are the possible reasons: \n - Release and Deploy is not available in this account: "+accountID+"\n - User does not have any credentials for this account: ";
-		String email = "joanna.paclibar@strongpoint.io";
-		String password = "FLODocs1234!";
+		String email = "";
+		String password = "";
 		String role = Credentials.getSDFRoleIdParam(accountID, true);
 		String roleMessage = Credentials.getSDFRoleIdParam(accountID, false);
 		JSONObject creds = Credentials.getCredentialsFromFile();
@@ -28,7 +28,6 @@ public class HttpTestConnectionService {
 			email = creds.get("email").toString();
 			password = creds.get("password").toString();
 		}
-		System.out.println("Test Connection - Email: " + email + " Password: " + password + " Account ID: " + accountID);
 		JSONObject results = new JSONObject();
 		String strongpointURL = Accounts.getProductionRestDomain(accountID) + "/app/site/hosting/restlet.nl?script=customscript_flo_check_connection&deploy=customdeploy_flo_check_connection";
 		if(Accounts.isSandboxAccount(accountID)) {

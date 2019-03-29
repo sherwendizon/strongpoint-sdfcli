@@ -127,7 +127,6 @@ public class DeployCliService {
 			httpGet = new HttpGet(strongpointURL);
 			System.out.println("Account ID: " + accountID);
 			System.out.println("Email: " + email);
-			System.out.println("password: " + password);
 			System.out.println("Role: " + role);
 			httpGet.addHeader("Authorization", "NLAuth nlauth_account=" + accountID + ", nlauth_email=" + email
 					+ ", nlauth_signature=" + password + ", nlauth_role="+role);

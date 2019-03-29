@@ -68,6 +68,8 @@ public class AccountDialog extends TitleAreaDialog{
 		super.create();
 		setTitle("NS Account Settings");
 		setMessage("Add/Edit Netsuite Accounts", IMessageProvider.INFORMATION);
+		results = new JSONObject();
+		results.put("okButton", "true");
 	}
 	
 	@Override
@@ -96,9 +98,19 @@ public class AccountDialog extends TitleAreaDialog{
 	}
 	
 	@Override
+	protected void cancelPressed() {
+		results = new JSONObject();
+		results.put("okButton", "false");
+		super.cancelPressed();
+	}
+	
+	@Override
 	protected void okPressed() {
 		System.out.println("[Logger] --- Account Dialog OK button is pressed");
 		this.okButtonPressed = true;
+		results = new JSONObject();
+		results.put("okButton", "true");
+		System.out.println("DIALOG: " +this.okButtonPressed);
 		super.okPressed();
 	}
 	
