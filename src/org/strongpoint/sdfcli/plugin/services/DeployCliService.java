@@ -21,6 +21,7 @@ import org.eclipse.swt.widgets.Shell;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
+import org.strongpoint.sdfcli.plugin.utils.Accounts;
 import org.strongpoint.sdfcli.plugin.utils.Credentials;
 import org.strongpoint.sdfcli.plugin.utils.StrongpointDirectoryGeneralUtility;
 
@@ -112,6 +113,10 @@ public class DeployCliService {
 //		} /*else {
 //			strongpointURL = "https://rest.netsuite.com/app/site/hosting/restlet.nl?script=customscript_flo_get_approval_status&deploy=customdeploy_flo_get_approval_status&crId=" + params + "&scriptIds=" + removeWhitespaces;
 //		}*/
+		if(Accounts.isSandboxAccount(accountID)) {
+			strongpointURL = Accounts.getSandboxRestDomain(accountID) + "/app/site/hosting/restlet.nl?script=customscript_flo_get_approval_status&deploy=customdeploy_flo_get_approval_status&scriptIds="
+					+ params;
+		}
 		System.out.println("IS DEPLOYMENT REQUEST URL: " + strongpointURL);
 		HttpGet httpGet = null;
 		int statusCode;
@@ -123,6 +128,7 @@ public class DeployCliService {
 			System.out.println("Account ID: " + accountID);
 			System.out.println("Email: " + email);
 			System.out.println("password: " + password);
+			System.out.println("Role: " + role);
 			httpGet.addHeader("Authorization", "NLAuth nlauth_account=" + accountID + ", nlauth_email=" + email
 					+ ", nlauth_signature=" + password + ", nlauth_role="+role);
 			response = client.execute(httpGet);
@@ -136,7 +142,7 @@ public class DeployCliService {
 				if(role.equals("")) {
 					results.put("message", roleMessage);
 				} else {
-					results.put("message", responseBodyStr);	
+					results.put("message", resultObj.get("message").toString());	
 				}
 				JSONObject result = new JSONObject();
 				result.put("result", false);
@@ -169,6 +175,9 @@ public class DeployCliService {
 		String roleMessage = Credentials.getSDFRoleIdParam(accountID, false);
 		JSONObject results = new JSONObject();
 		String strongpointURL = "https://rest.netsuite.com/app/site/hosting/restlet.nl?script=customscript_flo_get_supported_objects&deploy=customdeploy_flo_get_supported_objects";
+		if(Accounts.isSandboxAccount(accountID)) {
+			strongpointURL = Accounts.getSandboxRestDomain(accountID) + "/app/site/hosting/restlet.nl?script=customscript_flo_get_supported_objects&deploy=customdeploy_flo_get_supported_objects";
+		}
 		System.out.println(strongpointURL);
 		HttpGet httpGet = null;
 		int statusCode;
@@ -189,7 +198,7 @@ public class DeployCliService {
 				if(role.equals("")) {
 					results.put("message", roleMessage);	
 				} else {
-					results.put("message", responseBodyStr);
+					results.put("message", "Error: " +resultObj.get("message").toString());
 				}
 				JSONObject result = new JSONObject();
 				results.put("data", null);
@@ -224,7 +233,9 @@ public class DeployCliService {
 			passwordCred = creds.get("password").toString();
 		}
 		String strongpointURL = "https://rest.netsuite.com/app/site/hosting/restlet.nl?script=customscript_flo_post_search_restlet&deploy=customdeploy_flo_post_search_restlet";
-
+		if(Accounts.isSandboxAccount(accountID)) {
+			strongpointURL = Accounts.getSandboxRestDomain(accountID) + "/app/site/hosting/restlet.nl?script=customscript_flo_post_search_restlet&deploy=customdeploy_flo_post_search_restlet";
+		}
 		HttpPost httpPost = null;
 		int statusCode;
 		String responseBodyStr;
@@ -261,9 +272,9 @@ public class DeployCliService {
 						if (!resultObject.get("code").toString().equalsIgnoreCase("200")) {
 							JSONObject httpErrorMessage = new JSONObject();
 							if(role.equals("")) {
-								httpErrorMessage.put("message", "Error. " +roleMessage);
+								httpErrorMessage.put("message", "Error: " +roleMessage);
 							} else {
-								httpErrorMessage.put("message", "Error. HTTP Request has an error.");
+								httpErrorMessage.put("message", "Error: " +resultObject.get("message").toString());
 							}
 							httpErrorMessage.put("code", statusCode);
 							httpErrorMessage.put("data", null);

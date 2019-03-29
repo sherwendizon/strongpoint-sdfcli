@@ -21,6 +21,7 @@ import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
+import org.strongpoint.sdfcli.plugin.utils.Accounts;
 import org.strongpoint.sdfcli.plugin.utils.Credentials;
 import org.strongpoint.sdfcli.plugin.utils.StrongpointDirectoryGeneralUtility;
 
@@ -50,7 +51,9 @@ public class HttpRequestDeploymentService {
 		String role = Credentials.getSDFRoleIdParam(accountId, true);
 		String roleMessage = Credentials.getSDFRoleIdParam(accountId, false);
 		String strongpointURL = "https://rest.netsuite.com/app/site/hosting/restlet.nl?script=customscript_flo_create_cr_restlet&deploy=customdeploy_flo_create_cr_restlet";
-		
+		if(Accounts.isSandboxAccount(accountId)) {
+			strongpointURL = Accounts.getSandboxRestDomain(accountId) + "/app/site/hosting/restlet.nl?script=customscript_flo_create_cr_restlet&deploy=customdeploy_flo_create_cr_restlet";
+		}
 		HttpPost httpPost = null;
 		int statusCode;
 		String responseBodyStr;
@@ -126,7 +129,10 @@ public class HttpRequestDeploymentService {
 		String role = Credentials.getSDFRoleIdParam(accountId, true);
 		String roleMessage = Credentials.getSDFRoleIdParam(accountId, false);
 		String urlString = "https://rest.netsuite.com/app/site/hosting/restlet.nl?script=customscript_flo_create_cr_restlet&deploy=customdeploy_flo_create_cr_restlet";
-        int statusCode;
+        if(Accounts.isSandboxAccount(accountId)) {
+        	urlString = Accounts.getSandboxRestDomain(accountId) + "/app/site/hosting/restlet.nl?script=customscript_flo_create_cr_restlet&deploy=customdeploy_flo_create_cr_restlet";
+        }
+		int statusCode;
         String strRespBody;
         HttpGet httpGet = null;
         CloseableHttpResponse response = null;

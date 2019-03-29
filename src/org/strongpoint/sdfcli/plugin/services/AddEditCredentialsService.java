@@ -49,12 +49,14 @@ public class AddEditCredentialsService {
 
 	public void writeToJSONFile() {
 		JSONArray roles = accountsAndRoles(getAccountRoles(this.emailStr, this.passwordStr));
+		JSONArray sandboxRoles = accountsAndRoles(getSandboxAccountRoles(this.emailStr, this.passwordStr));
 		System.out.println("Roles: " +roles);
 		StrongpointDirectoryGeneralUtility.newInstance().createSdfcliDirectory();
 		JSONObject obj = new JSONObject();
 	    obj.put("email", this.emailStr);
 	    obj.put("password", this.passwordStr);
 	    obj.put("roles", roles);
+	    obj.put("sandboxRoles", sandboxRoles);
 //	    String path = userHomePath.replace("\\", "") + "/sdfcli/";
 	    String path = "";
 	    if(osName.indexOf("win") >= 0) {
@@ -101,8 +103,9 @@ public class AddEditCredentialsService {
 		String errorMessage = "Error during getting user accounts and roles: ";
 		System.out.println("Get account roles - Email: " +email+ " Password: " +password);
 		JSONObject results = new JSONObject();
-		String strongpointURL = "https://forms.netsuite.com/app/site/hosting/scriptlet.nl?script=1145&deploy=1&compid=TSTDRV1049933&h=9b265f0bc6e8cc5f673e&email="+email+"&pass="+password;
- 		System.out.println(strongpointURL);
+//		String strongpointURL = "https://forms.netsuite.com/app/site/hosting/scriptlet.nl?script=1145&deploy=1&compid=TSTDRV1049933&h=9b265f0bc6e8cc5f673e&email="+email+"&pass="+password;
+ 		String strongpointURL = "https://rest.netsuite.com/rest/roles";
+		System.out.println(strongpointURL);
 		HttpGet httpGet = null;
 		int statusCode;
 		String responseBodyStr;
@@ -110,7 +113,8 @@ public class AddEditCredentialsService {
 		try {
         	CloseableHttpClient client = HttpClients.createDefault();
             httpGet = new HttpGet(strongpointURL);
-//            httpGet.addHeader("Authorization", "NLAuth nlauth_account=" + accountID + ", nlauth_email=" + email + ", nlauth_signature=" + password + ", nlauth_role=3");
+            httpGet.addHeader("Authorization", "NLAuth nlauth_email=" + email + ", nlauth_signature=" + password);
+            httpGet.addHeader("Content-type", "application/json");
             response = client.execute(httpGet);
             HttpEntity entity = response.getEntity();
             statusCode = response.getStatusLine().getStatusCode();
@@ -135,7 +139,7 @@ public class AddEditCredentialsService {
 				httpGet.reset();
 			}
 		}
-		
+				
 		return results;
 	}
 	
@@ -143,20 +147,70 @@ public class AddEditCredentialsService {
 		JSONArray accountsAndRolesArray = new JSONArray();
 		JSONArray dataCenterResults = (JSONArray) results.get("results");
 		
-		for (int i = 0; i < dataCenterResults.size(); i++) {
-			JSONObject obj = new JSONObject();
-			JSONObject dataObject = (JSONObject) dataCenterResults.get(i);
-			JSONObject roleObject = (JSONObject) dataObject.get("role");
-			obj.put("roleId", roleObject.get("internalId").toString());
-			obj.put("roleName", roleObject.get("name").toString());
-			JSONObject accountObject = (JSONObject) dataObject.get("account");
-			obj.put("accountId", accountObject.get("internalId").toString());
-			obj.put("accountName", accountObject.get("name").toString());
-			
-			accountsAndRolesArray.add(obj);
+		if(dataCenterResults != null && !dataCenterResults.isEmpty()) {
+			for (int i = 0; i < dataCenterResults.size(); i++) {
+				JSONObject obj = new JSONObject();
+				JSONObject dataObject = (JSONObject) dataCenterResults.get(i);
+				JSONObject roleObject = (JSONObject) dataObject.get("role");
+				obj.put("roleId", roleObject.get("internalId").toString());
+				obj.put("roleName", roleObject.get("name").toString());
+				JSONObject accountObject = (JSONObject) dataObject.get("account");
+				obj.put("accountId", accountObject.get("internalId").toString());
+				obj.put("accountName", accountObject.get("name").toString());
+				obj.put("accountType", accountObject.get("type").toString());
+				JSONObject dataCenterUrlObject = (JSONObject) dataObject.get("dataCenterURLs");
+				obj.put("accountDomain", dataCenterUrlObject.get("restDomain").toString());
+				
+				accountsAndRolesArray.add(obj);
+			}			
 		}
 		
 		return accountsAndRolesArray;
+	}
+	
+	// Sandbox Account
+	private JSONObject getSandboxAccountRoles(String email, String password) {
+		String errorMessage = "Error during getting user sandbox accounts and roles: ";
+		System.out.println("Get sandbox account roles - Email: " +email+ " Password: " +password);
+		JSONObject results = new JSONObject();
+//		String strongpointURL = "https://forms.netsuite.com/app/site/hosting/scriptlet.nl?script=1145&deploy=1&compid=TSTDRV1049933&h=9b265f0bc6e8cc5f673e&email="+email+"&pass="+password;
+ 		String strongpointURL = "https://rest.sandbox.netsuite.com/rest/roles";
+		System.out.println(strongpointURL);
+		HttpGet httpGet = null;
+		int statusCode;
+		String responseBodyStr;
+		CloseableHttpResponse response = null;
+		try {
+        	CloseableHttpClient client = HttpClients.createDefault();
+            httpGet = new HttpGet(strongpointURL);
+            httpGet.addHeader("Authorization", "NLAuth nlauth_email=" + email + ", nlauth_signature=" + password);
+            httpGet.addHeader("Content-type", "application/json");
+            response = client.execute(httpGet);
+            HttpEntity entity = response.getEntity();
+            statusCode = response.getStatusLine().getStatusCode();
+            responseBodyStr = EntityUtils.toString(entity);
+            
+			if(statusCode >= 400) {
+				results = new JSONObject();
+				results.put("message", errorMessage);
+				results.put("results", null);
+				results.put("code", statusCode);
+			} else {
+				JSONArray arrayResults = (JSONArray) JSONValue.parse(responseBodyStr); 
+				results.put("results", arrayResults);	
+			}
+		} catch (Exception exception) {
+			results = new JSONObject();
+			results.put("message", exception.getMessage());
+			results.put("results", null);
+			results.put("code", 400);
+		} finally {
+			if (httpGet != null) {
+				httpGet.reset();
+			}
+		}
+		
+		return results;
 	}
 
 }

@@ -12,6 +12,7 @@ import org.eclipse.swt.widgets.Shell;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
+import org.strongpoint.sdfcli.plugin.utils.Accounts;
 import org.strongpoint.sdfcli.plugin.utils.Credentials;
 import org.strongpoint.sdfcli.plugin.utils.StrongpointDirectoryGeneralUtility;
 
@@ -37,7 +38,7 @@ public class HttpImpactAnalysisService {
 		if(getScripIds.isEmpty()) {
 			results.put("code", 300);
 			results.put("accountId", accountID);
-			results.put("message", "Error: Please sync before doing Impact Analysis. \n - Project is not yet sync'd to Netsuite. \n - Environment copmpare will also not launch.");	
+			results.put("message", "Error: Please sync before doing Impact Analysis. \n - Project is not yet sync'd to Netsuite. \n - Environment compare will also not launch.");	
 			
 			System.out.println("Writing to Impact Analysis error file...");
 			StrongpointDirectoryGeneralUtility.newInstance().writeToFile(results, jobType, accountID, timestamp);
@@ -47,9 +48,17 @@ public class HttpImpactAnalysisService {
 //			String strongpointURL = "https://rest.netsuite.com/app/site/hosting/restlet.nl?script=customscript_flo_impact_analysis_ext_res&deploy=customdeploy_flo_impact_analysis_ext_res&crId=" + changeRequestId/* + "&scriptIds=" + removeWhitespaces*/;
 			String strongpointURL = "";
 			if(changeRequestId != null && !changeRequestId.isEmpty()) {
-				strongpointURL = "https://rest.netsuite.com/app/site/hosting/restlet.nl?script=customscript_flo_impact_analysis_ext_res&deploy=customdeploy_flo_impact_analysis_ext_res&crId=" + changeRequestId;
+				if(Accounts.isSandboxAccount(accountID)) {
+					strongpointURL = Accounts.getSandboxRestDomain(accountID) + "/app/site/hosting/restlet.nl?script=customscript_flo_impact_analysis_ext_res&deploy=customdeploy_flo_impact_analysis_ext_res&crId=" + changeRequestId;
+				} else {
+					strongpointURL = "https://rest.netsuite.com/app/site/hosting/restlet.nl?script=customscript_flo_impact_analysis_ext_res&deploy=customdeploy_flo_impact_analysis_ext_res&crId=" + changeRequestId;	
+				}				
 			} else {
-				strongpointURL = "https://rest.netsuite.com/app/site/hosting/restlet.nl?script=customscript_flo_impact_analysis_ext_res&deploy=customdeploy_flo_impact_analysis_ext_res&scriptIds=" + removeWhitespaces;
+				if(Accounts.isSandboxAccount(accountID)) {
+					strongpointURL = Accounts.getSandboxRestDomain(accountID) + "/app/site/hosting/restlet.nl?script=customscript_flo_impact_analysis_ext_res&deploy=customdeploy_flo_impact_analysis_ext_res&scriptIds=" + removeWhitespaces;
+				} else {
+					strongpointURL = "https://rest.netsuite.com/app/site/hosting/restlet.nl?script=customscript_flo_impact_analysis_ext_res&deploy=customdeploy_flo_impact_analysis_ext_res&scriptIds=" + removeWhitespaces;	
+				}
 				System.out.println("IMPACT ANALYSIS SCRIPT ID URL: " +strongpointURL);		
 			}
 	 		System.out.println(strongpointURL);
@@ -68,10 +77,12 @@ public class HttpImpactAnalysisService {
 
 				JSONObject resultObj = (JSONObject) JSONValue.parse(responseBodyStr);
 				if(!resultObj.get("code").toString().equalsIgnoreCase("200")) {
+					results.put("code", 300);
+					results.put("accountId", accountID);
 					if(role.equals("")) {
-						results.put("code", 300);
-						results.put("accountId", accountID);
 						results.put("message", "Error: " +roleMessage);	
+					} else {
+						results.put("message", "Error: " +resultObj.get("message").toString());
 					}
 				} else {
 					results = (JSONObject) JSONValue.parse(responseBodyStr);	
@@ -120,7 +131,11 @@ public class HttpImpactAnalysisService {
 		} else {
 			String removeWhitespaces = String.join(",",getScripIds);
 			String strongpointURL = "";
-			strongpointURL = "https://rest.netsuite.com/app/site/hosting/restlet.nl?script=customscript_flo_get_diff_restlet&deploy=customdeploy_flo_get_diff_restlet&scriptIds=" + removeWhitespaces + "&target=" +targetAccountID;
+			if(Accounts.isSandboxAccount(sourceAccountID)) {
+				strongpointURL = Accounts.getSandboxRestDomain(sourceAccountID) + "/app/site/hosting/restlet.nl?script=customscript_flo_get_diff_restlet&deploy=customdeploy_flo_get_diff_restlet&scriptIds=" + removeWhitespaces + "&target=" +targetAccountID;
+			} else {
+				strongpointURL = "https://rest.netsuite.com/app/site/hosting/restlet.nl?script=customscript_flo_get_diff_restlet&deploy=customdeploy_flo_get_diff_restlet&scriptIds=" + removeWhitespaces + "&target=" +targetAccountID;
+			}
 			System.out.println("DIFF SCRIPT ID URL: " +strongpointURL);		
 	 		System.out.println(strongpointURL);
 			HttpGet httpGet = null;
@@ -138,10 +153,12 @@ public class HttpImpactAnalysisService {
 				
 	            JSONObject resultObj = (JSONObject) JSONValue.parse(responseBodyStr);
 				if(!resultObj.get("code").toString().equalsIgnoreCase("200")) {
+					results.put("code", 300);
+					results.put("accountId", sourceAccountID);
 					if(role.equals("")) {
-						results.put("code", 300);
-						results.put("accountId", sourceAccountID);
 						results.put("message", "Error: " +roleMessage);	
+					} else {
+						results.put("message", "Error: " +resultObj.get("message").toString());	
 					}
 				} else {
 					results = (JSONObject) JSONValue.parse(responseBodyStr);	
