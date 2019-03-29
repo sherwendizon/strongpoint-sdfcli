@@ -30,11 +30,11 @@ public class HttpTestConnectionService {
 		}
 		System.out.println("Test Connection - Email: " + email + " Password: " + password + " Account ID: " + accountID);
 		JSONObject results = new JSONObject();
-		String strongpointURL = "https://rest.netsuite.com/app/site/hosting/restlet.nl?script=customscript_flo_check_connection&deploy=customdeploy_flo_check_connection";
+		String strongpointURL = Accounts.getProductionRestDomain(accountID) + "/app/site/hosting/restlet.nl?script=customscript_flo_check_connection&deploy=customdeploy_flo_check_connection";
 		if(Accounts.isSandboxAccount(accountID)) {
 			strongpointURL = Accounts.getSandboxRestDomain(accountID) + "/app/site/hosting/restlet.nl?script=customscript_flo_check_connection&deploy=customdeploy_flo_check_connection";
 		}
-		System.out.println(strongpointURL);
+		System.out.println("Test Connection URL: " +strongpointURL);
 		HttpGet httpGet = null;
 		int statusCode;
 		String responseBodyStr;

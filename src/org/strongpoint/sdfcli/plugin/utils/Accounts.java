@@ -57,7 +57,7 @@ public class Accounts {
 	public static final boolean isSandboxAccount(String accountId) {
 		boolean isSandbox = false;
 		JSONObject credentials = Credentials.getCredentialsFromFile();
-		JSONArray sandBoxRoles = (JSONArray) credentials.get("sandboxRoles");
+		JSONArray sandBoxRoles = (JSONArray) credentials.get("roles");
 		for (int i = 0; i < sandBoxRoles.size(); i++) {
 			JSONObject sbRole = (JSONObject) sandBoxRoles.get(i);
 			if (sbRole.get("accountId").toString().equalsIgnoreCase(accountId)
@@ -70,9 +70,9 @@ public class Accounts {
 	}
 	
 	public static final String getSandboxRestDomain(String accountId) {
-		String restDomain = "";
+		String restDomain = "https://rest.sandbox.netsuite.com";
 		JSONObject credentials = Credentials.getCredentialsFromFile();
-		JSONArray sandBoxRoles = (JSONArray) credentials.get("sandboxRoles");
+		JSONArray sandBoxRoles = (JSONArray) credentials.get("roles");
 		for (int i = 0; i < sandBoxRoles.size(); i++) {
 			JSONObject sbRole = (JSONObject) sandBoxRoles.get(i);
 			if (sbRole.get("accountId").toString().equalsIgnoreCase(accountId)
@@ -86,7 +86,7 @@ public class Accounts {
 	}
 	
 	public static final String getProductionRestDomain(String accountId) {
-		String restDomain = "";
+		String restDomain = "https://rest.netsuite.com";
 		JSONObject credentials = Credentials.getCredentialsFromFile();
 		JSONArray sandBoxRoles = (JSONArray) credentials.get("roles");
 		for (int i = 0; i < sandBoxRoles.size(); i++) {

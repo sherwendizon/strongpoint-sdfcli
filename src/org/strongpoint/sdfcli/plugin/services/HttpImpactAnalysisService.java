@@ -51,17 +51,17 @@ public class HttpImpactAnalysisService {
 				if(Accounts.isSandboxAccount(accountID)) {
 					strongpointURL = Accounts.getSandboxRestDomain(accountID) + "/app/site/hosting/restlet.nl?script=customscript_flo_impact_analysis_ext_res&deploy=customdeploy_flo_impact_analysis_ext_res&crId=" + changeRequestId;
 				} else {
-					strongpointURL = "https://rest.netsuite.com/app/site/hosting/restlet.nl?script=customscript_flo_impact_analysis_ext_res&deploy=customdeploy_flo_impact_analysis_ext_res&crId=" + changeRequestId;	
+					strongpointURL = Accounts.getProductionRestDomain(accountID) + "/app/site/hosting/restlet.nl?script=customscript_flo_impact_analysis_ext_res&deploy=customdeploy_flo_impact_analysis_ext_res&crId=" + changeRequestId;	
 				}				
 			} else {
 				if(Accounts.isSandboxAccount(accountID)) {
 					strongpointURL = Accounts.getSandboxRestDomain(accountID) + "/app/site/hosting/restlet.nl?script=customscript_flo_impact_analysis_ext_res&deploy=customdeploy_flo_impact_analysis_ext_res&scriptIds=" + removeWhitespaces;
 				} else {
-					strongpointURL = "https://rest.netsuite.com/app/site/hosting/restlet.nl?script=customscript_flo_impact_analysis_ext_res&deploy=customdeploy_flo_impact_analysis_ext_res&scriptIds=" + removeWhitespaces;	
+					strongpointURL = Accounts.getProductionRestDomain(accountID) + "/app/site/hosting/restlet.nl?script=customscript_flo_impact_analysis_ext_res&deploy=customdeploy_flo_impact_analysis_ext_res&scriptIds=" + removeWhitespaces;	
 				}
 				System.out.println("IMPACT ANALYSIS SCRIPT ID URL: " +strongpointURL);		
 			}
-	 		System.out.println(strongpointURL);
+	 		System.out.println("Impact Analysis URL: " + strongpointURL);
 			HttpGet httpGet = null;
 			int statusCode;
 			String responseBodyStr;
@@ -134,10 +134,10 @@ public class HttpImpactAnalysisService {
 			if(Accounts.isSandboxAccount(sourceAccountID)) {
 				strongpointURL = Accounts.getSandboxRestDomain(sourceAccountID) + "/app/site/hosting/restlet.nl?script=customscript_flo_get_diff_restlet&deploy=customdeploy_flo_get_diff_restlet&scriptIds=" + removeWhitespaces + "&target=" +targetAccountID;
 			} else {
-				strongpointURL = "https://rest.netsuite.com/app/site/hosting/restlet.nl?script=customscript_flo_get_diff_restlet&deploy=customdeploy_flo_get_diff_restlet&scriptIds=" + removeWhitespaces + "&target=" +targetAccountID;
+				strongpointURL = Accounts.getProductionRestDomain(sourceAccountID) + "/app/site/hosting/restlet.nl?script=customscript_flo_get_diff_restlet&deploy=customdeploy_flo_get_diff_restlet&scriptIds=" + removeWhitespaces + "&target=" +targetAccountID;
 			}
 			System.out.println("DIFF SCRIPT ID URL: " +strongpointURL);		
-	 		System.out.println(strongpointURL);
+	 		System.out.println("Diff URL: " +strongpointURL);
 			HttpGet httpGet = null;
 			int statusCode;
 			String responseBodyStr;

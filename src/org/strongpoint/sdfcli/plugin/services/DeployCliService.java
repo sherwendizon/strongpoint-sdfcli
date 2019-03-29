@@ -108,7 +108,7 @@ public class DeployCliService {
 		JSONObject results = new JSONObject();
 		String strongpointURL = "";
 //		if(params.contains(",")) {
-		strongpointURL = "https://rest.netsuite.com/app/site/hosting/restlet.nl?script=customscript_flo_get_approval_status&deploy=customdeploy_flo_get_approval_status&scriptIds="
+		strongpointURL = Accounts.getProductionRestDomain(accountID) + "/app/site/hosting/restlet.nl?script=customscript_flo_get_approval_status&deploy=customdeploy_flo_get_approval_status&scriptIds="
 				+ params;
 //		} /*else {
 //			strongpointURL = "https://rest.netsuite.com/app/site/hosting/restlet.nl?script=customscript_flo_get_approval_status&deploy=customdeploy_flo_get_approval_status&crId=" + params + "&scriptIds=" + removeWhitespaces;
@@ -117,7 +117,7 @@ public class DeployCliService {
 			strongpointURL = Accounts.getSandboxRestDomain(accountID) + "/app/site/hosting/restlet.nl?script=customscript_flo_get_approval_status&deploy=customdeploy_flo_get_approval_status&scriptIds="
 					+ params;
 		}
-		System.out.println("IS DEPLOYMENT REQUEST URL: " + strongpointURL);
+		System.out.println("IS APPROVED DEPLOYMENT REQUEST URL: " + strongpointURL);
 		HttpGet httpGet = null;
 		int statusCode;
 		String responseBodyStr;
@@ -174,11 +174,11 @@ public class DeployCliService {
 		String role = Credentials.getSDFRoleIdParam(accountID, true);
 		String roleMessage = Credentials.getSDFRoleIdParam(accountID, false);
 		JSONObject results = new JSONObject();
-		String strongpointURL = "https://rest.netsuite.com/app/site/hosting/restlet.nl?script=customscript_flo_get_supported_objects&deploy=customdeploy_flo_get_supported_objects";
+		String strongpointURL = Accounts.getProductionRestDomain(accountID) + "/app/site/hosting/restlet.nl?script=customscript_flo_get_supported_objects&deploy=customdeploy_flo_get_supported_objects";
 		if(Accounts.isSandboxAccount(accountID)) {
 			strongpointURL = Accounts.getSandboxRestDomain(accountID) + "/app/site/hosting/restlet.nl?script=customscript_flo_get_supported_objects&deploy=customdeploy_flo_get_supported_objects";
 		}
-		System.out.println(strongpointURL);
+		System.out.println("Get Supported Objects URL: " + strongpointURL);
 		HttpGet httpGet = null;
 		int statusCode;
 		String responseBodyStr;
@@ -232,10 +232,11 @@ public class DeployCliService {
 			emailCred = creds.get("email").toString();
 			passwordCred = creds.get("password").toString();
 		}
-		String strongpointURL = "https://rest.netsuite.com/app/site/hosting/restlet.nl?script=customscript_flo_post_search_restlet&deploy=customdeploy_flo_post_search_restlet";
+		String strongpointURL = Accounts.getProductionRestDomain(accountID) + "/app/site/hosting/restlet.nl?script=customscript_flo_post_search_restlet&deploy=customdeploy_flo_post_search_restlet";
 		if(Accounts.isSandboxAccount(accountID)) {
 			strongpointURL = Accounts.getSandboxRestDomain(accountID) + "/app/site/hosting/restlet.nl?script=customscript_flo_post_search_restlet&deploy=customdeploy_flo_post_search_restlet";
 		}
+		System.out.println("Deploy Saved Searches URL: " +strongpointURL);
 		HttpPost httpPost = null;
 		int statusCode;
 		String responseBodyStr;
