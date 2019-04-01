@@ -294,7 +294,7 @@ public class SyncToNsCliService {
 					jsonArray.add(obj);
 				}
 
-				Pattern pattern = Pattern.compile("\\/([a-zA-Z0-9]*)\\/([a-zA-Z0-9]*)\\.js\\simported.");
+				Pattern pattern = Pattern.compile("\\/(.*?)\\/(.*?)\\.js\\simported.");
 				boolean isSuccess = false;
 				for (String string : resultList) {
 					Matcher matcher = pattern.matcher(string);
