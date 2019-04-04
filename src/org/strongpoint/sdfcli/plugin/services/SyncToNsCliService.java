@@ -12,9 +12,17 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.jobs.IJobChangeEvent;
+import org.eclipse.core.runtime.jobs.IJobChangeListener;
+import org.eclipse.core.runtime.jobs.IJobManager;
+import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
@@ -22,6 +30,7 @@ import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableItem;
 import org.eclipse.ui.IViewPart;
 import org.eclipse.ui.IWorkbenchWindow;
+import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -45,6 +54,8 @@ public class SyncToNsCliService {
 	private Shell parentShell;
 
 	private String accountId;
+	
+	private String timestamp;
 
 	private IProject project;
 
@@ -66,6 +77,10 @@ public class SyncToNsCliService {
 	public void setProject(IProject project) {
 		this.project = project;
 	}
+	
+	public void setTimestamp(String timestamp) {
+		this.timestamp = timestamp;
+	}
 
 	public AtomicBoolean getIsImportObjectProcessDone() {
 		return this.isImportObjectProcessDone;
@@ -82,22 +97,86 @@ public class SyncToNsCliService {
 	public void setParentShell(Shell parentShell) {
 		this.parentShell = parentShell;
 	}
+	
+    private void syncWithUi(String job) {
+        Display.getDefault().asyncExec(new Runnable() {
+            public void run() {
+            	try {
+					IViewPart viewPart = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(StrongpointView.viewId);
+					if(viewPart instanceof StrongpointView) {
+						StrongpointView strongpointView = (StrongpointView) viewPart;
+						Table table = strongpointView.getTable();
+						for (int i = 0; i < table.getItems().length; i++) {
+							TableItem tableItem = table.getItem(i);
+							if(tableItem.getText(0).equalsIgnoreCase(job)
+									&& tableItem.getText(1).equalsIgnoreCase(accountId)
+									&& tableItem.getText(4).equalsIgnoreCase(timestamp)) {
+								String fileName = tableItem.getText(0) + "_" + accountId + "_"
+										+ tableItem.getText(4).replaceAll(":", "_") + ".txt";
+								String fullPath = userHomePath + "/strongpoint_action_logs/" + fileName;
+								if(StrongpointDirectoryGeneralUtility.newInstance().readLogFileforErrorMessages(fullPath)) {
+									strongpointView.updateItemStatus(tableItem, "Error");
+								} else {
+									strongpointView.updateItemStatus(tableItem, "Success");	
+								}
+							}
+						}
+					}
+				} catch (PartInitException e) {
+					e.printStackTrace();
+				}
+            }
+        });
 
+    }
+	
 	public void syncToNetsuiteOperation(String projectPath, String timestamp) {
-		Thread syncOperationThread = new Thread(new Runnable() {
-
+		Job importObjectsJob = new Job(JobTypes.import_objects.getJobType()) {
+			
 			@Override
-			public void run() {
+			protected IStatus run(IProgressMonitor arg0) {
 				importObjectsCliResult(projectPath, JobTypes.import_objects.getJobType(), timestamp);
+				syncWithUi(JobTypes.import_objects.getJobType());
 				JSONObject importObj = StrongpointDirectoryGeneralUtility.newInstance().readImportJsonFile(projectPath);
 				JSONArray objs = (JSONArray) importObj.get("files");
 				if(!objs.isEmpty()) {
-					importFilesCliResult(projectPath, JobTypes.import_files.getJobType(), timestamp);
+					importFilesActionJob(projectPath, timestamp);
 				}
-				addDependenciesCliResult(projectPath, JobTypes.add_dependencies.getJobType(), timestamp);
+				addDependenciesActionJob(projectPath, timestamp);
+				return Status.OK_STATUS;
 			}
-		});
-		syncOperationThread.start();
+		};
+		importObjectsJob.setUser(true);
+		importObjectsJob.schedule();
+				
+	}
+	
+	private void importFilesActionJob(String projectPath, String timestamp) {
+		Job importFilesJob = new Job(JobTypes.import_files.getJobType()) {
+			
+			@Override
+			protected IStatus run(IProgressMonitor arg0) {
+				importFilesCliResult(projectPath, JobTypes.import_files.getJobType(), timestamp);
+				syncWithUi(JobTypes.import_files.getJobType());
+				return Status.OK_STATUS;
+			}
+		};
+		importFilesJob.setUser(true);
+		importFilesJob.schedule();		
+	}
+	
+	private void addDependenciesActionJob(String projectPath, String timestamp) {
+		Job addDependenciesJob = new Job(JobTypes.add_dependencies.getJobType()) {
+			
+			@Override
+			protected IStatus run(IProgressMonitor arg0) {
+				addDependenciesCliResult(projectPath, JobTypes.add_dependencies.getJobType(), timestamp);
+				syncWithUi(JobTypes.add_dependencies.getJobType());
+				return Status.OK_STATUS;
+			}
+		};
+		addDependenciesJob.setUser(true);
+		addDependenciesJob.schedule();	
 	}
 
 	public JSONObject importObjectsCliResult(String projectPath, String jobType, String timestamp) {
@@ -405,9 +484,9 @@ public class SyncToNsCliService {
 					jsonArray.add(obj);
 				}
 
-//				if (!this.isImportFileProcessDone.get()) {
-//					jsonArray = errorMessages(accountID, "adding dependencies");
-//				}
+				if (!resultList.contains("Done.")) {
+					jsonArray = errorMessages(accountID, "adding dependencies");
+				}
 
 			} catch (IOException e) {
 				jsonArray = errorMessages(accountID, "adding dependencies");

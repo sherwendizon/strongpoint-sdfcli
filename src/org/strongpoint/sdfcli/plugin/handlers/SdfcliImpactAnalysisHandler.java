@@ -138,7 +138,6 @@ public class SdfcliImpactAnalysisHandler extends AbstractHandler {
 						+ sourceAccountID + "&custpage_email2=" + email + "&custpage_password2=" + password
 						+ "&custpage_accounttarget=" + targetAccountId;
 			}
-
 			if(System.getProperty("os.name").toLowerCase().indexOf("win") >= 0) {
 				Program.launch(diffUrl);
 			} else {

@@ -52,6 +52,7 @@ public class SdfcliSyncToNsHandler extends AbstractHandler {
 			Date date = new Date();
 			Timestamp timestamp = new Timestamp(date.getTime());
 			String projectPath = path.toPortableString();
+			syncToNsCliService.setTimestamp(timestamp.toString());
 			syncToNsCliService.syncToNetsuiteOperation(projectPath, timestamp.toString());
 			createViewItem(viewPart, JobTypes.import_objects.getJobType(), syncToNsCliService.getAccountId(projectPath), timestamp.toString());
 			JSONObject importObj = StrongpointDirectoryGeneralUtility.newInstance().readImportJsonFile(projectPath);

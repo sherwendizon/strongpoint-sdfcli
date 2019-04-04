@@ -234,6 +234,16 @@ public class StrongpointView extends ViewPart {
 			editor.setEditor(bar, data, 3);
 		}
 	}
+	
+	public void updateItemStatus(TableItem tableItem, String status) {
+		if(status.equalsIgnoreCase("error")) {
+			tableItem.setText(2, status);
+			tableItem.setBackground(new Color(Display.getCurrent(), 242, 188, 177));
+		} else if(status.equalsIgnoreCase("success")) {
+			tableItem.setText(2, status);
+			tableItem.setBackground(new Color(Display.getCurrent(), 198, 242, 177));
+		}
+	}
 
 	@Override
 	public void setFocus() {

@@ -5,6 +5,10 @@ import java.util.List;
 import java.util.Map;
 
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.dialogs.IMessageProvider;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.dialogs.TitleAreaDialog;
@@ -17,9 +21,15 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
+import org.eclipse.swt.widgets.Table;
+import org.eclipse.swt.widgets.TableItem;
+import org.eclipse.ui.IViewPart;
 import org.eclipse.ui.IWorkbenchWindow;
+import org.eclipse.ui.PartInitException;
+import org.eclipse.ui.PlatformUI;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.strongpoint.sdfcli.plugin.services.DeployCliService;
@@ -27,6 +37,7 @@ import org.strongpoint.sdfcli.plugin.utils.Accounts;
 import org.strongpoint.sdfcli.plugin.utils.Credentials;
 import org.strongpoint.sdfcli.plugin.utils.StrongpointDirectoryGeneralUtility;
 import org.strongpoint.sdfcli.plugin.utils.enums.JobTypes;
+import org.strongpoint.sdfcli.plugin.views.StrongpointView;
 
 public class DeployDialog extends TitleAreaDialog {
 
@@ -143,17 +154,70 @@ public class DeployDialog extends TitleAreaDialog {
 	@Override
 	protected void okPressed() {
 		System.out.println("[Logger] --- Deploy Dialog OK button is pressed");
-		Thread thread = new Thread(new Runnable() {
-
+		Job deploymentJob = new Job(JobTypes.deployment.getJobType()) {
+			
 			@Override
-			public void run() {
+			protected IStatus run(IProgressMonitor arg0) {
 				processDeploy();
+				return Status.OK_STATUS;
 			}
-		});
-		thread.start();
+		};
+		deploymentJob.setUser(true);
+		deploymentJob.schedule();
 		this.okButtonPressed = true;
 		super.okPressed();
 	}
+	
+    private void syncWithUi(String job) {
+        Display.getDefault().asyncExec(new Runnable() {
+            public void run() {
+            	try {
+					IViewPart viewPart = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(StrongpointView.viewId);
+					if(viewPart instanceof StrongpointView) {
+						StrongpointView strongpointView = (StrongpointView) viewPart;
+						Table table = strongpointView.getTable();
+						String accountId = selectedValue.substring(selectedValue.indexOf("(") + 1, selectedValue.indexOf(")"));
+						for (int i = 0; i < table.getItems().length; i++) {
+							TableItem tableItem = table.getItem(i);
+							if(job.equalsIgnoreCase(JobTypes.deployment.getJobType())) {
+								if(tableItem.getText(0).equalsIgnoreCase(job)
+										&& tableItem.getText(1).equalsIgnoreCase(selectedValue)
+										&& tableItem.getText(4).equalsIgnoreCase(timestamp)) {
+									String fileName = tableItem.getText(0) + "_" + accountId + "_"
+											+ tableItem.getText(4).replaceAll(":", "_") + ".txt";
+									String fullPath = System.getProperty("user.home") + "/strongpoint_action_logs/" + fileName;
+									if(StrongpointDirectoryGeneralUtility.newInstance().readLogFileforErrorMessages(fullPath)) {
+										strongpointView.updateItemStatus(tableItem, "Error");
+									} else {
+										strongpointView.updateItemStatus(tableItem, "Success");	
+									}
+								}
+							} else {
+								for (Map.Entry<String, String> ssTimestamp : ssTimestamps.entrySet()) {
+									String ssAction = job + " - " + ssTimestamp.getKey();
+									if(tableItem.getText(0).equalsIgnoreCase(ssAction)
+											&& tableItem.getText(1).equalsIgnoreCase(selectedValue)
+											&& tableItem.getText(4).equalsIgnoreCase(ssTimestamp.getValue())) {
+										String fileName = tableItem.getText(0) + "_" + accountId + "_"
+												+ tableItem.getText(4).replaceAll(":", "_") + ".txt";
+										String fullPath = System.getProperty("user.home") + "/strongpoint_action_logs/" + fileName;
+										if(StrongpointDirectoryGeneralUtility.newInstance().readLogFileforErrorMessages(fullPath)) {
+											strongpointView.updateItemStatus(tableItem, "Error");
+										} else {
+											strongpointView.updateItemStatus(tableItem, "Success");	
+										}
+									}
+								}
+							}
+						}
+					}
+				} catch (PartInitException e) {
+					e.printStackTrace();
+				}
+            }
+        });
+
+    }	
 
 	private void processDeploy() {
 		List<String> scriptIds = this.scriptIDs;
@@ -289,7 +353,8 @@ public class DeployDialog extends TitleAreaDialog {
 			StrongpointDirectoryGeneralUtility.newInstance().writeToFile(results, JobTypes.deployment.getJobType(),
 					accountId, timestamp);
 			System.out.println("Finished writing Deploy file...");
-
+			syncWithUi(JobTypes.deployment.getJobType());
+			syncWithUi(JobTypes.savedSearch.getJobType());
 		}
 	}
 
@@ -318,59 +383,6 @@ public class DeployDialog extends TitleAreaDialog {
 		});
 		accountIDText.setLayoutData(accountIDGridData);
 	}
-
-//	public static IProject getCurrentProject(IWorkbenchWindow window) {
-//		ISelectionService selectionService = window.getSelectionService();
-//		ISelection selection = selectionService.getSelection();
-//		IProject project = null;
-//		if (selection instanceof IStructuredSelection) {
-//			Object element = ((IStructuredSelection) selection).getFirstElement();
-//			if (element instanceof IResource) {
-//				project = ((IResource) element).getProject();
-//			} else if (element instanceof PackageFragmentRoot) {
-//				IJavaProject jProject = ((PackageFragmentRoot) element).getJavaProject();
-//				project = jProject.getProject();
-//			} else if (element instanceof IJavaElement) {
-//				IJavaProject jProject = ((IJavaElement) element).getJavaProject();
-//				project = jProject.getProject();
-//			}
-//		}
-//		return project;
-//	}
-
-//	public List<String> getScripIds(IWorkbenchWindow window) {
-//		List<String> scriptIds = new ArrayList<String>();
-//		ISelectionService selectionService = this.window.getSelectionService();
-//		ISelection selection = selectionService.getSelection();
-//		IProject project = null;
-//		if (selection instanceof IStructuredSelection) {
-//			Object element = ((IStructuredSelection) selection).getFirstElement();
-//			if (element instanceof IResource) {
-//				project = ((IResource) element).getProject();
-//			} else if (element instanceof PackageFragmentRoot) {
-//				IJavaProject jProject = ((PackageFragmentRoot) element).getJavaProject();
-//				project = jProject.getProject();
-//			} else if (element instanceof IJavaElement) {
-//				IJavaProject jProject = ((IJavaElement) element).getJavaProject();
-//				project = jProject.getProject();
-//			}
-//		}
-//		IPath path = project.getRawLocation();
-//		IContainer container = project.getWorkspace().getRoot().getContainerForLocation(path);
-//		try {
-//			IContainer con = (IContainer) container.findMember("Objects");
-//			for (IResource res : con.members()) {
-//				if (res.getFileExtension().equalsIgnoreCase("xml")) {
-//					String id = res.getName().substring(0, res.getName().indexOf("."));
-//					scriptIds.add(id);
-//				}
-//			}
-//		} catch (CoreException e) {
-//			e.printStackTrace();
-//		}
-//
-//		return scriptIds;
-//	}
 
 	private boolean hasUnsupportedObjects(List<String> scriptIds, JSONObject supportedObjects) {
 		boolean hasUnsupportedObj = false;

@@ -110,7 +110,6 @@ public class AccountDialog extends TitleAreaDialog{
 		this.okButtonPressed = true;
 		results = new JSONObject();
 		results.put("okButton", "true");
-		System.out.println("DIALOG: " +this.okButtonPressed);
 		super.okPressed();
 	}
 	

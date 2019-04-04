@@ -6,6 +6,9 @@ import java.util.Date;
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
+import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Table;
+import org.eclipse.swt.widgets.TableItem;
 import org.eclipse.ui.IViewPart;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchWindow;
@@ -48,10 +51,43 @@ public class SdfcliTestConnectionHandler extends AbstractHandler{
 				StrongpointDirectoryGeneralUtility.newInstance().writeToFile(testConnectionDialog.getResults(), JobTypes.test_connection.getJobType(),
 						testConnectionDialog.getTargetAccountId(), timestamp.toString());
 			}
+			syncWithUi(JobTypes.test_connection.getJobType(), testConnectionDialog.getTargetAccountId(), timestamp.toString());
 		} catch (PartInitException e1) {
 			e1.printStackTrace();
 		}		
 		return null;
 	}
+	
+    private void syncWithUi(String job, String accountId, String timestamp) {
+        Display.getDefault().asyncExec(new Runnable() {
+            public void run() {
+            	try {
+					IViewPart viewPart = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(StrongpointView.viewId);
+					if(viewPart instanceof StrongpointView) {
+						StrongpointView strongpointView = (StrongpointView) viewPart;
+						Table table = strongpointView.getTable();
+						String accountID = accountId.substring(accountId.indexOf("(") + 1, accountId.indexOf(")"));
+						for (int i = 0; i < table.getItems().length; i++) {
+							TableItem tableItem = table.getItem(i);
+							if(tableItem.getText(0).equalsIgnoreCase(job)
+									&& tableItem.getText(1).equalsIgnoreCase(accountId)
+									&& tableItem.getText(4).equalsIgnoreCase(timestamp)) {
+								String fileName = tableItem.getText(0) + "_"+accountID+"_"
+										+ tableItem.getText(4).replaceAll(":", "_") + ".txt";
+								String fullPath = System.getProperty("user.home") + "/strongpoint_action_logs/" + fileName;
+								if(StrongpointDirectoryGeneralUtility.newInstance().readLogFileforErrorMessages(fullPath)) {
+									strongpointView.updateItemStatus(tableItem, "Error");
+								} else {
+									strongpointView.updateItemStatus(tableItem, "Success");	
+								}
+							}
+						}
+					}
+				} catch (PartInitException e) {
+					e.printStackTrace();
+				}
+            }
+        });
+    }	
 	
 }

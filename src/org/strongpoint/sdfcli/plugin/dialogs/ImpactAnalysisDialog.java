@@ -2,12 +2,17 @@ package org.strongpoint.sdfcli.plugin.dialogs;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.internal.core.PackageFragmentRoot;
@@ -25,16 +30,24 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
+import org.eclipse.swt.widgets.Table;
+import org.eclipse.swt.widgets.TableItem;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.ISelectionService;
+import org.eclipse.ui.IViewPart;
 import org.eclipse.ui.IWorkbenchWindow;
+import org.eclipse.ui.PartInitException;
+import org.eclipse.ui.PlatformUI;
 import org.json.simple.JSONObject;
 import org.strongpoint.sdfcli.plugin.services.HttpImpactAnalysisService;
 import org.strongpoint.sdfcli.plugin.utils.Accounts;
 import org.strongpoint.sdfcli.plugin.utils.Credentials;
 import org.strongpoint.sdfcli.plugin.utils.StrongpointDirectoryGeneralUtility;
+import org.strongpoint.sdfcli.plugin.utils.enums.JobTypes;
+import org.strongpoint.sdfcli.plugin.views.StrongpointView;
 
 public class ImpactAnalysisDialog extends TitleAreaDialog {
 
@@ -138,23 +151,58 @@ public class ImpactAnalysisDialog extends TitleAreaDialog {
 			MessageDialog.openError(this.parentShell, "No user credentials found",
 					"Please set user credentials in Strongpoint > Credentials Settings menu");
 		}
-		Thread impactAnalysisThread = new Thread(new Runnable() {
-
+		Job impactAnalysisJob = new Job(JobTypes.impact_analysis.getJobType()) {
+			
 			@Override
-			public void run() {
+			protected IStatus run(IProgressMonitor arg0) {
 				processImpactAnalysis(crID, accountID);
+				return Status.OK_STATUS;
 			}
-		});
-		impactAnalysisThread.start();
+		};
+		impactAnalysisJob.setUser(true);
+		impactAnalysisJob.schedule();
 		diffResults = HttpImpactAnalysisService.newInstance().getDiff(this.parentShell, this.scriptIDs,
 				sourceAccountIdText.getText(), accountID);
 		this.okButtonPressed = true;
 		super.okPressed();
 	}
+	
+    private void syncWithUi(String job) {
+        Display.getDefault().asyncExec(new Runnable() {
+            public void run() {
+            	try {
+					IViewPart viewPart = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(StrongpointView.viewId);
+					if(viewPart instanceof StrongpointView) {
+						StrongpointView strongpointView = (StrongpointView) viewPart;
+						Table table = strongpointView.getTable();
+						String accountId = selectedValue.substring(selectedValue.indexOf("(") + 1, selectedValue.indexOf(")"));
+						for (int i = 0; i < table.getItems().length; i++) {
+							TableItem tableItem = table.getItem(i);
+							if(tableItem.getText(0).equalsIgnoreCase(job)
+									&& tableItem.getText(1).equalsIgnoreCase(selectedValue)
+									&& tableItem.getText(4).equalsIgnoreCase(timestamp)) {
+								String fileName = tableItem.getText(0) + "_" + accountId + "_"
+										+ tableItem.getText(4).replaceAll(":", "_") + ".txt";
+								String fullPath = System.getProperty("user.home") + "/strongpoint_action_logs/" + fileName;
+								if(StrongpointDirectoryGeneralUtility.newInstance().readLogFileforErrorMessages(fullPath)) {
+									strongpointView.updateItemStatus(tableItem, "Error");
+								} else {
+									strongpointView.updateItemStatus(tableItem, "Success");	
+								}
+							}
+						}
+					}
+				} catch (PartInitException e) {
+					e.printStackTrace();
+				}
+            }
+        });
+    }
 
 	private void processImpactAnalysis(String crID, String accountID) {
 		results = HttpImpactAnalysisService.newInstance().getImpactAnalysis(crID, this.parentShell,
 				this.scriptIDs, accountID, this.jobType, this.timestamp);
+		syncWithUi(JobTypes.impact_analysis.getJobType());
 	}
 
 	private void createAccountIDElement(Composite container) {
@@ -211,39 +259,4 @@ public class ImpactAnalysisDialog extends TitleAreaDialog {
 		changeRequestIDText = new Text(container, SWT.BORDER);
 		changeRequestIDText.setLayoutData(changeRequestIDGridData);
 	}
-
-//	public List<String> getScripIds(IWorkbenchWindow window) {
-//		List<String> scriptIds = new ArrayList<String>();
-//		ISelectionService selectionService = window.getSelectionService();
-//		ISelection selection = selectionService.getSelection();
-//		IProject project = null;
-//		if (selection instanceof IStructuredSelection) {
-//			Object element = ((IStructuredSelection) selection).getFirstElement();
-//			if (element instanceof IResource) {
-//				project = ((IResource) element).getProject();
-//			} else if (element instanceof PackageFragmentRoot) {
-//				IJavaProject jProject = ((PackageFragmentRoot) element).getJavaProject();
-//				project = jProject.getProject();
-//			} else if (element instanceof IJavaElement) {
-//				IJavaProject jProject = ((IJavaElement) element).getJavaProject();
-//				project = jProject.getProject();
-//			}
-//		}
-//		IPath path = project.getRawLocation();
-//		IContainer container = project.getWorkspace().getRoot().getContainerForLocation(path);
-//		try {
-//			IContainer con = (IContainer) container.findMember("Objects");
-//			for (IResource res : con.members()) {
-//				if (res.getFileExtension().equalsIgnoreCase("xml")) {
-//					String id = res.getName().substring(0, res.getName().indexOf("."));
-//					scriptIds.add(id);
-//				}
-//			}
-//		} catch (CoreException e) {
-//			e.printStackTrace();
-//		}
-//
-//		return scriptIds;
-//	}   
-
 }

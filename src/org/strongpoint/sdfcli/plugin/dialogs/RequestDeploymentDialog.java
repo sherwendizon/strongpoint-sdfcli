@@ -8,6 +8,10 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.internal.core.PackageFragmentRoot;
@@ -24,15 +28,23 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
+import org.eclipse.swt.widgets.Table;
+import org.eclipse.swt.widgets.TableItem;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.ISelectionService;
+import org.eclipse.ui.IViewPart;
 import org.eclipse.ui.IWorkbenchWindow;
+import org.eclipse.ui.PartInitException;
+import org.eclipse.ui.PlatformUI;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.strongpoint.sdfcli.plugin.services.HttpRequestDeploymentService;
+import org.strongpoint.sdfcli.plugin.utils.StrongpointDirectoryGeneralUtility;
 import org.strongpoint.sdfcli.plugin.utils.enums.JobTypes;
+import org.strongpoint.sdfcli.plugin.views.StrongpointView;
 
 public class RequestDeploymentDialog extends TitleAreaDialog {
 	
@@ -128,20 +140,59 @@ public class RequestDeploymentDialog extends TitleAreaDialog {
 		obj.put("changeType", changeTypeInt);
 		obj.put("changeOverview", changeOverviewText.getText());
 		obj.put("scriptIds", this.scriptIDs);
-		Thread requestDeploymentThread = new Thread(new Runnable() {
-
+		Job requestDeploymentJob = new Job(JobTypes.request_deployment.getJobType()) {
+			
 			@Override
-			public void run() {
+			protected IStatus run(IProgressMonitor arg0) {
 				processRequestDeployment(obj);
+				return Status.OK_STATUS;
 			}
-		});
-		requestDeploymentThread.start();
+		};
+		requestDeploymentJob.setUser(true);
+		requestDeploymentJob.schedule();		
 		this.okButtonPressed = true;
 		super.okPressed();
 	}
 	
+    private void syncWithUi(String job) {
+        Display.getDefault().asyncExec(new Runnable() {
+            public void run() {
+            	try {
+					IViewPart viewPart = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(StrongpointView.viewId);
+					if(viewPart instanceof StrongpointView) {
+						StrongpointView strongpointView = (StrongpointView) viewPart;
+						Table table = strongpointView.getTable();
+						String accountId = "";
+				        JSONObject importObj = StrongpointDirectoryGeneralUtility.newInstance().readImportJsonFile(projectPath);
+				        if(importObj != null) {
+				        	accountId = importObj.get("accountId").toString();
+				        }
+						for (int i = 0; i < table.getItems().length; i++) {
+							TableItem tableItem = table.getItem(i);
+							if(tableItem.getText(0).equalsIgnoreCase(job)
+									&& tableItem.getText(1).equalsIgnoreCase(accountId)
+									&& tableItem.getText(4).equalsIgnoreCase(timestamp)) {
+								String fileName = tableItem.getText(0) + "_" + accountId + "_"
+										+ tableItem.getText(4).replaceAll(":", "_") + ".txt";
+								String fullPath = System.getProperty("user.home") + "/strongpoint_action_logs/" + fileName;
+								if(StrongpointDirectoryGeneralUtility.newInstance().readLogFileforErrorMessages(fullPath)) {
+									strongpointView.updateItemStatus(tableItem, "Error");
+								} else {
+									strongpointView.updateItemStatus(tableItem, "Success");	
+								}
+							}
+						}
+					}
+				} catch (PartInitException e) {
+					e.printStackTrace();
+				}
+            }
+        });
+    }	
+	
 	private void processRequestDeployment(JSONObject obj) {
 		results = HttpRequestDeploymentService.newInstance().requestDeployment(obj, this.projectPath, JobTypes.request_deployment.getJobType(), this.timestamp);		
+		syncWithUi(JobTypes.request_deployment.getJobType());
 	}
 	
 	private void createNameElement(Composite container) {
