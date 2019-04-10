@@ -19,6 +19,7 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.commons.io.FilenameUtils;
 import org.eclipse.core.resources.IProject;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -74,6 +75,22 @@ public class StrongpointDirectoryGeneralUtility {
 		return filenames;		
 	}
 	
+	public List<String> getSavedSearchIds(String projectPath) {
+		List<String> filenames = new ArrayList<>();
+		StringBuilder contents = new StringBuilder();
+		String str;
+		File savedSearchFolder = new File(projectPath + "/FileCabinet/SavedSearches");
+		File[] listOfFiles = savedSearchFolder.listFiles();
+		for (int i = 0; i < listOfFiles.length; i++) {
+		  if (listOfFiles[i].isFile()) {
+			  String scriptId = FilenameUtils.removeExtension(listOfFiles[i].getName());
+			  filenames.add(scriptId);
+		  }
+		}
+		
+		return filenames;		
+	}
+	
 	public JSONObject readSavedSearchFile(String filenameStr) {
 		StringBuilder contents = new StringBuilder();
 		String str;
@@ -117,6 +134,25 @@ public class StrongpointDirectoryGeneralUtility {
 			e.printStackTrace();
 		}
 		return isError;		
+	}
+	
+	public void writeSavedSearchDuringSync(Map<String, String> savedSearches, String projectPath) {
+		for (Map.Entry<String, String> savedSearch : savedSearches.entrySet()) {
+			File savedSearchFile = new File(projectPath + "/FileCabinet/SavedSearches/" + savedSearch.getKey() + ".json");
+			System.out.println("Saved Search File: " +savedSearchFile.getAbsolutePath());
+			if(savedSearchFile.exists() && !savedSearchFile.isDirectory()) {
+	            try {
+	            	FileWriter writer = new FileWriter(savedSearchFile);
+	            	System.out.println("Writing sycn'd saved search to file...");
+	            	String removeSlashQuote = savedSearch.getValue().replaceAll("\\\"", "\"");
+					writer.write(removeSlashQuote);
+		            writer.flush();
+		            writer.close();	
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
+		}	
 	}
 	
 	public void writeSavedSearchResultsToFile(JSONArray savedSearchesResults, String accountId, Map<String, String> ssTimestamps) {

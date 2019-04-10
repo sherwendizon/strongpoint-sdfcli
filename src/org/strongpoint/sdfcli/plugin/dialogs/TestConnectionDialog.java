@@ -1,21 +1,12 @@
 package org.strongpoint.sdfcli.plugin.dialogs;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import org.eclipse.core.resources.IContainer;
-import org.eclipse.core.resources.IProject;
-import org.eclipse.core.resources.IResource;
-import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.IPath;
-import org.eclipse.jdt.core.IJavaElement;
-import org.eclipse.jdt.core.IJavaProject;
-import org.eclipse.jdt.internal.core.PackageFragmentRoot;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.dialogs.IMessageProvider;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.dialogs.TitleAreaDialog;
-import org.eclipse.jface.viewers.ISelection;
-import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
@@ -25,18 +16,22 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
-import org.eclipse.swt.widgets.Text;
-import org.eclipse.ui.ISelectionService;
+import org.eclipse.swt.widgets.Table;
+import org.eclipse.swt.widgets.TableItem;
+import org.eclipse.ui.IViewPart;
 import org.eclipse.ui.IWorkbenchWindow;
+import org.eclipse.ui.PartInitException;
+import org.eclipse.ui.PlatformUI;
 import org.json.simple.JSONObject;
-import org.strongpoint.sdfcli.plugin.services.DeployCliService;
-import org.strongpoint.sdfcli.plugin.services.HttpImpactAnalysisService;
-import org.strongpoint.sdfcli.plugin.services.HttpRequestDeploymentService;
 import org.strongpoint.sdfcli.plugin.services.HttpTestConnectionService;
 import org.strongpoint.sdfcli.plugin.utils.Accounts;
 import org.strongpoint.sdfcli.plugin.utils.Credentials;
+import org.strongpoint.sdfcli.plugin.utils.StrongpointDirectoryGeneralUtility;
+import org.strongpoint.sdfcli.plugin.utils.enums.JobTypes;
+import org.strongpoint.sdfcli.plugin.views.StrongpointView;
 
 public class TestConnectionDialog extends TitleAreaDialog{
 	
@@ -45,6 +40,7 @@ public class TestConnectionDialog extends TitleAreaDialog{
 	private IWorkbenchWindow window;
 	private String selectedValue = "";
 	private Shell parentShell;
+	private String timestamp;
 	private boolean okButtonPressed;
 
 	public TestConnectionDialog(Shell parentShell) {
@@ -66,6 +62,10 @@ public class TestConnectionDialog extends TitleAreaDialog{
 	
 	public boolean isOkButtonPressed() {
 		return this.okButtonPressed;
+	}
+	
+	public void setTimestamp(String timestamp) {
+		this.timestamp = timestamp;
 	}
 	
 	@Override
@@ -108,12 +108,71 @@ public class TestConnectionDialog extends TitleAreaDialog{
 		}
 		if(!Credentials.isCredentialsFileExists()) {
 			MessageDialog.openError(this.parentShell, "No user credentials found", "Please set user credentials in Strongpoint > Credentials Settings menu");
-		}		
-		results = HttpTestConnectionService.newInstance().getConnectionResults(accountID);
+		}
+		
+		Job testConnectionJob = new Job(JobTypes.test_connection.getJobType()) {
+			
+			@Override
+			protected IStatus run(IProgressMonitor arg0) {
+				connectionResults(selectedValue.substring(selectedValue.indexOf("(") + 1, selectedValue.indexOf(")")));
+				return Status.OK_STATUS;
+			}
+		};
+		testConnectionJob.setUser(true);
+		testConnectionJob.schedule();
 		this.okButtonPressed = true;
 		super.okPressed();
 	}
 	
+	private void connectionResults(String accountID) {
+		JSONObject resultsObj = new JSONObject();
+		JSONObject connectionResults = HttpTestConnectionService.newInstance().getConnectionResults(accountID);
+		String connectionMessage = "\nTest Connection to " +accountID +": Success";
+		if(!connectionResults.get("message").toString().equalsIgnoreCase("success")) {
+			connectionMessage = "\nTest Connection to " +accountID +": Failed";
+		}
+		JSONObject sdfcliResults = HttpTestConnectionService.newInstance().testRunSdfcliCommand();
+		System.out.println(sdfcliResults.toJSONString());
+		resultsObj.put("code", connectionResults.get("code").toString());
+		resultsObj.put("message", connectionMessage + "\nSDFCLI Test Command: " +sdfcliResults.get("message").toString());
+		results = resultsObj;
+		StrongpointDirectoryGeneralUtility.newInstance().writeToFile(resultsObj, JobTypes.test_connection.getJobType(),
+				accountID, timestamp);
+		syncWithUi(JobTypes.test_connection.getJobType(), selectedValue, timestamp);
+	}
+	
+    private void syncWithUi(String job, String accountId, String timestamp) {
+        Display.getDefault().asyncExec(new Runnable() {
+            public void run() {
+            	try {
+					IViewPart viewPart = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(StrongpointView.viewId);
+					if(viewPart instanceof StrongpointView) {
+						StrongpointView strongpointView = (StrongpointView) viewPart;
+						Table table = strongpointView.getTable();
+						String accountID = accountId.substring(accountId.indexOf("(") + 1, accountId.indexOf(")"));
+						for (int i = 0; i < table.getItems().length; i++) {
+							TableItem tableItem = table.getItem(i);
+							if(tableItem.getText(0).equalsIgnoreCase(job)
+									&& tableItem.getText(1).equalsIgnoreCase(accountId)
+									&& tableItem.getText(4).equalsIgnoreCase(timestamp)) {
+								String fileName = tableItem.getText(0) + "_"+accountID+"_"
+										+ tableItem.getText(4).replaceAll(":", "_") + ".txt";
+								String fullPath = System.getProperty("user.home") + "/strongpoint_action_logs/" + fileName;
+								if(StrongpointDirectoryGeneralUtility.newInstance().readLogFileforErrorMessages(fullPath)) {
+									strongpointView.updateItemStatus(tableItem, "Error");
+								} else {
+									strongpointView.updateItemStatus(tableItem, "Success");	
+								}
+							}
+						}
+					}
+				} catch (PartInitException e) {
+					e.printStackTrace();
+				}
+            }
+        });
+    }
+
 	private void createAccountIDElement(Composite container) {
         Label accountIDLabel = new Label(container, SWT.NONE);
         accountIDLabel.setText("Account ID: ");
@@ -138,6 +197,6 @@ public class TestConnectionDialog extends TitleAreaDialog{
 			}
 		});          
         accountIDText.setLayoutData(accountIDGridData);
-	} 
+	}
 
 }

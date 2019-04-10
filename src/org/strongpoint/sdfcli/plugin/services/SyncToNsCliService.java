@@ -7,12 +7,19 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-
+import org.apache.http.HttpEntity;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.util.EntityUtils;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
@@ -34,8 +41,10 @@ import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
+import org.json.simple.JSONValue;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
+import org.strongpoint.sdfcli.plugin.utils.Accounts;
 import org.strongpoint.sdfcli.plugin.utils.Credentials;
 import org.strongpoint.sdfcli.plugin.utils.StrongpointDirectoryGeneralUtility;
 import org.strongpoint.sdfcli.plugin.utils.enums.JobTypes;
@@ -172,6 +181,7 @@ public class SyncToNsCliService {
 			protected IStatus run(IProgressMonitor arg0) {
 				addDependenciesCliResult(projectPath, JobTypes.add_dependencies.getJobType(), timestamp);
 				syncWithUi(JobTypes.add_dependencies.getJobType());
+				syncSavedSearch(getAccountId(projectPath), projectPath);
 				return Status.OK_STATUS;
 			}
 		};
@@ -504,6 +514,69 @@ public class SyncToNsCliService {
 		System.out.println("Finished writing Add Dependencies file...");
 
 		return results;
+	}
+	
+	public void syncSavedSearch(String accountID, String projectPath) {
+		Map<String, String> results = new HashMap<String, String>();
+		String email = "";
+		String password = "";
+		JSONObject credentials = Credentials.getCredentialsFromFile();
+		if (credentials != null) {
+			email = credentials.get("email").toString();
+			password = credentials.get("password").toString();
+		}
+		String role = Credentials.getSDFRoleIdParam(accountID, true);
+		String roleMessage = Credentials.getSDFRoleIdParam(accountID, false);
+		List<String> filenames = StrongpointDirectoryGeneralUtility.newInstance().getSavedSearchIds(projectPath);
+		for (String scriptId : filenames) {
+			String strongpointURL = Accounts.getProductionRestDomain(accountID) + "/app/site/hosting/restlet.nl?script=customscript_flo_sync_saved_search&deploy=customdeploy_flo_sync_saved_search&scriptId="+scriptId;
+			if(Accounts.isSandboxAccount(accountID)) {
+				strongpointURL = Accounts.getSandboxRestDomain(accountID) + "/app/site/hosting/restlet.nl?script=customscript_flo_sync_saved_search&deploy=customdeploy_flo_sync_saved_search&scriptId="+scriptId;
+			}
+			System.out.println("Sync Saved Search URL: " + strongpointURL);
+			
+			HttpGet httpGet = null;
+			int statusCode;
+			String responseBodyStr;
+			CloseableHttpResponse response = null;
+			try {
+				CloseableHttpClient client = HttpClients.createDefault();
+				httpGet = new HttpGet(strongpointURL);
+				httpGet.addHeader("Authorization", "NLAuth nlauth_account=" + accountID + ", nlauth_email=" + email
+						+ ", nlauth_signature=" + password + ", nlauth_role="+role);
+				response = client.execute(httpGet);
+				HttpEntity entity = response.getEntity();
+				statusCode = response.getStatusLine().getStatusCode();
+				responseBodyStr = EntityUtils.toString(entity);
+				JSONObject resultObj = (JSONObject) JSONValue.parse(responseBodyStr);
+				if (!resultObj.get("code").toString().equalsIgnoreCase("200")) {
+					if(role.equals("")) {
+						results.put("message", roleMessage);	
+					} else {
+						results.put("message", "Error: " +resultObj.get("message").toString());
+					}
+					results.put("data", null);
+					results.put("code", Integer.toString(statusCode));
+				} else {
+					JSONObject data = (JSONObject) resultObj.get("data");
+					System.out.println("Saved Search: " +scriptId);
+					System.out.println("Saved Search Data: " +data.get("search").toString());
+					results.put(scriptId, data.get("search").toString());	
+				}
+			} catch (Exception exception) {
+				results.put("message", exception.getMessage());
+				results.put("data", null);
+				results.put("code", Integer.toString(400));
+			} finally {
+				if (httpGet != null) {
+					httpGet.reset();
+				}
+			}
+		}
+		System.out.println("Writing to Saved Searches file...");
+		StrongpointDirectoryGeneralUtility.newInstance().writeSavedSearchDuringSync(results, projectPath);
+		System.out.println("Finished writing to Saved Searches file...");
+
 	}
 
 	private JSONArray errorMessages(String accountID, String action) {
