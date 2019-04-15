@@ -20,8 +20,11 @@ import org.eclipse.jface.dialogs.TitleAreaDialog;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.ModifyEvent;
+import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -42,6 +45,7 @@ import org.eclipse.ui.PlatformUI;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.strongpoint.sdfcli.plugin.services.HttpRequestDeploymentService;
+import org.strongpoint.sdfcli.plugin.utils.Accounts;
 import org.strongpoint.sdfcli.plugin.utils.StrongpointDirectoryGeneralUtility;
 import org.strongpoint.sdfcli.plugin.utils.enums.JobTypes;
 import org.strongpoint.sdfcli.plugin.views.StrongpointView;
@@ -49,6 +53,7 @@ import org.strongpoint.sdfcli.plugin.views.StrongpointView;
 public class RequestDeploymentDialog extends TitleAreaDialog {
 	
 	private Text nameText;
+	private Combo accountIDText;
 	private Combo changeTypeCombo;
 	private Text changeOverviewText;
 	private Combo requestedByCombo;
@@ -62,6 +67,7 @@ public class RequestDeploymentDialog extends TitleAreaDialog {
 	private JSONObject results;
 	private boolean okButtonPressed;
 	private List<String> scriptIDs;
+	private String selectedValue = "";
 	
 	public RequestDeploymentDialog(Shell parentShell) {
 		super(parentShell);
@@ -108,6 +114,7 @@ public class RequestDeploymentDialog extends TitleAreaDialog {
         container.setLayout(layout);
         
         createNameElement(container);
+        createAccountIDElement(container);
         createChangeTypeElement(container);
         createChangeOverviewElement(container);
         
@@ -127,24 +134,28 @@ public class RequestDeploymentDialog extends TitleAreaDialog {
 	@Override
 	protected void okPressed() {
 		System.out.println("[Logger] --- Request Deployment OK button is pressed");
-		int changeTypeInt = 0;
+		int changeStageInt = 0;
 		int employeeId = 0;
 		JSONObject obj = new JSONObject();
 		obj.put("name", nameText.getText());
 		for (int i = 0; i < arr.size(); i++) {
         	JSONObject object = (JSONObject) arr.get(i);
         	if(object.get("text").toString().equalsIgnoreCase(this.changeType)) {
-        		changeTypeInt = Integer.valueOf(object.get("value").toString());
+        		changeStageInt = Integer.valueOf(object.get("value").toString());
         	}
 		}
-		obj.put("changeType", changeTypeInt);
+		obj.put("changeStage", changeStageInt);
 		obj.put("changeOverview", changeOverviewText.getText());
 		obj.put("scriptIds", this.scriptIDs);
+		final String accountID = (selectedValue.substring(selectedValue.indexOf("(") + 1,
+				selectedValue.indexOf(")")) != null)
+						? selectedValue.substring(selectedValue.indexOf("(") + 1, selectedValue.indexOf(")"))
+						: "";
 		Job requestDeploymentJob = new Job(JobTypes.request_deployment.getJobType()) {
 			
 			@Override
 			protected IStatus run(IProgressMonitor arg0) {
-				processRequestDeployment(obj);
+				processRequestDeployment(obj, accountID);
 				return Status.OK_STATUS;
 			}
 		};
@@ -190,8 +201,8 @@ public class RequestDeploymentDialog extends TitleAreaDialog {
         });
     }	
 	
-	private void processRequestDeployment(JSONObject obj) {
-		results = HttpRequestDeploymentService.newInstance().requestDeployment(obj, this.projectPath, JobTypes.request_deployment.getJobType(), this.timestamp);		
+	private void processRequestDeployment(JSONObject obj, String accountId) {
+		results = HttpRequestDeploymentService.newInstance().requestDeployment(obj, this.projectPath, JobTypes.request_deployment.getJobType(), this.timestamp, accountId);		
 		syncWithUi(JobTypes.request_deployment.getJobType());
 	}
 	
@@ -209,7 +220,7 @@ public class RequestDeploymentDialog extends TitleAreaDialog {
 	
 	private void createChangeTypeElement(Composite container) {
         Label changeTypeLabel = new Label(container, SWT.NONE);
-        changeTypeLabel.setText("Change Type: ");
+        changeTypeLabel.setText("Change Stage: ");
         
         GridData changeTypeGridData = new GridData();
         changeTypeGridData.grabExcessHorizontalSpace = true;
@@ -217,21 +228,31 @@ public class RequestDeploymentDialog extends TitleAreaDialog {
         
         changeTypeCombo = new Combo(container, SWT.DROP_DOWN);
         changeTypeCombo.setLayoutData(changeTypeGridData);
-        JSONObject changeTypeObj = HttpRequestDeploymentService.newInstance().getChangeTypes(this.projectPath);
-        JSONObject data = (JSONObject) changeTypeObj.get("data");
-        arr = (JSONArray) data.get("changeTypes");
-		ArrayList<String> itemsToDisplay = new ArrayList<String>();
-        for (int i = 0; i < arr.size(); i++) {
-        	JSONObject object = (JSONObject) arr.get(i);
-        	itemsToDisplay.add(object.get("text").toString());
-		}
-        changeTypeCombo.setItems(itemsToDisplay.toArray(new String[arr.size()]));
-        changeTypeCombo.addSelectionListener(new SelectionAdapter() {
-			@Override
-			public void widgetSelected(SelectionEvent e) {
-				changeType = changeTypeCombo.getItem(changeTypeCombo.getSelectionIndex());
-			}
-		});        
+		if(selectedValue.isEmpty()) {
+			changeTypeCombo.setText("Select an Account ID");
+			changeTypeCombo.setEnabled(false);
+		}	
+//		} else {
+//			String accountID = (selectedValue.substring(selectedValue.indexOf("(") + 1,
+//					selectedValue.indexOf(")")) != null)
+//							? selectedValue.substring(selectedValue.indexOf("(") + 1, selectedValue.indexOf(")"))
+//							: "";
+//	        JSONObject changeTypeObj = HttpRequestDeploymentService.newInstance().getChangeStages(this.projectPath, accountID);
+//	        JSONObject data = (JSONObject) changeTypeObj.get("data");
+//	        arr = (JSONArray) data.get("changeStages");
+//			ArrayList<String> itemsToDisplay = new ArrayList<String>();
+//	        for (int i = 0; i < arr.size(); i++) {
+//	        	JSONObject object = (JSONObject) arr.get(i);
+//	        	itemsToDisplay.add(object.get("text").toString());
+//			}
+//	        changeTypeCombo.setItems(itemsToDisplay.toArray(new String[arr.size()]));
+//	        changeTypeCombo.addSelectionListener(new SelectionAdapter() {
+//				@Override
+//				public void widgetSelected(SelectionEvent e) {
+//					changeType = changeTypeCombo.getItem(changeTypeCombo.getSelectionIndex());
+//				}
+//			}); 	
+//		}       
 	}
 	
 	private void createChangeOverviewElement(Composite container) {
@@ -242,6 +263,58 @@ public class RequestDeploymentDialog extends TitleAreaDialog {
 
         changeOverviewText = new Text(container, SWT.MULTI | SWT.BORDER | SWT.WRAP | SWT.V_SCROLL);
         changeOverviewText.setLayoutData(changeOverviewGridData);
+	}
+	
+	private void createAccountIDElement(Composite container) {
+		Label accountIDLabel = new Label(container, SWT.NONE);
+		accountIDLabel.setText("Target Account ID: ");
+
+		GridData accountIDGridData = new GridData();
+		accountIDGridData.grabExcessHorizontalSpace = true;
+		accountIDGridData.horizontalAlignment = GridData.FILL;
+
+		accountIDText = new Combo(container, SWT.BORDER);
+		accountIDText.setItems(Accounts.getAccountsStrFromFile());
+		accountIDText.addSelectionListener(new SelectionListener() {
+
+			@Override
+			public void widgetSelected(SelectionEvent arg0) {
+				selectedValue = accountIDText.getText();
+				changeStageListener();
+			}
+
+			@Override
+			public void widgetDefaultSelected(SelectionEvent arg0) {
+				// TODO Auto-generated method stub
+
+			}
+		});
+		accountIDText.setLayoutData(accountIDGridData);
+	}
+	
+	private void changeStageListener() {
+		if(!selectedValue.isEmpty()) {
+			changeOverviewText.setEnabled(true);
+			String accountID = (selectedValue.substring(selectedValue.indexOf("(") + 1,
+					selectedValue.indexOf(")")) != null)
+							? selectedValue.substring(selectedValue.indexOf("(") + 1, selectedValue.indexOf(")"))
+							: "";
+	        JSONObject changeTypeObj = HttpRequestDeploymentService.newInstance().getChangeStages(this.projectPath, accountID);
+	        JSONObject data = (JSONObject) changeTypeObj.get("data");
+	        arr = (JSONArray) data.get("changeStages");
+			ArrayList<String> itemsToDisplay = new ArrayList<String>();
+	        for (int i = 0; i < arr.size(); i++) {
+	        	JSONObject object = (JSONObject) arr.get(i);
+	        	itemsToDisplay.add(object.get("text").toString());
+			}
+	        changeTypeCombo.setItems(itemsToDisplay.toArray(new String[arr.size()]));
+	        changeTypeCombo.addSelectionListener(new SelectionAdapter() {
+				@Override
+				public void widgetSelected(SelectionEvent e) {
+					changeType = changeTypeCombo.getItem(changeTypeCombo.getSelectionIndex());
+				}
+			}); 
+		} 		
 	}
 	
 //    public List<String> getScripIds(IWorkbenchWindow window){

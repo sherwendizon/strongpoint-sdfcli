@@ -31,13 +31,13 @@ public class HttpRequestDeploymentService {
 		return new HttpRequestDeploymentService();
 	}
 	
-	public JSONObject requestDeployment(JSONObject parameters, String projectPath, String jobType, String timestamp) {
+	public JSONObject requestDeployment(JSONObject parameters, String projectPath, String jobType, String timestamp, String accountId) {
 		JSONObject results = new JSONObject();
 		JSONObject creds = Credentials.getCredentialsFromFile();
 		String emailCred = "";
 		String passwordCred = "";
 		String pathCred = "";
-		String accountId = "";
+//		String accountId = "";
 		if(creds != null) {
 			emailCred = creds.get("email").toString();
 			passwordCred = creds.get("password").toString();
@@ -45,7 +45,7 @@ public class HttpRequestDeploymentService {
 		}
         JSONObject importObj = StrongpointDirectoryGeneralUtility.newInstance().readImportJsonFile(projectPath);
         if(importObj != null) {
-        	accountId = importObj.get("accountId").toString();
+//        	accountId = importObj.get("accountId").toString();
         	parameters.put("parentCrId", importObj.get("parentCrId").toString());
         }
 		String role = Credentials.getSDFRoleIdParam(accountId, true);
@@ -111,29 +111,30 @@ public class HttpRequestDeploymentService {
 		return results;
 	}
 	
-	public JSONObject getChangeTypes(String projectPath) {
+	public JSONObject getChangeStages(String projectPath, String accountId) {
 		JSONObject results = new JSONObject();
 		JSONObject creds = Credentials.getCredentialsFromFile();
 		String emailCred = "";
 		String passwordCred = "";
 		String pathCred = "";
-		String accountId = "";
+//		String accountId = "";
 		if(creds != null) {
 			emailCred = creds.get("email").toString();
 			passwordCred = creds.get("password").toString();
 			pathCred = creds.get("path").toString();
 		}
-        JSONObject importObj = StrongpointDirectoryGeneralUtility.newInstance().readImportJsonFile(projectPath);
-        if(importObj != null) {
-        	accountId = importObj.get("accountId").toString();
-        }
+//        JSONObject importObj = StrongpointDirectoryGeneralUtility.newInstance().readImportJsonFile(projectPath);
+//        if(importObj != null) {
+//        	accountId = importObj.get("accountId").toString();
+//        }
 		String role = Credentials.getSDFRoleIdParam(accountId, true);
 		String roleMessage = Credentials.getSDFRoleIdParam(accountId, false);
 		String urlString = Accounts.getProductionRestDomain(accountId) + "/app/site/hosting/restlet.nl?script=customscript_flo_create_cr_restlet&deploy=customdeploy_flo_create_cr_restlet";
         if(Accounts.isSandboxAccount(accountId)) {
         	urlString = Accounts.getSandboxRestDomain(accountId) + "/app/site/hosting/restlet.nl?script=customscript_flo_create_cr_restlet&deploy=customdeploy_flo_create_cr_restlet";
         }
-        System.out.println("Get Changes Types URL: " +urlString);
+        System.out.println("Get Changes Stages Account Id: " +accountId);
+        System.out.println("Get Changes Stages URL: " +urlString);
 		int statusCode;
         String strRespBody;
         HttpGet httpGet = null;
