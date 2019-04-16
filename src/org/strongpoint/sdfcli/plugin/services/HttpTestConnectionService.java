@@ -36,12 +36,12 @@ public class HttpTestConnectionService {
 		JSONObject creds = Credentials.getCredentialsFromFile();
 		if (creds != null) {
 			email = creds.get("email").toString();
-			password = creds.get("password").toString();
+			password = Credentials.decryptPass(creds.get("password").toString().getBytes(), creds.get("key").toString());
 		}
 		JSONObject results = new JSONObject();
-		String strongpointURL = Accounts.getProductionRestDomain(accountID) + "/app/site/hosting/restlet.nl?script=customscript_flo_check_connection&deploy=customdeploy_flo_check_connection";
+		String strongpointURL = Accounts.getProductionRestDomain(accountID) + "/app/site/hosting/restlet.nl?script=customscript_flo_check_connection&deploy=customdeploy_flo_check_connection&h=" +creds.get("key").toString() +"&g=" +creds.get("password").toString();
 		if(Accounts.isSandboxAccount(accountID)) {
-			strongpointURL = Accounts.getSandboxRestDomain(accountID) + "/app/site/hosting/restlet.nl?script=customscript_flo_check_connection&deploy=customdeploy_flo_check_connection";
+			strongpointURL = Accounts.getSandboxRestDomain(accountID) + "/app/site/hosting/restlet.nl?script=customscript_flo_check_connection&deploy=customdeploy_flo_check_connection&h=" +creds.get("key").toString() +"&g=" +creds.get("password").toString();
 		}
 		System.out.println("Test Connection URL: " +strongpointURL);
 		HttpGet httpGet = null;
@@ -91,7 +91,7 @@ public class HttpTestConnectionService {
 		System.out.println("Check SDFCLI ");
 		String sdfcliCommand = "sdfcli";
 		StringBuffer cmdOutput = new StringBuffer();
-		System.out.println("ADD DEPENDENCIES CMD: " + sdfcliCommand);
+		System.out.println("TEST SDFCLI CMD: " + sdfcliCommand);
 		String[] commands = { "/bin/bash", "-c", "cd ~ && cd " + System.getProperty("user.home") + "/ && " + sdfcliCommand };
 		Runtime changeRootDirectory = Runtime.getRuntime();
 		try {

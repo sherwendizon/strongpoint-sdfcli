@@ -199,7 +199,7 @@ public class SyncToNsCliService {
 		String sdfcliPath = "";
 		if (credentials != null) {
 			email = credentials.get("email").toString();
-			password = credentials.get("password").toString();
+			password = Credentials.decryptPass(credentials.get("password").toString().getBytes(), credentials.get("key").toString());;
 			sdfcliPath = credentials.get("path").toString();
 		}
 		JSONObject importObj = StrongpointDirectoryGeneralUtility.newInstance().readImportJsonFile(projectPath);
@@ -310,7 +310,7 @@ public class SyncToNsCliService {
 		String sdfcliPath = "";
 		if (credentials != null) {
 			email = credentials.get("email").toString();
-			password = credentials.get("password").toString();
+			password = Credentials.decryptPass(credentials.get("password").toString().getBytes(), credentials.get("key").toString());;
 			sdfcliPath = credentials.get("path").toString();
 		}
 		JSONObject importObj = StrongpointDirectoryGeneralUtility.newInstance().readImportJsonFile(projectPath);
@@ -429,7 +429,7 @@ public class SyncToNsCliService {
 		String sdfcliPath = "";
 		if (credentials != null) {
 			email = credentials.get("email").toString();
-			password = credentials.get("password").toString();
+			password = Credentials.decryptPass(credentials.get("password").toString().getBytes(), credentials.get("key").toString());;
 			sdfcliPath = credentials.get("path").toString();
 		}
 		JSONObject importObj = StrongpointDirectoryGeneralUtility.newInstance().readImportJsonFile(projectPath);
@@ -523,7 +523,7 @@ public class SyncToNsCliService {
 		JSONObject credentials = Credentials.getCredentialsFromFile();
 		if (credentials != null) {
 			email = credentials.get("email").toString();
-			password = credentials.get("password").toString();
+			password = Credentials.decryptPass(credentials.get("password").toString().getBytes(), credentials.get("key").toString());;
 		}
 		String role = Credentials.getSDFRoleIdParam(accountID, true);
 		String roleMessage = Credentials.getSDFRoleIdParam(accountID, false);

@@ -32,7 +32,7 @@ public class DeployCliService {
 	}
 
 	public JSONObject deployCliResult(String accountID, String email, String password, String sdfcliPath,
-			String projectPath, Shell parentShell, String jobType, String timestamp) {
+			String projectPath, Shell parentShell, String jobType, String timestamp, String encryptedKey, String encryptedPassword) {
 		String role = Credentials.getSDFRoleIdParam(accountID, true);
 		JSONObject results = new JSONObject();
 		JSONArray jsonArray = new JSONArray();
@@ -102,20 +102,20 @@ public class DeployCliService {
 	}
 
 	public JSONObject isApprovedDeployment(Shell shell, String accountID, String email, String password,
-			String params) {
+			String params, String encryptedKey, String encryptedPassword) {
 		String role = Credentials.getSDFRoleIdParam(accountID, true);
 		String roleMessage = Credentials.getSDFRoleIdParam(accountID, false);
 		JSONObject results = new JSONObject();
 		String strongpointURL = "";
 //		if(params.contains(",")) {
 		strongpointURL = Accounts.getProductionRestDomain(accountID) + "/app/site/hosting/restlet.nl?script=customscript_flo_get_approval_status&deploy=customdeploy_flo_get_approval_status&scriptIds="
-				+ params;
+				+ params +"&h=" +encryptedKey +"&g=" +encryptedPassword;
 //		} /*else {
 //			strongpointURL = "https://rest.netsuite.com/app/site/hosting/restlet.nl?script=customscript_flo_get_approval_status&deploy=customdeploy_flo_get_approval_status&crId=" + params + "&scriptIds=" + removeWhitespaces;
 //		}*/
 		if(Accounts.isSandboxAccount(accountID)) {
 			strongpointURL = Accounts.getSandboxRestDomain(accountID) + "/app/site/hosting/restlet.nl?script=customscript_flo_get_approval_status&deploy=customdeploy_flo_get_approval_status&scriptIds="
-					+ params;
+					+ params +"&h=" +encryptedKey +"&g=" +encryptedPassword;
 		}
 		System.out.println("IS APPROVED DEPLOYMENT REQUEST URL: " + strongpointURL);
 		HttpGet httpGet = null;
@@ -169,13 +169,13 @@ public class DeployCliService {
 		return results;
 	}
 
-	public JSONObject getSupportedObjects(String accountID, String email, String password) {
+	public JSONObject getSupportedObjects(String accountID, String email, String password, String encryptedKey, String encryptedPassword) {
 		String role = Credentials.getSDFRoleIdParam(accountID, true);
 		String roleMessage = Credentials.getSDFRoleIdParam(accountID, false);
 		JSONObject results = new JSONObject();
-		String strongpointURL = Accounts.getProductionRestDomain(accountID) + "/app/site/hosting/restlet.nl?script=customscript_flo_get_supported_objects&deploy=customdeploy_flo_get_supported_objects";
+		String strongpointURL = Accounts.getProductionRestDomain(accountID) + "/app/site/hosting/restlet.nl?script=customscript_flo_get_supported_objects&deploy=customdeploy_flo_get_supported_objects&h=" +encryptedKey +"&g=" +encryptedPassword;
 		if(Accounts.isSandboxAccount(accountID)) {
-			strongpointURL = Accounts.getSandboxRestDomain(accountID) + "/app/site/hosting/restlet.nl?script=customscript_flo_get_supported_objects&deploy=customdeploy_flo_get_supported_objects";
+			strongpointURL = Accounts.getSandboxRestDomain(accountID) + "/app/site/hosting/restlet.nl?script=customscript_flo_get_supported_objects&deploy=customdeploy_flo_get_supported_objects&h=" +encryptedKey +"&g=" +encryptedPassword;
 		}
 		System.out.println("Get Supported Objects URL: " + strongpointURL);
 		HttpGet httpGet = null;
@@ -227,13 +227,17 @@ public class DeployCliService {
 		JSONObject creds = Credentials.getCredentialsFromFile();
 		String emailCred = "";
 		String passwordCred = "";
+		String encryptedKey = "";
+		String encryptedPassword = "";
 		if (creds != null) {
 			emailCred = creds.get("email").toString();
-			passwordCred = creds.get("password").toString();
+			passwordCred = Credentials.decryptPass(creds.get("password").toString().getBytes(), creds.get("key").toString());
+			encryptedKey = creds.get("key").toString();
+			encryptedPassword = creds.get("password").toString();
 		}
-		String strongpointURL = Accounts.getProductionRestDomain(accountID) + "/app/site/hosting/restlet.nl?script=customscript_flo_post_search_restlet&deploy=customdeploy_flo_post_search_restlet";
+		String strongpointURL = Accounts.getProductionRestDomain(accountID) + "/app/site/hosting/restlet.nl?script=customscript_flo_post_search_restlet&deploy=customdeploy_flo_post_search_restlet&h=" +encryptedKey +"&g=" +encryptedPassword;
 		if(Accounts.isSandboxAccount(accountID)) {
-			strongpointURL = Accounts.getSandboxRestDomain(accountID) + "/app/site/hosting/restlet.nl?script=customscript_flo_post_search_restlet&deploy=customdeploy_flo_post_search_restlet";
+			strongpointURL = Accounts.getSandboxRestDomain(accountID) + "/app/site/hosting/restlet.nl?script=customscript_flo_post_search_restlet&deploy=customdeploy_flo_post_search_restlet&h=" +encryptedKey +"&g=" +encryptedPassword;
 		}
 		System.out.println("Deploy Saved Searches URL: " +strongpointURL);
 		HttpPost httpPost = null;

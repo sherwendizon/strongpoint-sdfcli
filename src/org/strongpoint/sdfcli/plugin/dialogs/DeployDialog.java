@@ -224,11 +224,15 @@ public class DeployDialog extends TitleAreaDialog {
 		JSONObject creds = Credentials.getCredentialsFromFile();
 		String emailCred = "";
 		String passwordCred = "";
+		String encryptedKey = "";
+		String encryptedPassword = "";
 		String pathCred = "";
 		String params = "";
 		if (creds != null) {
 			emailCred = creds.get("email").toString();
-			passwordCred = creds.get("password").toString();
+			passwordCred = Credentials.decryptPass(creds.get("password").toString().getBytes(), creds.get("key").toString());
+			encryptedKey = creds.get("key").toString();
+			encryptedPassword = creds.get("password").toString();
 			pathCred = creds.get("path").toString();
 		} else {
 			if (!Credentials.isCredentialsFileExists()) {
@@ -247,14 +251,14 @@ public class DeployDialog extends TitleAreaDialog {
 		}
 		String accountId = selectedValue.substring(selectedValue.indexOf("(") + 1, selectedValue.indexOf(")"));
 		JSONObject approveResult = DeployCliService.newInstance().isApprovedDeployment(parentShell, accountId,
-				emailCred, passwordCred, String.join(",", this.scriptIDs));
+				emailCred, passwordCred, String.join(",", this.scriptIDs), encryptedKey, encryptedPassword);
 //		JSONObject targetUpdates = TargetUpdatesService.newInstance().localUpdatedWithTarget(accountId,
 //				this.projectPath, scriptIds);
 		System.out.println("Deploy Approve results: " + approveResult.toJSONString());
 		JSONObject data = (JSONObject) approveResult.get("data");
 		isApproved = (boolean) data.get("result");
 		JSONObject supportedObjs = DeployCliService.newInstance().getSupportedObjects(accountId, emailCred,
-				passwordCred);
+				passwordCred, encryptedKey, encryptedPassword);
 		JSONObject importObjects = StrongpointDirectoryGeneralUtility.newInstance()
 				.readImportJsonFile(this.projectPath);
 		JSONArray objects = (JSONArray) importObjects.get("objects");
@@ -338,7 +342,7 @@ public class DeployDialog extends TitleAreaDialog {
 //					} else {
 						results = DeployCliService.newInstance().deployCliResult(accountId, emailCred, passwordCred,
 								pathCred, this.projectPath, this.parentShell, JobTypes.deployment.getJobType(),
-								timestamp);
+								timestamp, encryptedKey, encryptedPassword);
 						savedSearchResults = DeployCliService.newInstance().deploySavedSearches(accountId, emailCred,
 								passwordCred, pathCred, this.projectPath, this.parentShell,
 								JobTypes.savedSearch.getJobType(), this.ssTimestamps, (boolean) data.get("result"), "");

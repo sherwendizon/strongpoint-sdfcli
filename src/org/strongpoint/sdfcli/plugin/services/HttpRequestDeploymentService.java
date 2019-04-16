@@ -40,7 +40,7 @@ public class HttpRequestDeploymentService {
 //		String accountId = "";
 		if(creds != null) {
 			emailCred = creds.get("email").toString();
-			passwordCred = creds.get("password").toString();
+			passwordCred = Credentials.decryptPass(creds.get("password").toString().getBytes(), creds.get("key").toString());
 			pathCred = creds.get("path").toString();
 		}
         JSONObject importObj = StrongpointDirectoryGeneralUtility.newInstance().readImportJsonFile(projectPath);
@@ -50,9 +50,9 @@ public class HttpRequestDeploymentService {
         }
 		String role = Credentials.getSDFRoleIdParam(accountId, true);
 		String roleMessage = Credentials.getSDFRoleIdParam(accountId, false);
-		String strongpointURL = Accounts.getProductionRestDomain(accountId) + "/app/site/hosting/restlet.nl?script=customscript_flo_create_cr_restlet&deploy=customdeploy_flo_create_cr_restlet";
+		String strongpointURL = Accounts.getProductionRestDomain(accountId) + "/app/site/hosting/restlet.nl?script=customscript_flo_create_cr_restlet&deploy=customdeploy_flo_create_cr_restlet&h=" + creds.get("key").toString() + "&g=" + creds.get("password").toString();
 		if(Accounts.isSandboxAccount(accountId)) {
-			strongpointURL = Accounts.getSandboxRestDomain(accountId) + "/app/site/hosting/restlet.nl?script=customscript_flo_create_cr_restlet&deploy=customdeploy_flo_create_cr_restlet";
+			strongpointURL = Accounts.getSandboxRestDomain(accountId) + "/app/site/hosting/restlet.nl?script=customscript_flo_create_cr_restlet&deploy=customdeploy_flo_create_cr_restlet&h=" + creds.get("key").toString() + "&g=" + creds.get("password").toString();
 		}
 		System.out.println("Request Deployment URL: " +strongpointURL);
 		HttpPost httpPost = null;
@@ -120,7 +120,7 @@ public class HttpRequestDeploymentService {
 //		String accountId = "";
 		if(creds != null) {
 			emailCred = creds.get("email").toString();
-			passwordCred = creds.get("password").toString();
+			passwordCred = Credentials.decryptPass(creds.get("password").toString().getBytes(), creds.get("key").toString());
 			pathCred = creds.get("path").toString();
 		}
 //        JSONObject importObj = StrongpointDirectoryGeneralUtility.newInstance().readImportJsonFile(projectPath);
@@ -129,9 +129,9 @@ public class HttpRequestDeploymentService {
 //        }
 		String role = Credentials.getSDFRoleIdParam(accountId, true);
 		String roleMessage = Credentials.getSDFRoleIdParam(accountId, false);
-		String urlString = Accounts.getProductionRestDomain(accountId) + "/app/site/hosting/restlet.nl?script=customscript_flo_create_cr_restlet&deploy=customdeploy_flo_create_cr_restlet";
+		String urlString = Accounts.getProductionRestDomain(accountId) + "/app/site/hosting/restlet.nl?script=customscript_flo_create_cr_restlet&deploy=customdeploy_flo_create_cr_restlet&h=" + creds.get("key").toString() + "&g=" + creds.get("password").toString();
         if(Accounts.isSandboxAccount(accountId)) {
-        	urlString = Accounts.getSandboxRestDomain(accountId) + "/app/site/hosting/restlet.nl?script=customscript_flo_create_cr_restlet&deploy=customdeploy_flo_create_cr_restlet";
+        	urlString = Accounts.getSandboxRestDomain(accountId) + "/app/site/hosting/restlet.nl?script=customscript_flo_create_cr_restlet&deploy=customdeploy_flo_create_cr_restlet&h=" +creds.get("key").toString() + "&g=" +creds.get("password").toString();
         }
         System.out.println("Get Changes Stages Account Id: " +accountId);
         System.out.println("Get Changes Stages URL: " +urlString);

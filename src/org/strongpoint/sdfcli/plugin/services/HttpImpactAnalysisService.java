@@ -30,7 +30,7 @@ public class HttpImpactAnalysisService {
 		JSONObject creds = Credentials.getCredentialsFromFile();
 		if(creds != null) {
 			email = creds.get("email").toString();
-			password = creds.get("password").toString();
+			password = Credentials.decryptPass(creds.get("password").toString().getBytes(), creds.get("key").toString());
 		}
 		JSONObject results = new JSONObject();
 //		ArrayList<String> list = new ArrayList<String>(getScripIds);
@@ -49,15 +49,15 @@ public class HttpImpactAnalysisService {
 			String strongpointURL = "";
 			if(changeRequestId != null && !changeRequestId.isEmpty()) {
 				if(Accounts.isSandboxAccount(accountID)) {
-					strongpointURL = Accounts.getSandboxRestDomain(accountID) + "/app/site/hosting/restlet.nl?script=customscript_flo_impact_analysis_ext_res&deploy=customdeploy_flo_impact_analysis_ext_res&crId=" + changeRequestId;
+					strongpointURL = Accounts.getSandboxRestDomain(accountID) + "/app/site/hosting/restlet.nl?script=customscript_flo_impact_analysis_ext_res&deploy=customdeploy_flo_impact_analysis_ext_res&crId=" + changeRequestId + "&h=" + creds.get("key").toString() + "&g=" + creds.get("password").toString();
 				} else {
-					strongpointURL = Accounts.getProductionRestDomain(accountID) + "/app/site/hosting/restlet.nl?script=customscript_flo_impact_analysis_ext_res&deploy=customdeploy_flo_impact_analysis_ext_res&crId=" + changeRequestId;	
+					strongpointURL = Accounts.getProductionRestDomain(accountID) + "/app/site/hosting/restlet.nl?script=customscript_flo_impact_analysis_ext_res&deploy=customdeploy_flo_impact_analysis_ext_res&crId=" + changeRequestId + "&h=" + creds.get("key").toString() + "&g=" + creds.get("password").toString();	
 				}				
 			} else {
 				if(Accounts.isSandboxAccount(accountID)) {
-					strongpointURL = Accounts.getSandboxRestDomain(accountID) + "/app/site/hosting/restlet.nl?script=customscript_flo_impact_analysis_ext_res&deploy=customdeploy_flo_impact_analysis_ext_res&scriptIds=" + removeWhitespaces;
+					strongpointURL = Accounts.getSandboxRestDomain(accountID) + "/app/site/hosting/restlet.nl?script=customscript_flo_impact_analysis_ext_res&deploy=customdeploy_flo_impact_analysis_ext_res&scriptIds=" + removeWhitespaces + "&h=" + creds.get("key").toString() + "&g=" + creds.get("password").toString();
 				} else {
-					strongpointURL = Accounts.getProductionRestDomain(accountID) + "/app/site/hosting/restlet.nl?script=customscript_flo_impact_analysis_ext_res&deploy=customdeploy_flo_impact_analysis_ext_res&scriptIds=" + removeWhitespaces;	
+					strongpointURL = Accounts.getProductionRestDomain(accountID) + "/app/site/hosting/restlet.nl?script=customscript_flo_impact_analysis_ext_res&deploy=customdeploy_flo_impact_analysis_ext_res&scriptIds=" + removeWhitespaces + "&h=" + creds.get("key").toString() + "&g=" + creds.get("password").toString();	
 				}
 				System.out.println("IMPACT ANALYSIS SCRIPT ID URL: " +strongpointURL);		
 			}
@@ -117,7 +117,7 @@ public class HttpImpactAnalysisService {
 		JSONObject creds = Credentials.getCredentialsFromFile();
 		if(creds != null) {
 			email = creds.get("email").toString();
-			password = creds.get("password").toString();
+			password = Credentials.decryptPass(creds.get("password").toString().getBytes(), creds.get("key").toString());
 		}
 		JSONObject results = new JSONObject();
 		if(getScripIds.isEmpty()) {
@@ -132,9 +132,9 @@ public class HttpImpactAnalysisService {
 			String removeWhitespaces = String.join(",",getScripIds);
 			String strongpointURL = "";
 			if(Accounts.isSandboxAccount(sourceAccountID)) {
-				strongpointURL = Accounts.getSandboxRestDomain(sourceAccountID) + "/app/site/hosting/restlet.nl?script=customscript_flo_get_diff_restlet&deploy=customdeploy_flo_get_diff_restlet&scriptIds=" + removeWhitespaces + "&target=" +targetAccountID;
+				strongpointURL = Accounts.getSandboxRestDomain(sourceAccountID) + "/app/site/hosting/restlet.nl?script=customscript_flo_get_diff_restlet&deploy=customdeploy_flo_get_diff_restlet&scriptIds=" + removeWhitespaces + "&target=" +targetAccountID + "&h=" +creds.get("key").toString() + "&g=" +creds.get("password").toString();
 			} else {
-				strongpointURL = Accounts.getProductionRestDomain(sourceAccountID) + "/app/site/hosting/restlet.nl?script=customscript_flo_get_diff_restlet&deploy=customdeploy_flo_get_diff_restlet&scriptIds=" + removeWhitespaces + "&target=" +targetAccountID;
+				strongpointURL = Accounts.getProductionRestDomain(sourceAccountID) + "/app/site/hosting/restlet.nl?script=customscript_flo_get_diff_restlet&deploy=customdeploy_flo_get_diff_restlet&scriptIds=" + removeWhitespaces + "&target=" +targetAccountID +"&h=" +creds.get("get").toString() +"&g=" +creds.get("password").toString();
 			}
 			System.out.println("DIFF SCRIPT ID URL: " +strongpointURL);		
 	 		System.out.println("Diff URL: " +strongpointURL);

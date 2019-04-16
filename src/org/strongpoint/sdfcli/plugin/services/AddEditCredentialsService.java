@@ -4,8 +4,21 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.StringReader;
+import java.security.InvalidKeyException;
+import java.security.Key;
+import java.security.NoSuchAlgorithmException;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Properties;
 import java.util.UUID;
+
+import javax.crypto.BadPaddingException;
+import javax.crypto.Cipher;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.KeyGenerator;
+import javax.crypto.NoSuchPaddingException;
+import javax.crypto.SecretKey;
+import javax.crypto.spec.SecretKeySpec;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -13,6 +26,7 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
+import org.eclipse.core.internal.preferences.Base64;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
@@ -26,7 +40,11 @@ public class AddEditCredentialsService {
 	private final static String userHomePath = System.getProperty("user.home");
 	
 	private final static String osName = System.getProperty("os.name").toLowerCase();
-
+	
+	private static final String AES_CIPHER = "AES";
+	
+	private static final byte[] keyValue = new byte[] { 'A', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k','l', 'm', 'n', 'o', 'p'};	
+	
 	private String emailStr;
 	
 	private String passwordStr;
@@ -53,9 +71,31 @@ public class AddEditCredentialsService {
 		System.out.println("Roles: " +roles);
 		StrongpointDirectoryGeneralUtility.newInstance().createSdfcliDirectory();
 		JSONObject obj = new JSONObject();
+		Key key = generateKey();
+	    String encryptStrPass = encryptPasswd(this.passwordStr, key);
 	    obj.put("email", this.emailStr);
-	    obj.put("password", this.passwordStr);
+	    obj.put("password", encryptStrPass);
 	    obj.put("roles", roles);
+	    obj.put("key", new String(new Base64().encode(key.getEncoded())));
+//	    encryptPassword(this.passwordStr);
+	    // decipher key/value
+//		Cipher decryptCipher;
+//		try {
+//			decryptCipher = Cipher.getInstance(ALGO);
+//			decryptCipher.init(Cipher.DECRYPT_MODE, generateKey());
+//			System.out.println("Key: " +new String(new Base64().encode(key.getEncoded())));
+//			System.out.println("Decrypted Password: " +Credentials.decryptPass(encryptStrPass.getBytes(), decryptCipher));
+//		} catch (NoSuchAlgorithmException e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		} catch (NoSuchPaddingException e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		} catch (InvalidKeyException e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		}
+	    // decipher key/value
 //	    obj.put("sandboxRoles", sandboxRoles);
 //	    String path = userHomePath.replace("\\", "") + "/sdfcli/";
 	    String path = "";
@@ -167,6 +207,84 @@ public class AddEditCredentialsService {
 		
 		return accountsAndRolesArray;
 	}
+	
+//	private Map<SecretKey, String> encryptPassword(String password) {
+//		Map<SecretKey, String> encrytedPassword = new HashMap<>();
+//		SecretKey key;
+//		Cipher encryptCipher;
+//		String encrytedStr;
+//		try {
+//			key = KeyGenerator.getInstance("DES").generateKey();
+//			encryptCipher = Cipher.getInstance("DES");
+//			encryptCipher.init(Cipher.ENCRYPT_MODE, key);
+//			byte[] encrypt = encryptPass(password, encryptCipher);
+//			encrytedStr = new String(encrypt);
+//			System.out.println("Key: " +new String(new Base64().encode(key.getEncoded())));
+//			System.out.println("Encrypted Password: " +encrytedStr);
+//			
+////			Cipher decryptCipher = Cipher.getInstance("DES");
+////			decryptCipher.init(Cipher.DECRYPT_MODE, key);
+////			System.out.println("Key: " +new String(new Base64().encode(key.getEncoded())));
+////			System.out.println("Decrypted Password: " +Credentials.decryptPass(encrypt, decryptCipher));
+//			encrytedPassword.put(key, encrytedStr);
+//		} catch (NoSuchAlgorithmException e) {
+//			e.printStackTrace();
+//		} catch (NoSuchPaddingException e) {
+//			e.printStackTrace();
+//		} catch (InvalidKeyException e) {
+//			e.printStackTrace();
+//		}
+//		
+//		return encrytedPassword;
+//	}
+	
+	private static Key generateKey() {
+		Key key = new SecretKeySpec(keyValue, AES_CIPHER);
+		return key;
+	}
+	
+	private String encryptPasswd(String pass, Key keyGen) {
+	    Key key = generateKey();
+	    Cipher cipher;
+	    byte[] encryptedValue = null;
+		try {
+			cipher = Cipher.getInstance(AES_CIPHER);
+			cipher.init(Cipher.ENCRYPT_MODE, key);
+		    byte[] encryptedByteArr = cipher.doFinal(pass.getBytes());
+		    encryptedValue = new Base64().encode(encryptedByteArr);
+		} catch (NoSuchAlgorithmException | NoSuchPaddingException e) {
+			e.printStackTrace();
+		} catch (IllegalBlockSizeException e) {
+			e.printStackTrace();
+		} catch (BadPaddingException e) {
+			e.printStackTrace();
+		} catch (InvalidKeyException e) {
+			e.printStackTrace();
+		}
+	    return new String(encryptedValue);		
+	}
+	
+//	private static byte[] encryptPass(String pass, Cipher encryptCipher) {
+//		try {
+//			byte[] utf8 = pass.getBytes("UTF8");
+//			byte[] enc = encryptCipher.doFinal(utf8);
+//			return new Base64().encode(enc);
+//		} catch (Exception e) {
+//			e.printStackTrace();
+//		}
+//		return null;		
+//	}
+	
+//	private static String decryptPass(byte[] pass, Cipher decryptCipher) {
+//		try {
+//			byte[] dec = new Base64().decode(pass);
+//			byte[] utf8 = decryptCipher.doFinal(dec);
+//			return new String(utf8, "UTF8");
+//		} catch (Exception e) {
+//			e.printStackTrace();
+//		}
+//		return null;		
+//	}
 	
 	// Sandbox Account
 //	private JSONObject getSandboxAccountRoles(String email, String password) {

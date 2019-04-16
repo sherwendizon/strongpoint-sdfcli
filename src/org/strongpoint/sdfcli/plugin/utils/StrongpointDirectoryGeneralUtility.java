@@ -19,7 +19,10 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import javax.crypto.Cipher;
+
 import org.apache.commons.io.FilenameUtils;
+import org.eclipse.core.internal.preferences.Base64;
 import org.eclipse.core.resources.IProject;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -526,5 +529,5 @@ public class StrongpointDirectoryGeneralUtility {
 			file.mkdir();
 		}
 	}
-	
+		
 }

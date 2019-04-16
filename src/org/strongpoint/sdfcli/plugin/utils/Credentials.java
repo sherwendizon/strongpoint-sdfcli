@@ -5,7 +5,12 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.security.Key;
 
+import javax.crypto.Cipher;
+import javax.crypto.spec.SecretKeySpec;
+
+import org.eclipse.core.internal.preferences.Base64;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -64,6 +69,22 @@ public class Credentials {
 		}
 
 		return role;
+	}
+	
+	public static String decryptPass(byte[] pass, String keyStr) {
+		byte[] encodedKey = new Base64().decode(keyStr.getBytes());
+		Key key = new SecretKeySpec(encodedKey,0,encodedKey.length, "AES"); 
+		Cipher decryptCipher;
+		try {
+			decryptCipher = Cipher.getInstance("AES");
+			decryptCipher.init(Cipher.DECRYPT_MODE, key);
+			byte[] dec = new Base64().decode(pass);
+			byte[] utf8 = decryptCipher.doFinal(dec);
+			return new String(utf8, "UTF8");
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return null;		
 	}
 
 }
