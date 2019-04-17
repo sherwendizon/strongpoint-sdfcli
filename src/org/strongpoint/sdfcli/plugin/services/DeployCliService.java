@@ -7,6 +7,8 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -81,8 +83,16 @@ public class DeployCliService {
 					jsonArray.add(obj);
 				}
 			}
-			
-			if(resultList.isEmpty()) {
+			String regex = "(.*?)-(.*?)\\ (.*?):(.*?):(.*?)\\)\\ Installation\\ COMPLETE";
+			Pattern pattern = Pattern.compile(regex);
+			boolean isSuccess = false;
+			for (String string : resultList) {
+				Matcher matcher = pattern.matcher(string);
+				if (matcher.find()) {
+					isSuccess = true;
+				}
+			}
+			if(!isSuccess) {
 				errorMessages(accountID, "deploying");
 			}
 
