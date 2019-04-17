@@ -243,20 +243,12 @@ public class SyncToNsCliService {
 							+ " -type ALL -url system.netsuite.com";
 					String[] windowsCommands = { "cmd.exe", "/c", "cd " + projectPath + " && cd " + projectPath,
 							" && " + windowsImportObjectsCommand };
-					System.out.println("Windows: " + windowsImportObjectsCommand);
 //					MessageDialog.openInformation(this.parentShell, "Import Object", "cmd.exe"+ " /c "+"cd " +projectPath+" && cd "+projectPath+ " && "+windowsImportObjectsCommand);
 					ProcessBuilder processBuilderForWindows = new ProcessBuilder(windowsCommands);
 //					changeRootDirectoryProcess = changeRootDirectory.exec(windowsCommands);
 					processBuilderForWindows.redirectError(new File(projectPath + "/errorSync.log"));
 					changeRootDirectoryProcess = processBuilderForWindows.start();
 				} else {
-					System.out.println("Linux or MacOS: " + importobjectsCommand);
-					System.out.println("Windows: " + "(echo " + password
-							+ " && (FOR /L %G IN (1,1,1500) DO @ECHO YES)) | " + "sdfcli importobjects -account "
-							+ accountID + " -destinationfolder /Objects/ -email " + email + " -p "
-							+ projectPath/* .replace("\\", "/") */ + " -role "+role+" -scriptid "
-							+ String.join(" ", objsStr).toString().replaceAll("null", "")
-							+ " -type ALL -url system.netsuite.com");
 					changeRootDirectoryProcess = changeRootDirectory.exec(commands);
 				}
 				changeRootDirectoryProcess.waitFor();
@@ -341,7 +333,6 @@ public class SyncToNsCliService {
 					+ "sdfcli importfiles -paths " + String.join(" ", objsStr).toString().replaceAll("null", "")
 					+ " -account " + accountID + " -email " + email + " -p " + projectPath
 					+ " -role "+role+" -url system.netsuite.com";
-			System.out.println("IMPORT FILES CMD: " + importFilesCommand);
 			String[] commands = { "/bin/bash", "-c", "cd ~ && cd " + projectPath + "/ && " + importFilesCommand };
 			Runtime changeRootDirectory = Runtime.getRuntime();
 			try {
@@ -354,18 +345,12 @@ public class SyncToNsCliService {
 							+ " -email " + email + " -p " + projectPath + " -role "+role+" -url system.netsuite.com";
 					String[] windowsCommands = { "cmd.exe", "/c", "cd " + projectPath + " && cd " + projectPath,
 							" && " + windowsImportFilesCommand };
-					System.out.println("Windows: " + windowsImportFilesCommand);
 //					MessageDialog.openInformation(this.parentShell, "Import Files", "cmd.exe"+ " /c "+"cd " +projectPath+" && cd "+projectPath+ " && "+windowsImportFilesCommand);
 					ProcessBuilder processBuilderForWindows = new ProcessBuilder(windowsCommands);
 					processBuilderForWindows.redirectError(new File(projectPath + "/errorSync.log"));
 					changeRootDirectoryProcess = processBuilderForWindows.start();
 //					changeRootDirectoryProcess = changeRootDirectory.exec(windowsCommands);										
 				} else {
-					System.out.println("Linux or MacOS: " + importFilesCommand);
-					System.out.println("Windows: " + "(echo " + password
-							+ " && (FOR /L %G IN (1,1,1500) DO @ECHO YES)) | " + "sdfcli importfiles -paths "
-							+ String.join(" ", objsStrForWindows).toString().replaceAll("null", "") + " -account " + accountID
-							+ " -email " + email + " -p " + projectPath + " -role "+role+" -url system.netsuite.com");
 					changeRootDirectoryProcess = changeRootDirectory.exec(commands);
 				}
 				changeRootDirectoryProcess.waitFor();
@@ -454,7 +439,6 @@ public class SyncToNsCliService {
 			System.out.println("Project Path: " + projectPath);
 			String addDependenciesCommand = "(yes | awk '{print \"YES\"}') | " + "sdfcli adddependencies -account "
 					+ accountID + " -all -email " + email + " -p " + projectPath + " -role "+role+" -url system.netsuite.com";
-			System.out.println("ADD DEPENDENCIES CMD: " + addDependenciesCommand);
 			String[] commands = { "/bin/bash", "-c", "cd ~ && cd " + projectPath + "/ && " + addDependenciesCommand };
 			Runtime changeRootDirectory = Runtime.getRuntime();
 			try {
@@ -466,17 +450,12 @@ public class SyncToNsCliService {
 							+ projectPath + " -role "+role+" -url system.netsuite.com";
 					String[] windowsCommands = { "cmd.exe", "/c", "cd " + projectPath + " && cd " + projectPath,
 							" && " + windowsAddDependenciesCommand };
-					System.out.println("Windows: " + windowsAddDependenciesCommand);
 //					MessageDialog.openInformation(this.parentShell, "Add Dependencies", "cmd.exe"+ " /c "+"cd " +projectPath+" && cd "+projectPath+ " && "+windowsAddDependenciesCommand);
 					ProcessBuilder processBuilderForWindows = new ProcessBuilder(windowsCommands);
 					processBuilderForWindows.redirectError(new File(projectPath + "/errorSync.log"));
 					changeRootDirectoryProcess = processBuilderForWindows.start();
 //					changeRootDirectoryProcess = changeRootDirectory.exec(windowsCommands);						
 				} else {
-					System.out.println("Linux or MacOS: " + addDependenciesCommand);
-					System.out.println("Windows: " + "((FOR /L %G IN (1,1,1000) DO @ECHO YES)) | "
-							+ "sdfcli adddependencies -account " + accountID + " -all -email " + email + " -p "
-							+ projectPath + " -role "+role+" -url system.netsuite.com");
 					changeRootDirectoryProcess = changeRootDirectory.exec(commands);
 				}
 				changeRootDirectoryProcess.waitFor();

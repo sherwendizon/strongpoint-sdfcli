@@ -58,12 +58,10 @@ public class DeployCliService {
 						+ " -role "+role+" -url system.netsuite.com";
 				String[] windowsCommands = { "cmd.exe", "/c", "cd " + projectPath + " && cd " + projectPath,
 						" && " + windowsDeployCommand };
-				System.out.println("Windows: " + windowsDeployCommand);
 				ProcessBuilder processBuilderForWindows = new ProcessBuilder(windowsCommands);
 				processBuilderForWindows.redirectError(new File(projectPath + "/errorSync.log"));
 				changeRootDirectoryProcess = processBuilderForWindows.start();
 			} else {
-				System.out.println("Linux or MacOS: " + deployCommand);
 				changeRootDirectoryProcess = changeRootDirectory.exec(commands);
 			}
 			changeRootDirectoryProcess.waitFor();
