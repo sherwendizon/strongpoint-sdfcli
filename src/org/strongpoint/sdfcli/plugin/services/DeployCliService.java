@@ -235,9 +235,9 @@ public class DeployCliService {
 			encryptedKey = creds.get("key").toString();
 			encryptedPassword = creds.get("password").toString();
 		}
-		String strongpointURL = Accounts.getProductionRestDomain(accountID) + "/app/site/hosting/restlet.nl?script=customscript_flo_post_search_restlet&deploy=customdeploy_flo_post_search_restlet&h=" +encryptedKey +"&g=" +encryptedPassword;
+		String strongpointURL = Accounts.getProductionRestDomain(accountID) + "/app/site/hosting/restlet.nl?script=customscript_flo_post_search_restlet&deploy=customdeploy_flo_post_search_restlet";
 		if(Accounts.isSandboxAccount(accountID)) {
-			strongpointURL = Accounts.getSandboxRestDomain(accountID) + "/app/site/hosting/restlet.nl?script=customscript_flo_post_search_restlet&deploy=customdeploy_flo_post_search_restlet&h=" +encryptedKey +"&g=" +encryptedPassword;
+			strongpointURL = Accounts.getSandboxRestDomain(accountID) + "/app/site/hosting/restlet.nl?script=customscript_flo_post_search_restlet&deploy=customdeploy_flo_post_search_restlet";
 		}
 		System.out.println("Deploy Saved Searches URL: " +strongpointURL);
 		HttpPost httpPost = null;
@@ -257,6 +257,10 @@ public class DeployCliService {
 					JSONObject obj = new JSONObject();
 					obj.put("search", StrongpointDirectoryGeneralUtility.newInstance()
 							.readSavedSearchFile(projectPath + "/FileCabinet/SavedSearches/" + filename));
+					obj.put("email", emailCred);
+					obj.put("role", role);
+					obj.put("h", encryptedKey);
+					obj.put("g", encryptedPassword);
 
 					try {
 						CloseableHttpClient client = HttpClients.createDefault();
