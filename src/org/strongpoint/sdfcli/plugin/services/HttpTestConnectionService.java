@@ -92,27 +92,43 @@ public class HttpTestConnectionService {
 		String sdfcliCommand = "sdfcli";
 		StringBuffer cmdOutput = new StringBuffer();
 		System.out.println("TEST SDFCLI CMD: " + sdfcliCommand);
-		String[] commands = { "/bin/bash", "-c", "cd ~ && cd " + System.getProperty("user.home") + "/ && " + sdfcliCommand };
+		String osName = System.getProperty("os.name").toLowerCase();
+		String slash = "/ && ";
+		if(osName.indexOf("win") >= 0) {
+			slash = " && ";
+		}
+		String[] commands = { "/bin/bash", "-c", "cd ~ && cd " + System.getProperty("user.home") + slash + sdfcliCommand };
+		String[] windowsCommands = { "cmd.exe", "/c",
+				"cd " + System.getProperty("user.home") + " && cd " + System.getProperty("user.home"),
+				" && sdfcli project" };
 		Runtime changeRootDirectory = Runtime.getRuntime();
 		try {
 			Process changeRootDirectoryProcess;
-			System.out.println("Windows, Linux or MacOS: " + "cd ~ && cd " + System.getProperty("user.home") + "/ && " + sdfcliCommand);
-			changeRootDirectoryProcess = changeRootDirectory.exec(commands);
+			System.out.println("Windows, Linux or MacOS: " + "cd ~ && cd " + System.getProperty("user.home") + slash + sdfcliCommand);
+			if(osName.indexOf("win") >= 0) {
+				System.out.println("Windows here!");
+				ProcessBuilder processBuilderForWindows = new ProcessBuilder(windowsCommands);
+				changeRootDirectoryProcess = processBuilderForWindows.start();
+			} else {
+				changeRootDirectoryProcess = changeRootDirectory.exec(commands);
+			}
 			changeRootDirectoryProcess.waitFor();
 			BufferedReader reader = new BufferedReader(
 					new InputStreamReader(changeRootDirectoryProcess.getInputStream()));
 			String line = "";
 			while ((line = reader.readLine()) != null) {
-				if (line.contains("[INFO] BUILD SUCCESS")) {
+				if (line.contains("[INFO] Building SDF CLI 2018.2.1")) {
 					System.out.println(line);
 					cmdOutput.append(line);
-					results.put("message", line);	
+					results.put("message", "[INFO] BUILD SUCCESS");	
 				}
 			}
 
 		} catch (IOException e) {
+			System.out.println(e.getMessage());
 			results.put("message", "There was an error when invoking SDFCLI command. Please see to it that SDFCLI is in the environment variable or path.");
 		} catch (Exception exception) {
+			System.out.println(exception.getMessage());
 			JSONObject errorObject = new JSONObject();
 			results.put("message", "There was an error when invoking SDFCLI command. Please see to it that SDFCLI is in the environment variable or path.");
 		}

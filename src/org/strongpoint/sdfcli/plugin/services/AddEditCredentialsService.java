@@ -141,7 +141,6 @@ public class AddEditCredentialsService {
 	
 	private JSONObject getAccountRoles(String email, String password) {
 		String errorMessage = "Error during getting user accounts and roles: ";
-		System.out.println("Get account roles - Email: " +email+ " Password: " +password);
 		JSONObject results = new JSONObject();
 //		String strongpointURL = "https://forms.netsuite.com/app/site/hosting/scriptlet.nl?script=1145&deploy=1&compid=TSTDRV1049933&h=9b265f0bc6e8cc5f673e&email="+email+"&pass="+password;
  		String strongpointURL = "https://rest.netsuite.com/rest/roles";
