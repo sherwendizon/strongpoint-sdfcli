@@ -48,6 +48,11 @@
             name="Credentials Settings"
             id="strongpoint-sdfcli.commands.credentialsCommand">
       </command>
+      <command
+            categoryId="strongpoint-sdfcli.commands.category"
+            name="Refresh Roles"
+            id="strongpoint-sdfcli.commands.refreshRolesCommand">
+      </command>      
 <!--       
       <command
             categoryId="strongpoint-sdfcli.commands.category"
@@ -95,6 +100,10 @@
             class="org.strongpoint.sdfcli.plugin.handlers.SdfcliCredentialsHandler"
             commandId="strongpoint-sdfcli.commands.credentialsCommand">
       </handler>
+      <handler
+            class="org.strongpoint.sdfcli.plugin.handlers.SdfcliRolesHandler"
+            commandId="strongpoint-sdfcli.commands.RefreshRolesCommand">
+      </handler>      
 <!--
       <handler
             class="org.strongpoint.sdfcli.plugin.handlers.SdfcliSourceUpdatesHandler"
@@ -233,18 +242,18 @@
 -->                                                                                      
          </menu>
       </menuContribution>
-      <!--<menuContribution
+      <menuContribution
             locationURI="toolbar:org.eclipse.ui.main.toolbar?after=additions">
          <toolbar
                id="strongpoint-sdfcli.toolbars.sampleToolbar">
             <command
-                  id="strongpoint-sdfcli.toolbars.sampleCommand"
-                  commandId="strongpoint-sdfcli.commands.sampleCommand"
+                  id="strongpoint-sdfcli.toolbars.RefreshRolesCommand"
+                  commandId="strongpoint-sdfcli.commands.RefreshRolesCommand"
                   icon="icons/strpnt.png"
-                  tooltip="Strongpoint">
+                  tooltip="Strongpoint - Refresh Roles">
             </command>
          </toolbar>
-      </menuContribution>-->
+      </menuContribution>
    </extension>
    
    <extension point="org.eclipse.ui.views">

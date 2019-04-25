@@ -10,6 +10,7 @@ public enum JobTypes {
 	test_connection("Test Connection"),
 	account("Account"),
 	credentials("Credentials"),
+	refresh_roles("Refresh Roles"),
 	import_objects("Sync To Netsuite - Importing Objects"),
 	import_files("Sync To Netsuite - Importing Files"),
 	add_dependencies("Sync To Netsuite - Adding Dependencies"),

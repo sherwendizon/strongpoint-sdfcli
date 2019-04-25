@@ -401,8 +401,10 @@ public class StrongpointDirectoryGeneralUtility {
 			PrintWriter printWriter = new PrintWriter(writer);
 			if(jobType.equalsIgnoreCase(JobTypes.account.getJobType())) {
 				printWriter.println("Successfully added or updated an account.");
-			} else {
+			} else if(jobType.equalsIgnoreCase(JobTypes.credentials.getJobType())) {
 				printWriter.println("Successfully added or updated your credentials.");
+			} else {
+				printWriter.println("Successfully refreshed and updated user roles.");
 			}
 			
 			printWriter.close();

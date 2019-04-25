@@ -66,17 +66,26 @@ public class AddEditCredentialsService {
 	}
 
 	public void writeToJSONFile() {
-		JSONArray roles = accountsAndRoles(getAccountRoles(this.emailStr, this.passwordStr));
-//		JSONArray sandboxRoles = accountsAndRoles(getSandboxAccountRoles(this.emailStr, this.passwordStr));
-		System.out.println("Roles: " +roles);
+		String pass = "";
+		String passKey = "";
 		StrongpointDirectoryGeneralUtility.newInstance().createSdfcliDirectory();
 		JSONObject obj = new JSONObject();
 		Key key = generateKey();
-	    String encryptStrPass = encryptPasswd(this.passwordStr, key);
+//	    String encryptStrPass = encryptPasswd(this.passwordStr, key);
+		if(Credentials.isCredentialsFileExists()) {
+			JSONObject cred = Credentials.getCredentialsFromFile();
+			pass = cred.get("password").toString();
+			passKey = cred.get("key").toString();
+		} else {
+			pass = encryptPasswd(this.passwordStr, key);
+			passKey = new String(new Base64().encode(key.getEncoded()));
+		}
+		JSONArray roles = accountsAndRoles(getAccountRoles(this.emailStr, pass, passKey));
+		System.out.println("Roles: " +roles);
 	    obj.put("email", this.emailStr);
-	    obj.put("password", encryptStrPass);
+	    obj.put("password", pass);
 	    obj.put("roles", roles);
-	    obj.put("key", new String(new Base64().encode(key.getEncoded())));
+	    obj.put("key", passKey);
 //	    encryptPassword(this.passwordStr);
 	    // decipher key/value
 //		Cipher decryptCipher;
@@ -139,7 +148,8 @@ public class AddEditCredentialsService {
 	    }		
 	}
 	
-	private JSONObject getAccountRoles(String email, String password) {
+	private JSONObject getAccountRoles(String email, String password, String key) {
+		String passString = Credentials.decryptPass(password.getBytes(), key);
 		String errorMessage = "Error during getting user accounts and roles: ";
 		JSONObject results = new JSONObject();
 //		String strongpointURL = "https://forms.netsuite.com/app/site/hosting/scriptlet.nl?script=1145&deploy=1&compid=TSTDRV1049933&h=9b265f0bc6e8cc5f673e&email="+email+"&pass="+password;
@@ -152,7 +162,7 @@ public class AddEditCredentialsService {
 		try {
         	CloseableHttpClient client = HttpClients.createDefault();
             httpGet = new HttpGet(strongpointURL);
-            httpGet.addHeader("Authorization", "NLAuth nlauth_email=" + email + ", nlauth_signature=" + password);
+            httpGet.addHeader("Authorization", "NLAuth nlauth_email=" + email + ", nlauth_signature=" + passString);
             httpGet.addHeader("Content-type", "application/json");
             response = client.execute(httpGet);
             HttpEntity entity = response.getEntity();
