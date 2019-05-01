@@ -134,7 +134,7 @@ public class HttpImpactAnalysisService {
 			if(Accounts.isSandboxAccount(sourceAccountID)) {
 				strongpointURL = Accounts.getSandboxRestDomain(sourceAccountID) + "/app/site/hosting/restlet.nl?script=customscript_flo_get_diff_restlet&deploy=customdeploy_flo_get_diff_restlet&scriptIds=" + removeWhitespaces + "&target=" +targetAccountID + "&h=" +creds.get("key").toString() + "&g=" +creds.get("password").toString();
 			} else {
-				strongpointURL = Accounts.getProductionRestDomain(sourceAccountID) + "/app/site/hosting/restlet.nl?script=customscript_flo_get_diff_restlet&deploy=customdeploy_flo_get_diff_restlet&scriptIds=" + removeWhitespaces + "&target=" +targetAccountID +"&h=" +creds.get("get").toString() +"&g=" +creds.get("password").toString();
+				strongpointURL = Accounts.getProductionRestDomain(sourceAccountID) + "/app/site/hosting/restlet.nl?script=customscript_flo_get_diff_restlet&deploy=customdeploy_flo_get_diff_restlet&scriptIds=" + removeWhitespaces + "&target=" +targetAccountID +"&h=" +creds.get("key").toString() +"&g=" +creds.get("password").toString();
 			}
 			System.out.println("DIFF SCRIPT ID URL: " +strongpointURL);		
 	 		System.out.println("Diff URL: " +strongpointURL);

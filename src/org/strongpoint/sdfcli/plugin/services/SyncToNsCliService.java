@@ -285,6 +285,8 @@ public class SyncToNsCliService {
 		System.out.println("Finished writing Import Object file...");
 		try {
 			project.refreshLocal(IResource.DEPTH_INFINITE, null);
+			StrongpointDirectoryGeneralUtility.newInstance().removeUncessaryImportedObjects(projectPath);
+			project.refreshLocal(IResource.DEPTH_INFINITE, null);
 		} catch (CoreException e1) {
 			e1.printStackTrace();
 		}

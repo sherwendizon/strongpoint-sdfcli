@@ -531,5 +531,42 @@ public class StrongpointDirectoryGeneralUtility {
 			file.mkdir();
 		}
 	}
+	
+	public void removeUncessaryImportedObjects(String projectPath) {
+		JSONObject importFileObj = readImportJsonFile(projectPath);
+		JSONArray importObjects = (JSONArray) importFileObj.get("objects");
+		for (String scriptId : importedScriptIds(projectPath)) {
+			if(!importObjects.contains(scriptId)) {
+				String filePath = projectPath + "/Objects/" + scriptId + ".xml";
+				if(System.getProperty("os.name").toLowerCase().indexOf("win") >= 0) {
+					filePath = projectPath + "\\Objects\\" + scriptId + ".xml";
+				}
+				File file = new File(filePath);
+				if(file.exists() && !file.isDirectory()) {
+					if(file.delete()) {
+						System.out.println(filePath + " has been successfully deleted.");
+					}
+				}
+			}
+		}	
+	}
+	
+	private List<String> importedScriptIds(String projectPath) {
+		List<String> scriptIds = new ArrayList<String>();
+		String filePath = projectPath + "/Objects/";
+		if(System.getProperty("os.name").toLowerCase().indexOf("win") >= 0) {
+			filePath = projectPath + "\\Objects\\";
+		}
+		File file = new File(filePath);
+		File[] listOfFiles = file.listFiles();
+		for (int i = 0; i < listOfFiles.length; i++) {
+			if (listOfFiles[i].isFile() && FilenameUtils.getExtension(listOfFiles[i].getName()).equalsIgnoreCase("xml")) {
+				System.out.println("File " + listOfFiles[i].getName());
+				scriptIds.add(listOfFiles[i].getName().substring(0, listOfFiles[i].getName().indexOf(".")));
+			}
+		}
+		
+		return scriptIds;
+	}
 		
 }
