@@ -18,7 +18,9 @@ import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
+import org.strongpoint.sdfcli.plugin.handlers.SdfcliAddAccountHandler;
 import org.strongpoint.sdfcli.plugin.utils.Accounts;
+import org.strongpoint.sdfcli.plugin.utils.StrongpointLogger;
 
 public class AccountDialog extends TitleAreaDialog{
 	
@@ -106,7 +108,7 @@ public class AccountDialog extends TitleAreaDialog{
 	
 	@Override
 	protected void okPressed() {
-		System.out.println("[Logger] --- Account Dialog OK button is pressed");
+		StrongpointLogger.logger(AccountDialog.class.getName(), "info", "[Logger] --- Account Dialog OK button is pressed");
 		this.okButtonPressed = true;
 		results = new JSONObject();
 		results.put("okButton", "true");
@@ -154,8 +156,8 @@ public class AccountDialog extends TitleAreaDialog{
 			@Override
 			public void widgetSelected(SelectionEvent arg0) {
 				addAccountDialog.open();
-				System.out.println("HOME: " +System.getProperty("user.home"));
-				System.out.println("OS: " +System.getProperty("os.name"));
+				StrongpointLogger.logger(AccountDialog.class.getName(), "info", "HOME: " +System.getProperty("user.home"));
+				StrongpointLogger.logger(AccountDialog.class.getName(), "info", "OS: " +System.getProperty("os.name"));
 			}
 			
 			@Override

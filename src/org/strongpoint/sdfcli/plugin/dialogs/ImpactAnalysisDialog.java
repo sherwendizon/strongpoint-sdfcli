@@ -42,10 +42,12 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.json.simple.JSONObject;
+import org.strongpoint.sdfcli.plugin.handlers.SdfcliImpactAnalysisHandler;
 import org.strongpoint.sdfcli.plugin.services.HttpImpactAnalysisService;
 import org.strongpoint.sdfcli.plugin.utils.Accounts;
 import org.strongpoint.sdfcli.plugin.utils.Credentials;
 import org.strongpoint.sdfcli.plugin.utils.StrongpointDirectoryGeneralUtility;
+import org.strongpoint.sdfcli.plugin.utils.StrongpointLogger;
 import org.strongpoint.sdfcli.plugin.utils.enums.JobTypes;
 import org.strongpoint.sdfcli.plugin.views.StrongpointView;
 
@@ -60,7 +62,7 @@ public class ImpactAnalysisDialog extends TitleAreaDialog {
 	private String selectedValue = "";
 	private Shell parentShell;
 	private String projectPath;
-	private String jobType;
+	private String jobType;  
 	private String timestamp;
 	private boolean okButtonPressed;
 	private List<String> scriptIDs;
@@ -141,7 +143,7 @@ public class ImpactAnalysisDialog extends TitleAreaDialog {
 	
 	@Override
 	protected void okPressed() {
-		System.out.println("[Logger] --- Impact Analysis Dialog OK button is pressed");
+		StrongpointLogger.logger(ImpactAnalysisDialog.class.getName(), "info", "[Logger] --- Impact Analysis Dialog OK button is pressed");
 		final String crID = (changeRequestIDText.getText() != null) ? changeRequestIDText.getText() : "";
 		final String accountID = (selectedValue.substring(selectedValue.indexOf("(") + 1,
 				selectedValue.indexOf(")")) != null)
@@ -193,7 +195,7 @@ public class ImpactAnalysisDialog extends TitleAreaDialog {
 						}
 					}
 				} catch (PartInitException e) {
-					e.printStackTrace();
+					StrongpointLogger.logger(ImpactAnalysisDialog.class.getName(), "error", e.getMessage());
 				}
             }
         });

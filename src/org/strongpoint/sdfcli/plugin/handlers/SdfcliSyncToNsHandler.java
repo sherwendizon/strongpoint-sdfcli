@@ -30,6 +30,7 @@ import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.strongpoint.sdfcli.plugin.services.SyncToNsCliService;
 import org.strongpoint.sdfcli.plugin.utils.StrongpointDirectoryGeneralUtility;
+import org.strongpoint.sdfcli.plugin.utils.StrongpointLogger;
 import org.strongpoint.sdfcli.plugin.utils.enums.JobTypes;
 import org.strongpoint.sdfcli.plugin.views.StrongpointView;
 
@@ -61,7 +62,7 @@ public class SdfcliSyncToNsHandler extends AbstractHandler {
 			createViewItem(viewPart, JobTypes.import_objects.getJobType(), syncToNsCliService.getAccountId(projectPath), timestamp.toString());
 			JSONObject importObj = StrongpointDirectoryGeneralUtility.newInstance().readImportJsonFile(projectPath);
 			JSONArray objs = (JSONArray) importObj.get("files");
-			System.out.println("Files size: " +objs.size());
+			StrongpointLogger.logger(SdfcliSyncToNsHandler.class.getName(), "info", "Files size: " +objs.size());
 			if(!objs.isEmpty()) {
 				createViewItem(viewPart, JobTypes.import_files.getJobType(), syncToNsCliService.getAccountId(projectPath), timestamp.toString());	
 			}

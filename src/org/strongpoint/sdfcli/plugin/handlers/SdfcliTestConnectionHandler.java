@@ -21,13 +21,15 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.strongpoint.sdfcli.plugin.dialogs.TestConnectionDialog;
 import org.strongpoint.sdfcli.plugin.utils.StrongpointDirectoryGeneralUtility;
+import org.strongpoint.sdfcli.plugin.utils.StrongpointLogger;
 import org.strongpoint.sdfcli.plugin.utils.enums.JobTypes;
 import org.strongpoint.sdfcli.plugin.views.StrongpointView;
 
 public class SdfcliTestConnectionHandler extends AbstractHandler{
-
+	
 	@Override
 	public Object execute(ExecutionEvent event) throws ExecutionException {
+		StrongpointLogger.logger(SdfcliTestConnectionHandler.class.getName(), "info", "Test Connection Handler executed.");
 		IWorkbenchWindow window = HandlerUtil.getActiveWorkbenchWindowChecked(event);
 		IWorkbenchPage page = window.getActivePage();
 		TestConnectionDialog testConnectionDialog = new TestConnectionDialog(window.getShell());
@@ -58,7 +60,7 @@ public class SdfcliTestConnectionHandler extends AbstractHandler{
 //			}
 //			syncWithUi(JobTypes.test_connection.getJobType(), testConnectionDialog.getTargetAccountId(), timestamp.toString());
 		} catch (PartInitException e1) {
-			e1.printStackTrace();
+			StrongpointLogger.logger(SdfcliTestConnectionHandler.class.getName(), "error", e1.getMessage());
 		}		
 		return null;
 	}

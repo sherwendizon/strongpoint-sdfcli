@@ -44,10 +44,12 @@ import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
+import org.strongpoint.sdfcli.plugin.dialogs.DeployDialog;
 import org.strongpoint.sdfcli.plugin.dialogs.ImpactAnalysisDialog;
 import org.strongpoint.sdfcli.plugin.utils.Accounts;
 import org.strongpoint.sdfcli.plugin.utils.Credentials;
 import org.strongpoint.sdfcli.plugin.utils.StrongpointDirectoryGeneralUtility;
+import org.strongpoint.sdfcli.plugin.utils.StrongpointLogger;
 import org.strongpoint.sdfcli.plugin.utils.enums.JobTypes;
 import org.strongpoint.sdfcli.plugin.views.StrongpointView;
 
@@ -90,7 +92,7 @@ public class SdfcliImpactAnalysisHandler extends AbstractHandler {
 					launchDiff(impactAnalysisDialog.getDiffResults());
 				}
 			} catch (PartInitException e1) {
-				e1.printStackTrace();
+				StrongpointLogger.logger(SdfcliImpactAnalysisHandler.class.getName(), "error", e1.getMessage());
 			}
 		} else {
 			MessageDialog.openWarning(window.getShell(), "Warning", "Please select a project from Project Explorer.");
@@ -145,7 +147,7 @@ public class SdfcliImpactAnalysisHandler extends AbstractHandler {
 					IWebBrowser browser = PlatformUI.getWorkbench().getBrowserSupport().createBrowser("Diff");
 					browser.openURL(new URL(diffUrl));
 				} catch (PartInitException | MalformedURLException e) {
-					e.printStackTrace();
+					StrongpointLogger.logger(SdfcliImpactAnalysisHandler.class.getName(), "error", e.getMessage());
 				}
 			}
 		}
@@ -199,7 +201,7 @@ public class SdfcliImpactAnalysisHandler extends AbstractHandler {
 				}
 			}
 		} catch (CoreException e) {
-			e.printStackTrace();
+			StrongpointLogger.logger(SdfcliImpactAnalysisHandler.class.getName(), "error", e.getMessage());
 		}
 
 		return scriptIds;

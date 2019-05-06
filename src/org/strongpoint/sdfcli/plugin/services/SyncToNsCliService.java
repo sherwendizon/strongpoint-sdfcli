@@ -47,6 +47,7 @@ import org.json.simple.parser.ParseException;
 import org.strongpoint.sdfcli.plugin.utils.Accounts;
 import org.strongpoint.sdfcli.plugin.utils.Credentials;
 import org.strongpoint.sdfcli.plugin.utils.StrongpointDirectoryGeneralUtility;
+import org.strongpoint.sdfcli.plugin.utils.StrongpointLogger;
 import org.strongpoint.sdfcli.plugin.utils.enums.JobTypes;
 import org.strongpoint.sdfcli.plugin.views.StrongpointView;
 
@@ -191,7 +192,7 @@ public class SyncToNsCliService {
 
 	public JSONObject importObjectsCliResult(String projectPath, String jobType, String timestamp) {
 		this.isImportObjectProcessDone = new AtomicBoolean(false);
-		System.out.println("Before Import Object Process: " + this.isImportObjectProcessDone);
+		StrongpointLogger.logger(SyncToNsCliService.class.getName(), "info", "Before Import Object Process: " + this.isImportObjectProcessDone);
 		JSONObject results = new JSONObject();
 		JSONObject credentials = Credentials.getCredentialsFromFile();
 		String email = "";
@@ -210,25 +211,25 @@ public class SyncToNsCliService {
 			String roleMessage = Credentials.getSDFRoleIdParam(accountID, false);
 			JSONArray objs = (JSONArray) importObj.get("objects");
 			String[] objsStr = new String[objs.size()];
-			System.out.println("IMPORT OBJECTS: " + objs.toJSONString());
+			StrongpointLogger.logger(SyncToNsCliService.class.getName(), "info", "IMPORT OBJECTS: " + objs.toJSONString());
 			for (int i = 0; i < objs.size(); i++) {
 //				JSONObject scriptObj = (JSONObject) objs.get(i);
 //				objsStr[i] += scriptObj.get("name").toString();
 				objsStr[i] += objs.get(i).toString();
 			}
-			System.out.println("OBJECT PARAMETERS: " + objsStr.toString());
+			StrongpointLogger.logger(SyncToNsCliService.class.getName(), "info", "OBJECT PARAMETERS: " + objsStr.toString());
 			String.join(" ", objsStr);
-			System.out.println(
+			StrongpointLogger.logger(SyncToNsCliService.class.getName(), "info", 
 					"OBJECT PARAMETERS WITH JOIN: " + String.join(" ", objsStr).toString().replaceAll("null", ""));
 			JSONArray jsonArray = new JSONArray();
 			StringBuffer cmdOutput = new StringBuffer();
-			System.out.println("Project Path: " + projectPath);
+			StrongpointLogger.logger(SyncToNsCliService.class.getName(), "info", "Project Path: " + projectPath);
 			String importobjectsCommand = "(echo " + "\"" + password + "\"" + " ; yes | awk '{print \"YES\"}') | "
 					+ "sdfcli importobjects -account " + accountID + " -destinationfolder /Objects/ -email " + email
 					+ " -p " + projectPath + " -role "+role+" -scriptid "
 					+ String.join(" ", objsStr).toString().replaceAll("null", "")
 					+ " -type ALL -url system.netsuite.com";
-			System.out.println(importobjectsCommand);
+			StrongpointLogger.logger(SyncToNsCliService.class.getName(), "info", importobjectsCommand);
 			String[] commands = { "/bin/bash", "-c", "cd ~ && cd " + projectPath + "/ && " + importobjectsCommand };
 			Runtime changeRootDirectory = Runtime.getRuntime();
 			try {
@@ -259,7 +260,7 @@ public class SyncToNsCliService {
 				while ((line = reader.readLine()) != null) {
 					JSONObject obj = new JSONObject();
 					obj.put("accountId", accountID);
-					System.out.println(line);
+					StrongpointLogger.logger(SyncToNsCliService.class.getName(), "info", line);
 					cmdOutput.append(line);
 					obj.put("message", line);
 					resultList.add(line);
@@ -279,10 +280,10 @@ public class SyncToNsCliService {
 		}
 
 		this.isImportObjectProcessDone = new AtomicBoolean(true);
-		System.out.println("After Import Objects Process: " + this.isImportObjectProcessDone);
-		System.out.println("Writing to Import Object file...");
+		StrongpointLogger.logger(SyncToNsCliService.class.getName(), "info", "After Import Objects Process: " + this.isImportObjectProcessDone);
+		StrongpointLogger.logger(SyncToNsCliService.class.getName(), "info", "Writing to Import Object file...");
 		StrongpointDirectoryGeneralUtility.newInstance().writeToFile(results, jobType, this.accountId, timestamp);
-		System.out.println("Finished writing Import Object file...");
+		StrongpointLogger.logger(SyncToNsCliService.class.getName(), "info", "Finished writing Import Object file...");
 		try {
 			project.refreshLocal(IResource.DEPTH_INFINITE, null);
 			StrongpointDirectoryGeneralUtility.newInstance().removeUncessaryImportedObjects(projectPath);
@@ -296,7 +297,7 @@ public class SyncToNsCliService {
 
 	public JSONObject importFilesCliResult(String projectPath, String jobType, String timestamp) {
 		this.isImportFileProcessDone = new AtomicBoolean(false);
-		System.out.println("Before Import Files Process: " + this.isImportFileProcessDone);
+		StrongpointLogger.logger(SyncToNsCliService.class.getName(), "info", "Before Import Files Process: " + this.isImportFileProcessDone);
 		JSONObject results = new JSONObject();
 		JSONObject credentials = Credentials.getCredentialsFromFile();
 		String email = "";
@@ -315,7 +316,7 @@ public class SyncToNsCliService {
 			JSONArray objs = (JSONArray) importObj.get("files");
 			String[] objsStr = new String[objs.size()];
 			String[] objsStrForWindows = new String[objs.size()];
-			System.out.println("IMPORT FILES: " + objs.toJSONString());
+			StrongpointLogger.logger(SyncToNsCliService.class.getName(), "info", "IMPORT FILES: " + objs.toJSONString());
 			for (int i = 0; i < objs.size(); i++) {
 //				JSONObject scriptObj = (JSONObject) objs.get(i);
 //				objsStr[i] += "\"" +scriptObj.get("scriptId").toString()+ "\"";				
@@ -323,14 +324,14 @@ public class SyncToNsCliService {
 				String forWrindows = (String) objs.get(i);
 				objsStrForWindows[i] += forWrindows.replace(" ", "^ ");
 			}
-			System.out.println("FILE PARAMETERS: " + objsStr.toString());
+			StrongpointLogger.logger(SyncToNsCliService.class.getName(), "info", "FILE PARAMETERS: " + objsStr.toString());
 			String.join(" ", objsStr);
 			String.join(" ", objsStrForWindows);
-			System.out.println(
+			StrongpointLogger.logger(SyncToNsCliService.class.getName(), "info", 
 					"FILE PARAMETERS WITH JOIN: " + String.join(" ", objsStr).toString().replaceAll("null", ""));
 			JSONArray jsonArray = new JSONArray();
 			StringBuffer cmdOutput = new StringBuffer();
-			System.out.println("Project Path: " + projectPath);
+			StrongpointLogger.logger(SyncToNsCliService.class.getName(), "info", "Project Path: " + projectPath);
 			String importFilesCommand = "(echo " + "\"" + password + "\"" + " ; yes | awk '{print \"YES\"}') | "
 					+ "sdfcli importfiles -paths " + String.join(" ", objsStr).toString().replaceAll("null", "")
 					+ " -account " + accountID + " -email " + email + " -p " + projectPath
@@ -363,7 +364,7 @@ public class SyncToNsCliService {
 				while ((line = reader.readLine()) != null) {
 					JSONObject obj = new JSONObject();
 					obj.put("accountId", accountID);
-					System.out.println(line);
+					StrongpointLogger.logger(SyncToNsCliService.class.getName(), "info", line);
 					cmdOutput.append(line);
 					obj.put("message", line);
 					resultList.add(line);
@@ -394,21 +395,21 @@ public class SyncToNsCliService {
 			results.put("results", jsonArray);
 		}
 
-		System.out.println("After Import Files Process: " + this.isImportFileProcessDone);
-		System.out.println("Writing to Import Files file...");
+		StrongpointLogger.logger(SyncToNsCliService.class.getName(), "info", "After Import Files Process: " + this.isImportFileProcessDone);
+		StrongpointLogger.logger(SyncToNsCliService.class.getName(), "info", "Writing to Import Files file...");
 		StrongpointDirectoryGeneralUtility.newInstance().writeToFile(results, jobType, this.accountId, timestamp);
-		System.out.println("Finished writing Import Files file...");
+		StrongpointLogger.logger(SyncToNsCliService.class.getName(), "info", "Finished writing Import Files file...");
 		try {
 			project.refreshLocal(IResource.DEPTH_INFINITE, null);
 		} catch (CoreException e1) {
-			e1.printStackTrace();
+			StrongpointLogger.logger(SyncToNsCliService.class.getName(), "error", e1.getMessage());
 		}
 		return results;
 	}
 
 	public JSONObject addDependenciesCliResult(String projectPath, String jobType, String timestamp) {
 		this.isAddDependenciesProcessDone = new AtomicBoolean(false);
-		System.out.println("Before Add Dependencies Process: " + this.isAddDependenciesProcessDone);
+		StrongpointLogger.logger(SyncToNsCliService.class.getName(), "info", "Before Add Dependencies Process: " + this.isAddDependenciesProcessDone);
 		JSONObject results = new JSONObject();
 		JSONObject credentials = Credentials.getCredentialsFromFile();
 		String email = "";
@@ -426,19 +427,19 @@ public class SyncToNsCliService {
 			String roleMessage = Credentials.getSDFRoleIdParam(accountID, false);
 			JSONArray objs = (JSONArray) importObj.get("files");
 			String[] objsStr = new String[objs.size()];
-			System.out.println("IMPORT FILES: " + objs.toJSONString());
+			StrongpointLogger.logger(SyncToNsCliService.class.getName(), "info", "IMPORT FILES: " + objs.toJSONString());
 			for (int i = 0; i < objs.size(); i++) {
 //				JSONObject scriptObj = (JSONObject) objs.get(i);
 //				objsStr[i] += "\"" +scriptObj.get("scriptId").toString()+ "\"";				
 				objsStr[i] += "\"" + (String) objs.get(i) + "\"";
 			}
-			System.out.println("FILE PARAMETERS: " + objsStr.toString());
+			StrongpointLogger.logger(SyncToNsCliService.class.getName(), "info", "FILE PARAMETERS: " + objsStr.toString());
 			String.join(" ", objsStr);
-			System.out.println(
+			StrongpointLogger.logger(SyncToNsCliService.class.getName(), "info", 
 					"FILE PARAMETERS WITH JOIN: " + String.join(" ", objsStr).toString().replaceAll("null", ""));
 			JSONArray jsonArray = new JSONArray();
 			StringBuffer cmdOutput = new StringBuffer();
-			System.out.println("Project Path: " + projectPath);
+			StrongpointLogger.logger(SyncToNsCliService.class.getName(), "info", "Project Path: " + projectPath);
 			String addDependenciesCommand = "(yes | awk '{print \"YES\"}') | " + "sdfcli adddependencies -account "
 					+ accountID + " -all -email " + email + " -p " + projectPath + " -role "+role+" -url system.netsuite.com";
 			String[] commands = { "/bin/bash", "-c", "cd ~ && cd " + projectPath + "/ && " + addDependenciesCommand };
@@ -468,7 +469,7 @@ public class SyncToNsCliService {
 				while ((line = reader.readLine()) != null) {
 					JSONObject obj = new JSONObject();
 					obj.put("accountId", accountID);
-					System.out.println(line);
+					StrongpointLogger.logger(SyncToNsCliService.class.getName(), "info", line);
 					cmdOutput.append(line);
 					obj.put("message", line);
 					resultList.add(line);
@@ -489,10 +490,10 @@ public class SyncToNsCliService {
 		}
 
 		this.isAddDependenciesProcessDone = new AtomicBoolean(true);
-		System.out.println("After Add Dependencies Process: " + this.isAddDependenciesProcessDone);
-		System.out.println("Writing to Add Dependencies file...");
+		StrongpointLogger.logger(SyncToNsCliService.class.getName(), "info", "After Add Dependencies Process: " + this.isAddDependenciesProcessDone);
+		StrongpointLogger.logger(SyncToNsCliService.class.getName(), "info", "Writing to Add Dependencies file...");
 		StrongpointDirectoryGeneralUtility.newInstance().writeToFile(results, jobType, this.accountId, timestamp);
-		System.out.println("Finished writing Add Dependencies file...");
+		StrongpointLogger.logger(SyncToNsCliService.class.getName(), "info", "Finished writing Add Dependencies file...");
 
 		return results;
 	}
@@ -514,7 +515,7 @@ public class SyncToNsCliService {
 			if(Accounts.isSandboxAccount(accountID)) {
 				strongpointURL = Accounts.getSandboxRestDomain(accountID) + "/app/site/hosting/restlet.nl?script=customscript_flo_sync_saved_search&deploy=customdeploy_flo_sync_saved_search&scriptId="+scriptId;
 			}
-			System.out.println("Sync Saved Search URL: " + strongpointURL);
+			StrongpointLogger.logger(SyncToNsCliService.class.getName(), "info", "Sync Saved Search URL: " + strongpointURL);
 			
 			HttpGet httpGet = null;
 			int statusCode;
@@ -540,8 +541,8 @@ public class SyncToNsCliService {
 					results.put("code", Integer.toString(statusCode));
 				} else {
 					JSONObject data = (JSONObject) resultObj.get("data");
-					System.out.println("Saved Search: " +scriptId);
-					System.out.println("Saved Search Data: " +data.get("search").toString());
+					StrongpointLogger.logger(SyncToNsCliService.class.getName(), "info", "Saved Search: " +scriptId);
+					StrongpointLogger.logger(SyncToNsCliService.class.getName(), "info", "Saved Search Data: " +data.get("search").toString());
 					results.put(scriptId, data.get("search").toString());	
 				}
 			} catch (Exception exception) {
@@ -554,9 +555,9 @@ public class SyncToNsCliService {
 				}
 			}
 		}
-		System.out.println("Writing to Saved Searches file...");
+		StrongpointLogger.logger(SyncToNsCliService.class.getName(), "info", "Writing to Saved Searches file...");
 		StrongpointDirectoryGeneralUtility.newInstance().writeSavedSearchDuringSync(results, projectPath);
-		System.out.println("Finished writing to Saved Searches file...");
+		StrongpointLogger.logger(SyncToNsCliService.class.getName(), "info", "Finished writing to Saved Searches file...");
 
 	}
 

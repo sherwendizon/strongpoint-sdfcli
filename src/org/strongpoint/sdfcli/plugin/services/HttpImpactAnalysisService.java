@@ -15,6 +15,7 @@ import org.json.simple.JSONValue;
 import org.strongpoint.sdfcli.plugin.utils.Accounts;
 import org.strongpoint.sdfcli.plugin.utils.Credentials;
 import org.strongpoint.sdfcli.plugin.utils.StrongpointDirectoryGeneralUtility;
+import org.strongpoint.sdfcli.plugin.utils.StrongpointLogger;
 
 public class HttpImpactAnalysisService {
 	
@@ -40,9 +41,9 @@ public class HttpImpactAnalysisService {
 			results.put("accountId", accountID);
 			results.put("message", "Error: Please sync before doing Impact Analysis. \n - Project is not yet sync'd to Netsuite. \n - Environment compare will also not launch.");	
 			
-			System.out.println("Writing to Impact Analysis error file...");
+			StrongpointLogger.logger(HttpImpactAnalysisService.class.getName(), "info", "Writing to Impact Analysis error file...");
 			StrongpointDirectoryGeneralUtility.newInstance().writeToFile(results, jobType, accountID, timestamp);
-			System.out.println("Finished writing Impact Analysis error file...");	
+			StrongpointLogger.logger(HttpImpactAnalysisService.class.getName(), "info", "Finished writing Impact Analysis error file...");	
 		} else {
 			String removeWhitespaces = String.join(",",getScripIds);
 //			String strongpointURL = "https://rest.netsuite.com/app/site/hosting/restlet.nl?script=customscript_flo_impact_analysis_ext_res&deploy=customdeploy_flo_impact_analysis_ext_res&crId=" + changeRequestId/* + "&scriptIds=" + removeWhitespaces*/;
@@ -59,9 +60,9 @@ public class HttpImpactAnalysisService {
 				} else {
 					strongpointURL = Accounts.getProductionRestDomain(accountID) + "/app/site/hosting/restlet.nl?script=customscript_flo_impact_analysis_ext_res&deploy=customdeploy_flo_impact_analysis_ext_res&scriptIds=" + removeWhitespaces + "&h=" + creds.get("key").toString() + "&g=" + creds.get("password").toString();	
 				}
-				System.out.println("IMPACT ANALYSIS SCRIPT ID URL: " +strongpointURL);		
+				StrongpointLogger.logger(HttpImpactAnalysisService.class.getName(), "info", "IMPACT ANALYSIS SCRIPT ID URL: " +strongpointURL);		
 			}
-	 		System.out.println("Impact Analysis URL: " + strongpointURL);
+			StrongpointLogger.logger(HttpImpactAnalysisService.class.getName(), "info", "Impact Analysis URL: " + strongpointURL);
 			HttpGet httpGet = null;
 			int statusCode;
 			String responseBodyStr;
@@ -101,9 +102,9 @@ public class HttpImpactAnalysisService {
 				}
 			}
 			
-			System.out.println("Writing to Impact Analysis file...");
+			StrongpointLogger.logger(HttpImpactAnalysisService.class.getName(), "info", "Writing to Impact Analysis file...");
 			StrongpointDirectoryGeneralUtility.newInstance().writeToFileImpactAnalysis(results, jobType, accountID, timestamp);
-			System.out.println("Finished writing Impact Analysis file...");			
+			StrongpointLogger.logger(HttpImpactAnalysisService.class.getName(), "info", "Finished writing Impact Analysis file...");			
 		}
 		
 		return results;
@@ -136,8 +137,8 @@ public class HttpImpactAnalysisService {
 			} else {
 				strongpointURL = Accounts.getProductionRestDomain(sourceAccountID) + "/app/site/hosting/restlet.nl?script=customscript_flo_get_diff_restlet&deploy=customdeploy_flo_get_diff_restlet&scriptIds=" + removeWhitespaces + "&target=" +targetAccountID +"&h=" +creds.get("key").toString() +"&g=" +creds.get("password").toString();
 			}
-			System.out.println("DIFF SCRIPT ID URL: " +strongpointURL);		
-	 		System.out.println("Diff URL: " +strongpointURL);
+			StrongpointLogger.logger(HttpImpactAnalysisService.class.getName(), "info", "DIFF SCRIPT ID URL: " +strongpointURL);		
+			StrongpointLogger.logger(HttpImpactAnalysisService.class.getName(), "info", "Diff URL: " +strongpointURL);
 			HttpGet httpGet = null;
 			int statusCode;
 			String responseBodyStr;

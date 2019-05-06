@@ -26,6 +26,7 @@ import org.json.simple.JSONValue;
 import org.strongpoint.sdfcli.plugin.utils.Accounts;
 import org.strongpoint.sdfcli.plugin.utils.Credentials;
 import org.strongpoint.sdfcli.plugin.utils.StrongpointDirectoryGeneralUtility;
+import org.strongpoint.sdfcli.plugin.utils.StrongpointLogger;
 
 public class DeployCliService {
 
@@ -40,8 +41,8 @@ public class DeployCliService {
 		JSONArray jsonArray = new JSONArray();
 		StringBuffer cmdOutput = new StringBuffer();
 		String osName = System.getProperty("os.name").toLowerCase();
-		System.out.println("Project Path: " + projectPath);
-		System.out.println("SDFCLI Path: " + sdfcliPath);
+		StrongpointLogger.logger(DeployCliService.class.getName(), "info", "Project Path: " + projectPath);
+		StrongpointLogger.logger(DeployCliService.class.getName(), "info", "SDFCLI Path: " + sdfcliPath);
 		String deployCommand = "(echo " + "\"" + password + "\""
 				+ " ; yes | awk '{print \"YES\"}' ; yes | awk '{print \"YES\"}') | " + "sdfcli deploy -account " + accountID + " -email " + email + " -p " + projectPath
 				+ " -role "+role+" -url system.netsuite.com -l /webdev/sdf/sdk/test.log";
@@ -74,7 +75,7 @@ public class DeployCliService {
 						&& !line.contains("Using user credentials") && !line.contains("Enter password:Preview")) {
 					JSONObject obj = new JSONObject();
 					obj.put("accountId", accountID);
-					System.out.println(line);
+					StrongpointLogger.logger(DeployCliService.class.getName(), "info", line);
 					cmdOutput.append(line);
 					obj.put("message", line);
 					resultList.add(line);
@@ -125,7 +126,7 @@ public class DeployCliService {
 			strongpointURL = Accounts.getSandboxRestDomain(accountID) + "/app/site/hosting/restlet.nl?script=customscript_flo_get_approval_status&deploy=customdeploy_flo_get_approval_status&scriptIds="
 					+ params +"&h=" +encryptedKey +"&g=" +encryptedPassword;
 		}
-		System.out.println("IS APPROVED DEPLOYMENT REQUEST URL: " + strongpointURL);
+		StrongpointLogger.logger(DeployCliService.class.getName(), "info", "IS APPROVED DEPLOYMENT REQUEST URL: " + strongpointURL);
 		HttpGet httpGet = null;
 		int statusCode;
 		String responseBodyStr;
@@ -133,16 +134,16 @@ public class DeployCliService {
 		try {
 			CloseableHttpClient client = HttpClients.createDefault();
 			httpGet = new HttpGet(strongpointURL);
-			System.out.println("Account ID: " + accountID);
-			System.out.println("Email: " + email);
-			System.out.println("Role: " + role);
+			StrongpointLogger.logger(DeployCliService.class.getName(), "info", "Account ID: " + accountID);
+			StrongpointLogger.logger(DeployCliService.class.getName(), "info", "Email: " + email);
+			StrongpointLogger.logger(DeployCliService.class.getName(), "info", "Role: " + role);
 			httpGet.addHeader("Authorization", "NLAuth nlauth_account=" + accountID + ", nlauth_email=" + email
 					+ ", nlauth_signature=" + password + ", nlauth_role="+role);
 			response = client.execute(httpGet);
 			HttpEntity entity = response.getEntity();
 			statusCode = response.getStatusLine().getStatusCode();
 			responseBodyStr = EntityUtils.toString(entity);
-			System.out.println("IS APPROVE RESPONSE: " + responseBodyStr);
+			StrongpointLogger.logger(DeployCliService.class.getName(), "info", "IS APPROVE RESPONSE: " + responseBodyStr);
 			JSONObject resultObj = (JSONObject) JSONValue.parse(responseBodyStr);
 			if (!resultObj.get("code").toString().equalsIgnoreCase("200")) {
 				results = new JSONObject();
@@ -185,7 +186,7 @@ public class DeployCliService {
 		if(Accounts.isSandboxAccount(accountID)) {
 			strongpointURL = Accounts.getSandboxRestDomain(accountID) + "/app/site/hosting/restlet.nl?script=customscript_flo_get_supported_objects&deploy=customdeploy_flo_get_supported_objects&h=" +encryptedKey +"&g=" +encryptedPassword;
 		}
-		System.out.println("Get Supported Objects URL: " + strongpointURL);
+		StrongpointLogger.logger(DeployCliService.class.getName(), "info", "Get Supported Objects URL: " + strongpointURL);
 		HttpGet httpGet = null;
 		int statusCode;
 		String responseBodyStr;
@@ -247,7 +248,7 @@ public class DeployCliService {
 		if(Accounts.isSandboxAccount(accountID)) {
 			strongpointURL = Accounts.getSandboxRestDomain(accountID) + "/app/site/hosting/restlet.nl?script=customscript_flo_post_search_restlet&deploy=customdeploy_flo_post_search_restlet";
 		}
-		System.out.println("Deploy Saved Searches URL: " +strongpointURL);
+		StrongpointLogger.logger(DeployCliService.class.getName(), "info", "Deploy Saved Searches URL: " +strongpointURL);
 		HttpPost httpPost = null;
 		int statusCode;
 		String responseBodyStr;
@@ -275,7 +276,7 @@ public class DeployCliService {
 						httpPost = new HttpPost(strongpointURL);
 						httpPost.addHeader("Authorization", "NLAuth nlauth_account=" + accountID + ", nlauth_email="
 								+ emailCred + ", nlauth_signature=" + passwordCred + ", nlauth_role="+role);
-						System.out.println("PARAMETERS: " + obj.toJSONString());
+						StrongpointLogger.logger(DeployCliService.class.getName(), "info", "PARAMETERS: " + obj.toJSONString());
 						httpPost.addHeader("Content-type", "application/json");
 						StringEntity stringEntity = new StringEntity(obj.toJSONString(), ContentType.APPLICATION_JSON);
 						httpPost.setEntity(stringEntity);
@@ -319,9 +320,9 @@ public class DeployCliService {
 		}
 	
 		
-		System.out.println("Writing Saved Search to file...");
+		StrongpointLogger.logger(DeployCliService.class.getName(), "info", "Writing Saved Search to file...");
 		StrongpointDirectoryGeneralUtility.newInstance().writeSavedSearchResultsToFile(results, accountID, ssTimestamps);
-		System.out.println("Finished writing saved search to file...");
+		StrongpointLogger.logger(DeployCliService.class.getName(), "info", "Finished writing saved search to file...");
 		
 		return results;
 	}

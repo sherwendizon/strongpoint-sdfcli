@@ -21,9 +21,11 @@ import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
+import org.strongpoint.sdfcli.plugin.dialogs.RequestDeploymentDialog;
 import org.strongpoint.sdfcli.plugin.utils.Accounts;
 import org.strongpoint.sdfcli.plugin.utils.Credentials;
 import org.strongpoint.sdfcli.plugin.utils.StrongpointDirectoryGeneralUtility;
+import org.strongpoint.sdfcli.plugin.utils.StrongpointLogger;
 
 public class HttpRequestDeploymentService {
 	
@@ -58,7 +60,7 @@ public class HttpRequestDeploymentService {
 		if(Accounts.isSandboxAccount(accountId)) {
 			strongpointURL = Accounts.getSandboxRestDomain(accountId) + "/app/site/hosting/restlet.nl?script=customscript_flo_create_cr_restlet&deploy=customdeploy_flo_create_cr_restlet";
 		}
-		System.out.println("Request Deployment URL: " +strongpointURL);
+		StrongpointLogger.logger(HttpRequestDeploymentService.class.getName(), "info", "Request Deployment URL: " +strongpointURL);
 		HttpPost httpPost = null;
 		int statusCode;
 		String responseBodyStr;
@@ -67,7 +69,7 @@ public class HttpRequestDeploymentService {
 			CloseableHttpClient client = HttpClients.createDefault();
 			httpPost = new HttpPost(strongpointURL);
 			httpPost.addHeader("Authorization", "NLAuth nlauth_account="+accountId+", nlauth_email="+emailCred+", nlauth_signature="+passwordCred+", nlauth_role="+role);
-			System.out.println("PARAMETERS: " +parameters.toJSONString());
+			StrongpointLogger.logger(HttpRequestDeploymentService.class.getName(), "info", "PARAMETERS: " +parameters.toJSONString());
 			httpPost.addHeader("Content-type", "application/json");
 			StringEntity stringEntity = new StringEntity(parameters.toJSONString(), ContentType.APPLICATION_JSON);
 			httpPost.setEntity(stringEntity);
@@ -77,7 +79,7 @@ public class HttpRequestDeploymentService {
 			responseBodyStr = EntityUtils.toString(entity);
 			
 			JSONObject resultObj = (JSONObject) JSONValue.parse(responseBodyStr);
-			System.out.println("CR results: " +responseBodyStr);
+			StrongpointLogger.logger(HttpRequestDeploymentService.class.getName(), "info", "CR results: " +responseBodyStr);
 			if(!resultObj.get("code").toString().equalsIgnoreCase("200")) {
 				if(role.equals("")) {
 					results.put("code", 300);
@@ -108,9 +110,9 @@ public class HttpRequestDeploymentService {
 			}
 		}
 		
-		System.out.println("Writing to Request Deployment file..." +results.toJSONString() );
+		StrongpointLogger.logger(HttpRequestDeploymentService.class.getName(), "info", "Writing to Request Deployment file..." +results.toJSONString() );
 		StrongpointDirectoryGeneralUtility.newInstance().writeToFile(results, jobType, accountId, timestamp, projectPath);
-		System.out.println("Finished writing Request Deployment file...");
+		StrongpointLogger.logger(HttpRequestDeploymentService.class.getName(), "info", "Finished writing Request Deployment file...");
 		
 		return results;
 	}
@@ -137,8 +139,8 @@ public class HttpRequestDeploymentService {
         if(Accounts.isSandboxAccount(accountId)) {
         	urlString = Accounts.getSandboxRestDomain(accountId) + "/app/site/hosting/restlet.nl?script=customscript_flo_create_cr_restlet&deploy=customdeploy_flo_create_cr_restlet&h=" +creds.get("key").toString() + "&g=" +creds.get("password").toString();
         }
-        System.out.println("Get Changes Stages Account Id: " +accountId);
-        System.out.println("Get Changes Stages URL: " +urlString);
+        StrongpointLogger.logger(HttpRequestDeploymentService.class.getName(), "info", "Get Changes Stages Account Id: " +accountId);
+        StrongpointLogger.logger(HttpRequestDeploymentService.class.getName(), "info", "Get Changes Stages URL: " +urlString);
 		int statusCode;
         String strRespBody;
         HttpGet httpGet = null;

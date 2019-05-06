@@ -35,11 +35,11 @@ public class Credentials {
 				credentials = (JSONObject) new JSONParser().parse(contents.toString());
 			}
 		} catch (FileNotFoundException e) {
-			e.printStackTrace();
+			StrongpointLogger.logger(Credentials.class.getName(), "error", e.getMessage());
 		} catch (IOException e) {
-			e.printStackTrace();
+			StrongpointLogger.logger(Credentials.class.getName(), "error", e.getMessage());
 		} catch (ParseException e) {
-			e.printStackTrace();
+			StrongpointLogger.logger(Credentials.class.getName(), "error", e.getMessage());
 		}
 		return credentials;
 	}
@@ -82,7 +82,7 @@ public class Credentials {
 			byte[] utf8 = decryptCipher.doFinal(dec);
 			return new String(utf8, "UTF8");
 		} catch (Exception e) {
-			e.printStackTrace();
+			StrongpointLogger.logger(Credentials.class.getName(), "error", e.getMessage());
 		}
 		return null;		
 	}

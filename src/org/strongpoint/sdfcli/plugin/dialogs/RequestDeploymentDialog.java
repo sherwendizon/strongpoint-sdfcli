@@ -44,9 +44,11 @@ import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
+import org.strongpoint.sdfcli.plugin.handlers.SdfcliChangeRequestHandler;
 import org.strongpoint.sdfcli.plugin.services.HttpRequestDeploymentService;
 import org.strongpoint.sdfcli.plugin.utils.Accounts;
 import org.strongpoint.sdfcli.plugin.utils.StrongpointDirectoryGeneralUtility;
+import org.strongpoint.sdfcli.plugin.utils.StrongpointLogger;
 import org.strongpoint.sdfcli.plugin.utils.enums.JobTypes;
 import org.strongpoint.sdfcli.plugin.views.StrongpointView;
 
@@ -133,7 +135,7 @@ public class RequestDeploymentDialog extends TitleAreaDialog {
 	
 	@Override
 	protected void okPressed() {
-		System.out.println("[Logger] --- Request Deployment OK button is pressed");
+		StrongpointLogger.logger(RequestDeploymentDialog.class.getName(), "info", "[Logger] --- Request Deployment OK button is pressed");
 		int changeStageInt = 0;
 		int employeeId = 0;
 		JSONObject obj = new JSONObject();
@@ -195,7 +197,7 @@ public class RequestDeploymentDialog extends TitleAreaDialog {
 						}
 					}
 				} catch (PartInitException e) {
-					e.printStackTrace();
+					StrongpointLogger.logger(RequestDeploymentDialog.class.getName(), "error", e.getMessage());
 				}
             }
         });

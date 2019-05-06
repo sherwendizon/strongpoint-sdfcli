@@ -20,6 +20,7 @@ import org.json.simple.JSONValue;
 import org.strongpoint.sdfcli.plugin.utils.Accounts;
 import org.strongpoint.sdfcli.plugin.utils.Credentials;
 import org.strongpoint.sdfcli.plugin.utils.StrongpointDirectoryGeneralUtility;
+import org.strongpoint.sdfcli.plugin.utils.StrongpointLogger;
 
 public class HttpTestConnectionService {
 
@@ -43,7 +44,7 @@ public class HttpTestConnectionService {
 		if(Accounts.isSandboxAccount(accountID)) {
 			strongpointURL = Accounts.getSandboxRestDomain(accountID) + "/app/site/hosting/restlet.nl?script=customscript_flo_check_connection&deploy=customdeploy_flo_check_connection&h=" +creds.get("key").toString() +"&g=" +creds.get("password").toString();
 		}
-		System.out.println("Test Connection URL: " +strongpointURL);
+		StrongpointLogger.logger(HttpTestConnectionService.class.getName(), "info", "Test Connection URL: " +strongpointURL);
 		HttpGet httpGet = null;
 		int statusCode;
 		String responseBodyStr;
@@ -58,7 +59,7 @@ public class HttpTestConnectionService {
 			statusCode = response.getStatusLine().getStatusCode();
 			responseBodyStr = EntityUtils.toString(entity);
 
-			System.out.println("Response body: " + responseBodyStr);
+			StrongpointLogger.logger(HttpTestConnectionService.class.getName(), "info", "Response body: " + responseBodyStr);
 
 			if (statusCode >= 400) {
 				results = new JSONObject();
@@ -88,10 +89,10 @@ public class HttpTestConnectionService {
 	
 	public JSONObject testRunSdfcliCommand() {
 		JSONObject results = new JSONObject();
-		System.out.println("Check SDFCLI ");
+		StrongpointLogger.logger(HttpTestConnectionService.class.getName(), "info", "Check SDFCLI ");
 		String sdfcliCommand = "sdfcli";
 		StringBuffer cmdOutput = new StringBuffer();
-		System.out.println("TEST SDFCLI CMD: " + sdfcliCommand);
+		StrongpointLogger.logger(HttpTestConnectionService.class.getName(), "info", "TEST SDFCLI CMD: " + sdfcliCommand);
 		String osName = System.getProperty("os.name").toLowerCase();
 		String slash = "/ && ";
 		if(osName.indexOf("win") >= 0) {
@@ -104,9 +105,9 @@ public class HttpTestConnectionService {
 		Runtime changeRootDirectory = Runtime.getRuntime();
 		try {
 			Process changeRootDirectoryProcess;
-			System.out.println("Windows, Linux or MacOS: " + "cd ~ && cd " + System.getProperty("user.home") + slash + sdfcliCommand);
+			StrongpointLogger.logger(HttpTestConnectionService.class.getName(), "info", "Windows, Linux or MacOS: " + "cd ~ && cd " + System.getProperty("user.home") + slash + sdfcliCommand);
 			if(osName.indexOf("win") >= 0) {
-				System.out.println("Windows here!");
+				StrongpointLogger.logger(HttpTestConnectionService.class.getName(), "info", "Windows here!");
 				ProcessBuilder processBuilderForWindows = new ProcessBuilder(windowsCommands);
 				changeRootDirectoryProcess = processBuilderForWindows.start();
 			} else {
@@ -118,17 +119,17 @@ public class HttpTestConnectionService {
 			String line = "";
 			while ((line = reader.readLine()) != null) {
 				if (line.contains("[INFO] Building SDF CLI 2018.2.1")) {
-					System.out.println(line);
+					StrongpointLogger.logger(SyncToNsCliService.class.getName(), "info", line);
 					cmdOutput.append(line);
 					results.put("message", "[INFO] BUILD SUCCESS");	
 				}
 			}
 
 		} catch (IOException e) {
-			System.out.println(e.getMessage());
+			StrongpointLogger.logger(SyncToNsCliService.class.getName(), "error", e.getMessage());
 			results.put("message", "There was an error when invoking SDFCLI command. Please see to it that SDFCLI is in the environment variable or path.");
 		} catch (Exception exception) {
-			System.out.println(exception.getMessage());
+			StrongpointLogger.logger(HttpTestConnectionService.class.getName(), "error", exception.getMessage());
 			JSONObject errorObject = new JSONObject();
 			results.put("message", "There was an error when invoking SDFCLI command. Please see to it that SDFCLI is in the environment variable or path.");
 		}

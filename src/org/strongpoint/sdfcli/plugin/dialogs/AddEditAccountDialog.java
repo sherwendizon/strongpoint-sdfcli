@@ -33,6 +33,7 @@ import org.json.simple.JSONObject;
 import org.strongpoint.sdfcli.plugin.services.AddEditAccountService;
 import org.strongpoint.sdfcli.plugin.services.DeployCliService;
 import org.strongpoint.sdfcli.plugin.utils.Credentials;
+import org.strongpoint.sdfcli.plugin.utils.StrongpointLogger;
 
 public class AddEditAccountDialog extends TitleAreaDialog{
 	
@@ -144,7 +145,7 @@ public class AddEditAccountDialog extends TitleAreaDialog{
 	
 	@Override
 	protected void okPressed() {
-		System.out.println("[Logger] --- Add/Edit Account Dialog OK button is pressed");
+		StrongpointLogger.logger(AddEditAccountDialog.class.getName(), "info", "[Logger] --- Add/Edit Account Dialog OK button is pressed");
 		if((accountIDText.getText() != null && !accountIDText.getText().isEmpty()) && 
 				(accountNameText.getText() != null && !accountNameText.getText().isEmpty())) {
 			AddEditAccountService addEditAccountService = new AddEditAccountService();

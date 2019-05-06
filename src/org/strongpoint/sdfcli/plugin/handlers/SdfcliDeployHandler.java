@@ -31,6 +31,7 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.strongpoint.sdfcli.plugin.dialogs.DeployDialog;
 import org.strongpoint.sdfcli.plugin.utils.StrongpointDirectoryGeneralUtility;
+import org.strongpoint.sdfcli.plugin.utils.StrongpointLogger;
 import org.strongpoint.sdfcli.plugin.utils.enums.JobTypes;
 import org.strongpoint.sdfcli.plugin.views.StrongpointView;
 
@@ -160,7 +161,7 @@ public class SdfcliDeployHandler extends AbstractHandler {
 				}
 			}
 		} catch (CoreException e) {
-			e.printStackTrace();
+			StrongpointLogger.logger(SdfcliDeployHandler.class.getName(), "error", e.getMessage());
 		}
 
 		return scriptIds;

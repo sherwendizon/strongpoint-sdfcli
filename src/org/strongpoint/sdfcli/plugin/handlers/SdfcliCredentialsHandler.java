@@ -15,8 +15,10 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.handlers.HandlerUtil;
+import org.strongpoint.sdfcli.plugin.dialogs.AddEditAccountDialog;
 import org.strongpoint.sdfcli.plugin.dialogs.CredentialsDialog;
 import org.strongpoint.sdfcli.plugin.utils.StrongpointDirectoryGeneralUtility;
+import org.strongpoint.sdfcli.plugin.utils.StrongpointLogger;
 import org.strongpoint.sdfcli.plugin.utils.enums.JobTypes;
 import org.strongpoint.sdfcli.plugin.views.StrongpointView;
 
@@ -55,7 +57,7 @@ public class SdfcliCredentialsHandler extends AbstractHandler {
 			}
 			syncWithUi(JobTypes.credentials.getJobType(), timestamp.toString());
 		} catch (PartInitException e1) {
-			e1.printStackTrace();
+			StrongpointLogger.logger(SdfcliCredentialsHandler.class.getName(), "error", e1.getMessage());
 		}		
 		return null;
 	}
@@ -85,7 +87,7 @@ public class SdfcliCredentialsHandler extends AbstractHandler {
 						}
 					}
 				} catch (PartInitException e) {
-					e.printStackTrace();
+					StrongpointLogger.logger(SdfcliCredentialsHandler.class.getName(), "error", e.getMessage());
 				}
             }
         });

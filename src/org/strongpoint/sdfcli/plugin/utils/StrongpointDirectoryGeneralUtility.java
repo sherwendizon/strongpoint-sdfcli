@@ -29,6 +29,7 @@ import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 import org.strongpoint.sdfcli.plugin.utils.enums.JobTypes;
+import org.strongpoint.sdfcli.plugin.views.StrongpointDetailView;
 
 public class StrongpointDirectoryGeneralUtility {
 	
@@ -42,7 +43,7 @@ public class StrongpointDirectoryGeneralUtility {
 		StringBuilder contents = new StringBuilder();
 		String str;
 		File file = new File(projectPath + "/import.json");
-		System.out.println("SYNC PROJECT PATH: " + projectPath + "/import.json");
+		StrongpointLogger.logger(StrongpointDirectoryGeneralUtility.class.getName(), "info", "SYNC PROJECT PATH: " + projectPath + "/import.json");
 		JSONObject scriptObjects = null;
 		try {
 			if(file.exists() && !file.isDirectory()) {
@@ -50,15 +51,15 @@ public class StrongpointDirectoryGeneralUtility {
 				while((str = reader.readLine())  != null) {
 					contents.append(str);
 				}
-				System.out.println("FILE Contents: " +contents.toString());
+				StrongpointLogger.logger(StrongpointDirectoryGeneralUtility.class.getName(), "info", "FILE Contents: " +contents.toString());
 				scriptObjects = (JSONObject) new JSONParser().parse(contents.toString());	
 			}
 		} catch (FileNotFoundException e) {
-			e.printStackTrace();
+			StrongpointLogger.logger(StrongpointDirectoryGeneralUtility.class.getName(), "error", e.getMessage());
 		} catch (IOException e) {
-			e.printStackTrace();
+			StrongpointLogger.logger(StrongpointDirectoryGeneralUtility.class.getName(), "error", e.getMessage());
 		} catch (ParseException e) {
-			e.printStackTrace();
+			StrongpointLogger.logger(StrongpointDirectoryGeneralUtility.class.getName(), "error", e.getMessage());
 		}
 		return scriptObjects;		
 	}
@@ -108,11 +109,11 @@ public class StrongpointDirectoryGeneralUtility {
 				savedSearchtObject = (JSONObject) new JSONParser().parse(contents.toString());	
 			}
 		} catch (FileNotFoundException e) {
-			e.printStackTrace();
+			StrongpointLogger.logger(StrongpointDirectoryGeneralUtility.class.getName(), "error", e.getMessage());
 		} catch (IOException e) {
-			e.printStackTrace();
+			StrongpointLogger.logger(StrongpointDirectoryGeneralUtility.class.getName(), "error", e.getMessage());
 		} catch (ParseException e) {
-			e.printStackTrace();
+			StrongpointLogger.logger(StrongpointDirectoryGeneralUtility.class.getName(), "error", e.getMessage());
 		}
 		return savedSearchtObject;		
 	}
@@ -132,9 +133,9 @@ public class StrongpointDirectoryGeneralUtility {
 				}
 			}
 		} catch (FileNotFoundException e) {
-			e.printStackTrace();
+			StrongpointLogger.logger(StrongpointDirectoryGeneralUtility.class.getName(), "error", e.getMessage());
 		} catch (IOException e) {
-			e.printStackTrace();
+			StrongpointLogger.logger(StrongpointDirectoryGeneralUtility.class.getName(), "error", e.getMessage());
 		}
 		return isError;		
 	}
@@ -142,17 +143,17 @@ public class StrongpointDirectoryGeneralUtility {
 	public void writeSavedSearchDuringSync(Map<String, String> savedSearches, String projectPath) {
 		for (Map.Entry<String, String> savedSearch : savedSearches.entrySet()) {
 			File savedSearchFile = new File(projectPath + "/FileCabinet/SavedSearches/" + savedSearch.getKey() + ".json");
-			System.out.println("Saved Search File: " +savedSearchFile.getAbsolutePath());
+			StrongpointLogger.logger(StrongpointDirectoryGeneralUtility.class.getName(), "info", "Saved Search File: " +savedSearchFile.getAbsolutePath());
 			if(savedSearchFile.exists() && !savedSearchFile.isDirectory()) {
 	            try {
 	            	FileWriter writer = new FileWriter(savedSearchFile);
-	            	System.out.println("Writing sycn'd saved search to file...");
+	            	StrongpointLogger.logger(StrongpointDirectoryGeneralUtility.class.getName(), "info", "Writing sycn'd saved search to file...");
 	            	String removeSlashQuote = savedSearch.getValue().replaceAll("\\\"", "\"");
 					writer.write(removeSlashQuote);
 		            writer.flush();
 		            writer.close();	
 				} catch (IOException e) {
-					e.printStackTrace();
+					StrongpointLogger.logger(StrongpointDirectoryGeneralUtility.class.getName(), "error", e.getMessage());
 				}
 			}
 		}	
@@ -162,7 +163,7 @@ public class StrongpointDirectoryGeneralUtility {
 		if (savedSearchesResults != null) {
 			for (int i = 0; i < savedSearchesResults.size(); i++) {
 				for (Map.Entry<String, String> ssTimestamp : ssTimestamps.entrySet()) {
-				    System.out.println(ssTimestamp.getKey() + "/" + ssTimestamp.getValue());
+					StrongpointLogger.logger(StrongpointDirectoryGeneralUtility.class.getName(), "info", ssTimestamp.getKey() + "/" + ssTimestamp.getValue());
 				    JSONObject obj = (JSONObject) savedSearchesResults.get(i);
 				    if(ssTimestamp.getKey().equalsIgnoreCase(obj.get("filename").toString())) {
 						String savedSearchJobPerFile = JobTypes.savedSearch.getJobType() + " - "
@@ -196,7 +197,7 @@ public class StrongpointDirectoryGeneralUtility {
 			try {
 				newFile.createNewFile();
 			} catch (IOException e) {
-				e.printStackTrace();
+				StrongpointLogger.logger(StrongpointDirectoryGeneralUtility.class.getName(), "error", e.getMessage());
 			}
 		}
 
@@ -223,7 +224,7 @@ public class StrongpointDirectoryGeneralUtility {
 				printWriter.close();
 			}
 		} catch (IOException e) {
-			e.printStackTrace();
+			StrongpointLogger.logger(StrongpointDirectoryGeneralUtility.class.getName(), "error", e.getMessage());
 		}
 	}
 	
@@ -248,7 +249,7 @@ public class StrongpointDirectoryGeneralUtility {
 			try {
 				newFile.createNewFile();
 			} catch (IOException e) {
-				e.printStackTrace();
+				StrongpointLogger.logger(StrongpointDirectoryGeneralUtility.class.getName(), "error", e.getMessage());
 			}
 		}
 		
@@ -261,7 +262,7 @@ public class StrongpointDirectoryGeneralUtility {
 	            if(importObj != null) {
 	            	printWriter.println("Account ID: " + importObj.get("accountId").toString());
 	            }
-	            System.out.println("REQUEST DEPLOYMENT RESULT: " +obj.toJSONString());
+	            StrongpointLogger.logger(StrongpointDirectoryGeneralUtility.class.getName(), "info", "REQUEST DEPLOYMENT RESULT: " +obj.toJSONString());
 	            if(obj.get("id") == null) {
 	            	printWriter.println(obj.get("message").toString());
 	            } else {
@@ -270,7 +271,7 @@ public class StrongpointDirectoryGeneralUtility {
 				printWriter.close();
 			}
 		} catch (IOException e) {
-			e.printStackTrace();
+			StrongpointLogger.logger(StrongpointDirectoryGeneralUtility.class.getName(), "error", e.getMessage());
 		}			
 	}
 	
@@ -292,7 +293,7 @@ public class StrongpointDirectoryGeneralUtility {
 			try {
 				newFile.createNewFile();
 			} catch (IOException e) {
-				e.printStackTrace();
+				StrongpointLogger.logger(StrongpointDirectoryGeneralUtility.class.getName(), "error", e.getMessage());
 			}
 		}
 
@@ -373,7 +374,7 @@ public class StrongpointDirectoryGeneralUtility {
 			}
 			printWriter.close();
 		} catch (IOException e) {
-			e.printStackTrace();
+			StrongpointLogger.logger(StrongpointDirectoryGeneralUtility.class.getName(), "error", e.getMessage());
 		}
 	}
 	
@@ -391,7 +392,7 @@ public class StrongpointDirectoryGeneralUtility {
 			try {
 				newFile.createNewFile();
 			} catch (IOException e) {
-				e.printStackTrace();
+				StrongpointLogger.logger(StrongpointDirectoryGeneralUtility.class.getName(), "error", e.getMessage());
 			}
 		}
 
@@ -410,7 +411,7 @@ public class StrongpointDirectoryGeneralUtility {
 			printWriter.close();
 
 		} catch (IOException e) {
-			e.printStackTrace();
+			StrongpointLogger.logger(StrongpointDirectoryGeneralUtility.class.getName(), "error", e.getMessage());
 		}
 	}
 	
@@ -435,7 +436,7 @@ public class StrongpointDirectoryGeneralUtility {
 			try {
 				newFile.createNewFile();
 			} catch (IOException e) {
-				e.printStackTrace();
+				StrongpointLogger.logger(StrongpointDirectoryGeneralUtility.class.getName(), "error", e.getMessage());
 			}
 		}
 
@@ -462,7 +463,7 @@ public class StrongpointDirectoryGeneralUtility {
 				printWriter.close();
 			}
 		} catch (IOException e) {
-			e.printStackTrace();
+			StrongpointLogger.logger(StrongpointDirectoryGeneralUtility.class.getName(), "error", e.getMessage());
 		}
 	}
 	
@@ -487,7 +488,7 @@ public class StrongpointDirectoryGeneralUtility {
 			try {
 				newFile.createNewFile();
 			} catch (IOException e) {
-				e.printStackTrace();
+				StrongpointLogger.logger(StrongpointDirectoryGeneralUtility.class.getName(), "error", e.getMessage());
 			}
 		}
 
@@ -517,7 +518,7 @@ public class StrongpointDirectoryGeneralUtility {
 				printWriter.close();
 			}
 		} catch (IOException e) {
-			e.printStackTrace();
+			StrongpointLogger.logger(StrongpointDirectoryGeneralUtility.class.getName(), "error", e.getMessage());
 		}
 	}	
 	
@@ -526,7 +527,7 @@ public class StrongpointDirectoryGeneralUtility {
 		
 		File file = new File(userHomePath + "/sdfcli");
 		if(file.exists() && file.isDirectory()) {
-			System.out.println("SDFCLI directory already created!");
+			StrongpointLogger.logger(StrongpointDirectoryGeneralUtility.class.getName(), "info", "SDFCLI directory already created!");
 		} else {
 			file.mkdir();
 		}
@@ -544,7 +545,7 @@ public class StrongpointDirectoryGeneralUtility {
 				File file = new File(filePath);
 				if(file.exists() && !file.isDirectory()) {
 					if(file.delete()) {
-						System.out.println(filePath + " has been successfully deleted.");
+						StrongpointLogger.logger(StrongpointDirectoryGeneralUtility.class.getName(), "info", filePath + " has been successfully deleted.");
 					}
 				}
 			}
@@ -561,7 +562,7 @@ public class StrongpointDirectoryGeneralUtility {
 		File[] listOfFiles = file.listFiles();
 		for (int i = 0; i < listOfFiles.length; i++) {
 			if (listOfFiles[i].isFile() && FilenameUtils.getExtension(listOfFiles[i].getName()).equalsIgnoreCase("xml")) {
-				System.out.println("File " + listOfFiles[i].getName());
+				StrongpointLogger.logger(StrongpointDirectoryGeneralUtility.class.getName(), "info", "File " + listOfFiles[i].getName());
 				scriptIds.add(listOfFiles[i].getName().substring(0, listOfFiles[i].getName().indexOf(".")));
 			}
 		}

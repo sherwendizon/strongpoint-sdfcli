@@ -26,10 +26,12 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.json.simple.JSONObject;
+import org.strongpoint.sdfcli.plugin.handlers.SdfcliTestConnectionHandler;
 import org.strongpoint.sdfcli.plugin.services.HttpTestConnectionService;
 import org.strongpoint.sdfcli.plugin.utils.Accounts;
 import org.strongpoint.sdfcli.plugin.utils.Credentials;
 import org.strongpoint.sdfcli.plugin.utils.StrongpointDirectoryGeneralUtility;
+import org.strongpoint.sdfcli.plugin.utils.StrongpointLogger;
 import org.strongpoint.sdfcli.plugin.utils.enums.JobTypes;
 import org.strongpoint.sdfcli.plugin.views.StrongpointView;
 
@@ -101,7 +103,7 @@ public class TestConnectionDialog extends TitleAreaDialog{
 	
 	@Override
 	protected void okPressed() {
-		System.out.println("[Logger] --- Test Connection Dialog OK button is pressed");
+		StrongpointLogger.logger(TestConnectionDialog.class.getName(), "info", "[Logger] --- Test Connection Dialog OK button is pressed");
 		String accountID = "";
 		if(selectedValue != null && selectedValue != "") {
 			accountID = selectedValue.substring(selectedValue.indexOf("(") + 1, selectedValue.indexOf(")"));
@@ -132,7 +134,7 @@ public class TestConnectionDialog extends TitleAreaDialog{
 			connectionMessage = "\nTest Connection to " +accountID +": Failed";
 		}
 		JSONObject sdfcliResults = HttpTestConnectionService.newInstance().testRunSdfcliCommand();
-		System.out.println(sdfcliResults.toJSONString());
+		StrongpointLogger.logger(TestConnectionDialog.class.getName(), "info", sdfcliResults.toJSONString());
 		resultsObj.put("code", connectionResults.get("code").toString());
 		resultsObj.put("message", connectionMessage + "\nSDFCLI Test Command: " +sdfcliResults.get("message").toString());
 		results = resultsObj;
@@ -167,7 +169,7 @@ public class TestConnectionDialog extends TitleAreaDialog{
 						}
 					}
 				} catch (PartInitException e) {
-					e.printStackTrace();
+					StrongpointLogger.logger(TestConnectionDialog.class.getName(), "error", e.getMessage());
 				}
             }
         });

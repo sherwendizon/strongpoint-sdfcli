@@ -12,6 +12,7 @@ import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
+import org.strongpoint.sdfcli.plugin.services.HttpTestConnectionService;
 
 public class Accounts {
 
@@ -30,11 +31,11 @@ public class Accounts {
 //			System.out.println("FILE Contents: " +contents.toString());
 			accounts = (JSONArray) new JSONParser().parse(contents.toString());
 		} catch (FileNotFoundException e) {
-			e.printStackTrace();
+			StrongpointLogger.logger(Accounts.class.getName(), "error", e.getMessage());
 		} catch (IOException e) {
-			e.printStackTrace();
+			StrongpointLogger.logger(Accounts.class.getName(), "error", e.getMessage());
 		} catch (ParseException e) {
-			e.printStackTrace();
+			StrongpointLogger.logger(Accounts.class.getName(), "error", e.getMessage());
 		}
 		return accounts;
 	}
@@ -43,11 +44,11 @@ public class Accounts {
 		String[] accounts = { "No account/s available" };
 		if (getAccountsFromFile() != null && !getAccountsFromFile().isEmpty()) {
 			accounts = new String[getAccountsFromFile().size()];
-			System.out.println("Accounts: " + getAccountsFromFile().toJSONString());
-			System.out.println("Accounts Size: " + getAccountsFromFile().size());
+			StrongpointLogger.logger(Accounts.class.getName(), "info", "Accounts: " + getAccountsFromFile().toJSONString());
+			StrongpointLogger.logger(Accounts.class.getName(), "info", "Accounts Size: " + getAccountsFromFile().size());
 			for (int i = 0; i < getAccountsFromFile().size(); i++) {
 				JSONObject obj = (JSONObject) getAccountsFromFile().get(i);
-				System.out.println("Account: " + obj.toJSONString());
+				StrongpointLogger.logger(Accounts.class.getName(), "info", "Account: " + obj.toJSONString());
 				accounts[i] = obj.get("accountName") + " (" + obj.get("accountId") + ")";
 			}
 		}

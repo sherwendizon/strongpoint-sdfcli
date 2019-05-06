@@ -10,6 +10,8 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableItem;
 import org.eclipse.ui.part.ViewPart;
+import org.strongpoint.sdfcli.plugin.services.HttpImpactAnalysisService;
+import org.strongpoint.sdfcli.plugin.utils.StrongpointLogger;
 
 public class StrongpointDetailView extends ViewPart{
 	
@@ -58,13 +60,13 @@ public class StrongpointDetailView extends ViewPart{
 			}
 			
 		} catch (IOException e) {
-			e.printStackTrace();
+			StrongpointLogger.logger(StrongpointDetailView.class.getName(), "error", e.getMessage());
 		} finally {
 			if(bufferedReader != null) {
 				try {
 					bufferedReader.close();
 				} catch (IOException e) {
-					e.printStackTrace();
+					StrongpointLogger.logger(StrongpointDetailView.class.getName(), "error", e.getMessage());
 				}	
 			}
 		}

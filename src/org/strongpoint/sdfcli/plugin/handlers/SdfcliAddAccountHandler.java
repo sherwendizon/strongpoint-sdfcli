@@ -16,7 +16,9 @@ import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.strongpoint.sdfcli.plugin.dialogs.AccountDialog;
+import org.strongpoint.sdfcli.plugin.dialogs.TestConnectionDialog;
 import org.strongpoint.sdfcli.plugin.utils.StrongpointDirectoryGeneralUtility;
+import org.strongpoint.sdfcli.plugin.utils.StrongpointLogger;
 import org.strongpoint.sdfcli.plugin.utils.enums.JobTypes;
 import org.strongpoint.sdfcli.plugin.views.StrongpointView;
 
@@ -42,7 +44,7 @@ public class SdfcliAddAccountHandler extends AbstractHandler {
 			strongpointView.setTargetAccountId(not_available);
 			strongpointView.setTimestamp(timestamp.toString());
 			String statusStr = "";
-			System.out.println("Get results: " +accountDialog.getResults().toJSONString());
+			StrongpointLogger.logger(SdfcliAddAccountHandler.class.getName(), "info", "Get results: " +accountDialog.getResults().toJSONString());
 			if(accountDialog.getResults().get("okButton").toString().equalsIgnoreCase("true")) {
 				statusStr = "In Progress";
 			} else {
@@ -56,7 +58,7 @@ public class SdfcliAddAccountHandler extends AbstractHandler {
 			}
 			syncWithUi(JobTypes.account.getJobType(), timestamp.toString());
 		} catch (PartInitException e1) {
-			e1.printStackTrace();
+			StrongpointLogger.logger(SdfcliAddAccountHandler.class.getName(), "error", e1.getMessage());
 		}
 		return null;
 	}
@@ -86,7 +88,7 @@ public class SdfcliAddAccountHandler extends AbstractHandler {
 						}
 					}
 				} catch (PartInitException e) {
-					e.printStackTrace();
+					StrongpointLogger.logger(SdfcliAddAccountHandler.class.getName(), "error", e.getMessage());
 				}
             }
         });

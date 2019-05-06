@@ -32,10 +32,12 @@ import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
+import org.strongpoint.sdfcli.plugin.handlers.SdfcliDeployHandler;
 import org.strongpoint.sdfcli.plugin.services.DeployCliService;
 import org.strongpoint.sdfcli.plugin.utils.Accounts;
 import org.strongpoint.sdfcli.plugin.utils.Credentials;
 import org.strongpoint.sdfcli.plugin.utils.StrongpointDirectoryGeneralUtility;
+import org.strongpoint.sdfcli.plugin.utils.StrongpointLogger;
 import org.strongpoint.sdfcli.plugin.utils.enums.JobTypes;
 import org.strongpoint.sdfcli.plugin.views.StrongpointView;
 
@@ -60,11 +62,11 @@ public class DeployDialog extends TitleAreaDialog {
 	private Map<String, String> ssTimestamps;
 
 	private boolean isApproved;
-	
+
 	private boolean okButtonPressed;
-	
+
 	private List<String> scriptIDs;
-	
+
 	private IProject project;
 
 	public DeployDialog(Shell parentShell) {
@@ -107,19 +109,19 @@ public class DeployDialog extends TitleAreaDialog {
 	public boolean getIsApproved() {
 		return this.isApproved;
 	}
-	
+
 	public boolean isOkButtonPressed() {
 		return this.okButtonPressed;
 	}
-	
+
 	public void setScriptIDs(List<String> scriptIds) {
 		this.scriptIDs = scriptIds;
 	}
-	
+
 	public void setProject(IProject project) {
 		this.project = project;
 	}
-	
+
 	@Override
 	public void create() {
 		super.create();
@@ -153,9 +155,10 @@ public class DeployDialog extends TitleAreaDialog {
 
 	@Override
 	protected void okPressed() {
-		System.out.println("[Logger] --- Deploy Dialog OK button is pressed");
+		StrongpointLogger.logger(DeployDialog.class.getName(), "info",
+				"[Logger] --- Deploy Dialog OK button is pressed");
 		Job deploymentJob = new Job(JobTypes.deployment.getJobType()) {
-			
+
 			@Override
 			protected IStatus run(IProgressMonitor arg0) {
 				processDeploy();
@@ -167,44 +170,50 @@ public class DeployDialog extends TitleAreaDialog {
 		this.okButtonPressed = true;
 		super.okPressed();
 	}
-	
-    private void syncWithUi(String job) {
-        Display.getDefault().asyncExec(new Runnable() {
-            public void run() {
-            	try {
-					IViewPart viewPart = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(StrongpointView.viewId);
-					if(viewPart instanceof StrongpointView) {
+
+	private void syncWithUi(String job) {
+		Display.getDefault().asyncExec(new Runnable() {
+			public void run() {
+				try {
+					IViewPart viewPart = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage()
+							.showView(StrongpointView.viewId);
+					if (viewPart instanceof StrongpointView) {
 						StrongpointView strongpointView = (StrongpointView) viewPart;
 						Table table = strongpointView.getTable();
-						String accountId = selectedValue.substring(selectedValue.indexOf("(") + 1, selectedValue.indexOf(")"));
+						String accountId = selectedValue.substring(selectedValue.indexOf("(") + 1,
+								selectedValue.indexOf(")"));
 						for (int i = 0; i < table.getItems().length; i++) {
 							TableItem tableItem = table.getItem(i);
-							if(job.equalsIgnoreCase(JobTypes.deployment.getJobType())) {
-								if(tableItem.getText(0).equalsIgnoreCase(job)
+							if (job.equalsIgnoreCase(JobTypes.deployment.getJobType())) {
+								if (tableItem.getText(0).equalsIgnoreCase(job)
 										&& tableItem.getText(1).equalsIgnoreCase(selectedValue)
 										&& tableItem.getText(4).equalsIgnoreCase(timestamp)) {
 									String fileName = tableItem.getText(0) + "_" + accountId + "_"
 											+ tableItem.getText(4).replaceAll(":", "_") + ".txt";
-									String fullPath = System.getProperty("user.home") + "/strongpoint_action_logs/" + fileName;
-									if(StrongpointDirectoryGeneralUtility.newInstance().readLogFileforErrorMessages(fullPath)) {
+									String fullPath = System.getProperty("user.home") + "/strongpoint_action_logs/"
+											+ fileName;
+									if (StrongpointDirectoryGeneralUtility.newInstance()
+											.readLogFileforErrorMessages(fullPath)) {
 										strongpointView.updateItemStatus(tableItem, "Error");
 									} else {
-										strongpointView.updateItemStatus(tableItem, "Success");	
+										strongpointView.updateItemStatus(tableItem, "Success");
 									}
 								}
 							} else {
 								for (Map.Entry<String, String> ssTimestamp : ssTimestamps.entrySet()) {
 									String ssAction = job + " - " + ssTimestamp.getKey();
-									if(tableItem.getText(0).equalsIgnoreCase(ssAction)
+									if (tableItem.getText(0).equalsIgnoreCase(ssAction)
 											&& tableItem.getText(1).equalsIgnoreCase(selectedValue)
 											&& tableItem.getText(4).equalsIgnoreCase(ssTimestamp.getValue())) {
 										String fileName = tableItem.getText(0) + "_" + accountId + "_"
 												+ tableItem.getText(4).replaceAll(":", "_") + ".txt";
-										String fullPath = System.getProperty("user.home") + "/strongpoint_action_logs/" + fileName;
-										if(StrongpointDirectoryGeneralUtility.newInstance().readLogFileforErrorMessages(fullPath)) {
+										String fullPath = System.getProperty("user.home") + "/strongpoint_action_logs/"
+												+ fileName;
+										if (StrongpointDirectoryGeneralUtility.newInstance()
+												.readLogFileforErrorMessages(fullPath)) {
 											strongpointView.updateItemStatus(tableItem, "Error");
 										} else {
-											strongpointView.updateItemStatus(tableItem, "Success");	
+											strongpointView.updateItemStatus(tableItem, "Success");
 										}
 									}
 								}
@@ -212,12 +221,12 @@ public class DeployDialog extends TitleAreaDialog {
 						}
 					}
 				} catch (PartInitException e) {
-					e.printStackTrace();
+					StrongpointLogger.logger(DeployDialog.class.getName(), "error", e.getMessage());
 				}
-            }
-        });
+			}
+		});
 
-    }	
+	}
 
 	private void processDeploy() {
 		List<String> scriptIds = this.scriptIDs;
@@ -230,7 +239,8 @@ public class DeployDialog extends TitleAreaDialog {
 		String params = "";
 		if (creds != null) {
 			emailCred = creds.get("email").toString();
-			passwordCred = Credentials.decryptPass(creds.get("password").toString().getBytes(), creds.get("key").toString());
+			passwordCred = Credentials.decryptPass(creds.get("password").toString().getBytes(),
+					creds.get("key").toString());
 			encryptedKey = creds.get("key").toString();
 			encryptedPassword = creds.get("password").toString();
 			pathCred = creds.get("path").toString();
@@ -240,21 +250,21 @@ public class DeployDialog extends TitleAreaDialog {
 						"Please set user credentials in Strongpoint > Credentials Settings menu");
 			}
 		}
-		System.out.println("WINDOW: " + this.project);
-		String crId = this.project.getName().substring(0,
-				this.project.getName().indexOf("_"));
+		StrongpointLogger.logger(DeployDialog.class.getName(), "info", "WINDOW: " + this.project);
+		String crId = this.project.getName().substring(0, this.project.getName().indexOf("_"));
 		if (crId != null && !crId.isEmpty()) {
 			params = crId;
 		} else {
 			params = String.join(",", scriptIds);
-			System.out.println("DEPLOY SCRIPT IDS: " + params);
+			StrongpointLogger.logger(DeployDialog.class.getName(), "info", "DEPLOY SCRIPT IDS: " + params);
 		}
 		String accountId = selectedValue.substring(selectedValue.indexOf("(") + 1, selectedValue.indexOf(")"));
 		JSONObject approveResult = DeployCliService.newInstance().isApprovedDeployment(parentShell, accountId,
 				emailCred, passwordCred, String.join(",", this.scriptIDs), encryptedKey, encryptedPassword);
 //		JSONObject targetUpdates = TargetUpdatesService.newInstance().localUpdatedWithTarget(accountId,
 //				this.projectPath, scriptIds);
-		System.out.println("Deploy Approve results: " + approveResult.toJSONString());
+		StrongpointLogger.logger(DeployDialog.class.getName(), "info",
+				"Deploy Approve results: " + approveResult.toJSONString());
 		JSONObject data = (JSONObject) approveResult.get("data");
 		isApproved = (boolean) data.get("result");
 		JSONObject supportedObjs = DeployCliService.newInstance().getSupportedObjects(accountId, emailCred,
@@ -287,10 +297,10 @@ public class DeployDialog extends TitleAreaDialog {
 					(boolean) data.get("result"), approveResult.get("message").toString());
 //			MessageDialog.openError(this.parentShell, "Object List Error",
 //					"Objects in the project changed after approval. Request a new Change Request.");
-			System.out.println("Writing to Deploy file...");
+			StrongpointLogger.logger(DeployDialog.class.getName(), "info", "Writing to Deploy file...");
 			StrongpointDirectoryGeneralUtility.newInstance().writeToFile(results, JobTypes.deployment.getJobType(),
 					accountId, timestamp);
-			System.out.println("Finished writing Deploy file...");
+			StrongpointLogger.logger(DeployDialog.class.getName(), "info", "Finished writing Deploy file...");
 		} else {
 			if (hasUnsupportedObjects(scriptIds, supportedObjs)) {
 				JSONObject messageObject = new JSONObject();
@@ -340,12 +350,12 @@ public class DeployDialog extends TitleAreaDialog {
 ////						MessageDialog.openWarning(this.parentShell, "Outdated Target Objects",
 ////								"The local copies of the following objects are outdated with the target account copy: " +String.join(",", listStriptIds));
 //					} else {
-						results = DeployCliService.newInstance().deployCliResult(accountId, emailCred, passwordCred,
-								pathCred, this.projectPath, this.parentShell, JobTypes.deployment.getJobType(),
-								timestamp, encryptedKey, encryptedPassword);
-						savedSearchResults = DeployCliService.newInstance().deploySavedSearches(accountId, emailCred,
-								passwordCred, pathCred, this.projectPath, this.parentShell,
-								JobTypes.savedSearch.getJobType(), this.ssTimestamps, (boolean) data.get("result"), "");
+					results = DeployCliService.newInstance().deployCliResult(accountId, emailCred, passwordCred,
+							pathCred, this.projectPath, this.parentShell, JobTypes.deployment.getJobType(), timestamp,
+							encryptedKey, encryptedPassword);
+					savedSearchResults = DeployCliService.newInstance().deploySavedSearches(accountId, emailCred,
+							passwordCred, pathCred, this.projectPath, this.parentShell,
+							JobTypes.savedSearch.getJobType(), this.ssTimestamps, (boolean) data.get("result"), "");
 //					}
 //					results = DeployCliService.newInstance().deployCliResult(accountId, emailCred, passwordCred,
 //							pathCred, this.projectPath, this.parentShell, JobTypes.deployment.getJobType(), timestamp);
@@ -353,10 +363,10 @@ public class DeployDialog extends TitleAreaDialog {
 //							passwordCred, pathCred, this.projectPath, this.parentShell, JobTypes.savedSearch.getJobType(), this.ssTimestamps, (boolean) data.get("result"));
 				}
 			}
-			System.out.println("Writing to Deploy file...");
+			StrongpointLogger.logger(DeployDialog.class.getName(), "info", "Writing to Deploy file...");
 			StrongpointDirectoryGeneralUtility.newInstance().writeToFile(results, JobTypes.deployment.getJobType(),
 					accountId, timestamp);
-			System.out.println("Finished writing Deploy file...");
+			StrongpointLogger.logger(DeployDialog.class.getName(), "info", "Finished writing Deploy file...");
 			syncWithUi(JobTypes.deployment.getJobType());
 			syncWithUi(JobTypes.savedSearch.getJobType());
 		}
@@ -396,12 +406,13 @@ public class DeployDialog extends TitleAreaDialog {
 		if (data != null) {
 			int size = data.size();
 			for (int i = 0; i < size; i++) {
-				System.out.println("SUPPORTED OBJECT: " + data.get(i).toString());
+				StrongpointLogger.logger(DeployDialog.class.getName(), "info",
+						"SUPPORTED OBJECT: " + data.get(i).toString());
 				supportedList.add(data.get(i).toString());
 			}
 		}
 		for (String scriptId : scriptIds) {
-			System.out.println("SCRIPT ID: " + scriptId);
+			StrongpointLogger.logger(DeployDialog.class.getName(), "info", "SCRIPT ID: " + scriptId);
 			for (String supportedObj : supportedList) {
 				if (supportedObj.contains(scriptId)) {
 					hasUnsupportedObj = true;

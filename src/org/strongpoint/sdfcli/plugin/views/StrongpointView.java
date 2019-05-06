@@ -27,6 +27,7 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.ViewPart;
 import org.json.simple.JSONObject;
 import org.strongpoint.sdfcli.plugin.utils.StrongpointDirectoryGeneralUtility;
+import org.strongpoint.sdfcli.plugin.utils.StrongpointLogger;
 
 public class StrongpointView extends ViewPart {
 
@@ -142,7 +143,7 @@ public class StrongpointView extends ViewPart {
 							}
 							String fileName = selection[i].getText(0) + "_" + parsedAccountId + "_"
 									+ selection[i].getText(4).replaceAll(":", "_") + ".txt";
-							System.out.println("File Path: " + fileName);
+							StrongpointLogger.logger(StrongpointView.class.getName(), "info", "File Path: " + fileName);
 							fullPath = userHomePath + "/strongpoint_action_logs/" + fileName;
 							detailView.setFileAbsolutePath(fullPath);
 							detailView.updateView(selection[i]);

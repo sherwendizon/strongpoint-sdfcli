@@ -33,10 +33,12 @@ import org.eclipse.ui.ISelectionService;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
+import org.strongpoint.sdfcli.plugin.handlers.SdfcliCredentialsHandler;
 import org.strongpoint.sdfcli.plugin.services.AddEditCredentialsService;
 import org.strongpoint.sdfcli.plugin.services.DeployCliService;
 import org.strongpoint.sdfcli.plugin.utils.Accounts;
 import org.strongpoint.sdfcli.plugin.utils.Credentials;
+import org.strongpoint.sdfcli.plugin.utils.StrongpointLogger;
 
 public class CredentialsDialog extends TitleAreaDialog{
 	
@@ -104,7 +106,7 @@ public class CredentialsDialog extends TitleAreaDialog{
 	
 	@Override
 	protected void okPressed() {
-		System.out.println("[Logger] --- Credentials Dialog OK button is pressed");
+		StrongpointLogger.logger(CredentialsDialog.class.getName(), "info", "[Logger] --- Credentials Dialog OK button is pressed");
 		AddEditCredentialsService addEditCredentialsService = new AddEditCredentialsService();
 		addEditCredentialsService.setEmailStr(emailText.getText());
 		addEditCredentialsService.setPasswordStr(passwordText.getText());

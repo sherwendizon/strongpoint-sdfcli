@@ -40,6 +40,7 @@ import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 import org.strongpoint.sdfcli.plugin.dialogs.RequestDeploymentDialog;
 import org.strongpoint.sdfcli.plugin.utils.StrongpointDirectoryGeneralUtility;
+import org.strongpoint.sdfcli.plugin.utils.StrongpointLogger;
 import org.strongpoint.sdfcli.plugin.utils.enums.JobTypes;
 import org.strongpoint.sdfcli.plugin.views.StrongpointView;
 
@@ -79,7 +80,7 @@ public class SdfcliChangeRequestHandler extends AbstractHandler{
 //				writeToFile(requestDeploymentDialog.getResults(), JobTypes.request_deployment.getJobType(),
 //						accountId, timestamp.toString(), path.toPortableString());
 			} catch (PartInitException e1) {
-				e1.printStackTrace();
+				StrongpointLogger.logger(SdfcliChangeRequestHandler.class.getName(), "error", e1.getMessage());
 			}					
 		} else {
 			MessageDialog.openWarning(window.getShell(), "Warning", "Please select a project.");
@@ -144,7 +145,7 @@ public class SdfcliChangeRequestHandler extends AbstractHandler{
 				}
 			}
 		} catch (CoreException e) {
-			e.printStackTrace();
+			StrongpointLogger.logger(SdfcliChangeRequestHandler.class.getName(), "error", e.getMessage());
 		}
         
         return scriptIds;    

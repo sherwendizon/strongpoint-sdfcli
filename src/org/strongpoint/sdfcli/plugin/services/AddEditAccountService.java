@@ -8,7 +8,9 @@ import java.util.UUID;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.strongpoint.sdfcli.plugin.utils.Accounts;
+import org.strongpoint.sdfcli.plugin.utils.Credentials;
 import org.strongpoint.sdfcli.plugin.utils.StrongpointDirectoryGeneralUtility;
+import org.strongpoint.sdfcli.plugin.utils.StrongpointLogger;
 
 public class AddEditAccountService {
 	
@@ -71,29 +73,29 @@ public class AddEditAccountService {
 					if(object.get("UUID").equals(this.uuid)) {
 						array.remove(i);
 			            FileWriter writer = new FileWriter(file);
-			            System.out.println("Writing JSON object to file...");
-			            System.out.println(obj);
+			            StrongpointLogger.logger(AddEditAccountService.class.getName(), "info", "Writing JSON object to file...");
+			            StrongpointLogger.logger(AddEditAccountService.class.getName(), "info", obj.toJSONString());
 						obj.put("UUID", this.uuid);
 						array.add(obj);
-			            System.out.println("After editing account: " +array.toJSONString());
+						StrongpointLogger.logger(AddEditAccountService.class.getName(), "info", "After editing account: " +array.toJSONString());
 			            writer.write(array.toJSONString());
 			            writer.flush();
 			            writer.close();							
 					}
-	        		System.out.println("UUID: " +this.uuid);
+					StrongpointLogger.logger(AddEditAccountService.class.getName(), "info", "UUID: " +this.uuid);
 				}
-				System.out.println("Selected ID: " +this.accountId);
-				System.out.println("Selected Name: " +this.accountName);
+	        	StrongpointLogger.logger(AddEditAccountService.class.getName(), "info", "Selected ID: " +this.accountId);
+	        	StrongpointLogger.logger(AddEditAccountService.class.getName(), "info", "Selected Name: " +this.accountName);
 	        } else {
 		        if(file.exists() && !file.isDirectory()) {
 		        	JSONArray array = Accounts.getAccountsFromFile();
-		        	System.out.println("Current contents: " +array.toJSONString());
+		        	StrongpointLogger.logger(AddEditAccountService.class.getName(), "info", "Current contents: " +array.toJSONString());
 		            FileWriter writer = new FileWriter(file);
-		            System.out.println("Writing JSON object to file...");
-		            System.out.println(obj);
+		            StrongpointLogger.logger(AddEditAccountService.class.getName(), "info", "Writing JSON object to file...");
+		            StrongpointLogger.logger(AddEditAccountService.class.getName(), "info", obj.toJSONString());
 		            obj.put("UUID", UUID.randomUUID().toString());
 		            array.add(obj);
-		            System.out.println("After adding new account: " +array.toJSONString());
+		            StrongpointLogger.logger(AddEditAccountService.class.getName(), "info", "After adding new account: " +array.toJSONString());
 		            writer.write(array.toJSONString());
 		            writer.flush();
 		            writer.close();	
@@ -101,14 +103,14 @@ public class AddEditAccountService {
 		    		JSONArray jsonArray = new JSONArray();
 		            boolean isCreated = file.createNewFile();
 		            if(isCreated) {
-		                System.out.println("File successfully created!");
+		            	StrongpointLogger.logger(AddEditAccountService.class.getName(), "info", "File successfully created!");
 		            } else {
-		                System.out.println("File not created!");
+		            	StrongpointLogger.logger(AddEditAccountService.class.getName(), "info", "File not created!");
 		            }
 		
 		            FileWriter writer = new FileWriter(file);
-		            System.out.println("Writing JSON object to file...");
-		            System.out.println(obj);
+		            StrongpointLogger.logger(AddEditAccountService.class.getName(), "info", "Writing JSON object to file...");
+		            StrongpointLogger.logger(AddEditAccountService.class.getName(), "info", obj.toJSONString());
 		            obj.put("UUID", UUID.randomUUID().toString());
 		            jsonArray.add(obj);
 		            writer.write(jsonArray.toJSONString());
@@ -117,7 +119,7 @@ public class AddEditAccountService {
 		        }	        	
 	        }
 	    } catch (IOException exception) {
-	        exception.printStackTrace();
+	    	StrongpointLogger.logger(AddEditAccountService.class.getName(), "error", exception.getMessage());
 	    }		
 	}
 
