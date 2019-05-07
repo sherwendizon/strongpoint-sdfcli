@@ -1,5 +1,6 @@
 package org.strongpoint.sdfcli.plugin.services;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.http.HttpEntity;
@@ -25,9 +26,14 @@ public class MissingDependenciesService {
 	public JSONObject getMissingDependencies(String accountID, String projectPath, List<String> scriptIds) {
 		List<String> dependenciesFromManifest = StrongpointDirectoryGeneralUtility.newInstance()
 				.readManifestXMLFile(projectPath + "/manifest.xml");
-//		JSONObject importObjects = StrongpointDirectoryGeneralUtility.newInstance().readImportJsonFile(projectPath);
-//		JSONObject responseObject = getMissingDependenciesFromNS(accountID, projectPath, dependenciesFromManifest);
-		JSONObject responseObject = testResponseMissingDependencies();
+		JSONObject importObjects = StrongpointDirectoryGeneralUtility.newInstance().readImportJsonFile(projectPath);
+		JSONArray objectsArray = (JSONArray) importObjects.get("objects");
+		List<String> objectsListScriptIds = new ArrayList<>();
+		for (int i = 0; i < objectsArray.size(); i++) {
+			objectsListScriptIds.add(objectsArray.get(i).toString());
+		}
+		JSONObject responseObject = getMissingDependenciesFromNS(accountID, projectPath, objectsListScriptIds);
+//		JSONObject responseObject = testResponseMissingDependencies();
 		JSONArray targetData = (JSONArray) responseObject.get("data");
 		JSONObject results = new JSONObject();
 		results.put("code", (Long) responseObject.get("code"));
@@ -55,7 +61,7 @@ public class MissingDependenciesService {
 		JSONObject creds = Credentials.getCredentialsFromFile();
 		JSONObject importObjects = StrongpointDirectoryGeneralUtility.newInstance().readImportJsonFile(projectPath);
 		JSONObject results = new JSONObject();
-		String strongpointURL = "https://rest.netsuite.com/app/site/hosting/restlet.nl?script=customscript_flo_get_last_mod_date&deploy=customdeploy_flo_get_last_mod_date&scriptIds="
+		String strongpointURL = "https://rest.netsuite.com/app/site/hosting/restlet.nl?script=customscript_flo_get_sdf_obj_dependency&deploy=customdeploy_flo_get_sdf_obj_dependency&scriptIds="
 				+ scriptIdsWithouWhitespaces;
 		System.out.println("Target Updates URL: " + strongpointURL);
 		HttpGet httpGet = null;
