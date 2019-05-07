@@ -34,7 +34,8 @@ public class MissingDependenciesService {
 		}
 		JSONObject responseObject = getMissingDependenciesFromNS(accountID, projectPath, objectsListScriptIds);
 //		JSONObject responseObject = testResponseMissingDependencies();
-		JSONArray targetData = (JSONArray) responseObject.get("data");
+		JSONObject resultsData = (JSONObject) responseObject.get("data");
+		JSONArray targetData = (JSONArray) resultsData.get("result");
 		JSONObject results = new JSONObject();
 		results.put("code", (Long) responseObject.get("code"));
 		results.put("message", responseObject.get("message").toString());
