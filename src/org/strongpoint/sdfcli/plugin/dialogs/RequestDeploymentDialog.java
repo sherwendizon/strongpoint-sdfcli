@@ -231,7 +231,7 @@ public class RequestDeploymentDialog extends TitleAreaDialog {
         changeTypeCombo = new Combo(container, SWT.DROP_DOWN);
         changeTypeCombo.setLayoutData(changeTypeGridData);
 		if(selectedValue.isEmpty()) {
-			changeTypeCombo.setText("Select an Account ID");
+			changeTypeCombo.setText("Select an Change Type");
 			changeTypeCombo.setEnabled(false);
 		}	
 //		} else {
