@@ -118,7 +118,7 @@ public class HttpTestConnectionService {
 					new InputStreamReader(changeRootDirectoryProcess.getInputStream()));
 			String line = "";
 			while ((line = reader.readLine()) != null) {
-				if (line.contains("[INFO] Building SDF CLI 2018.2.1")) {
+				if (line.contains("[INFO] Building SDF CLI")) {
 					StrongpointLogger.logger(SyncToNsCliService.class.getName(), "info", line);
 					cmdOutput.append(line);
 					results.put("message", "[INFO] BUILD SUCCESS");	

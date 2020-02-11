@@ -74,8 +74,13 @@ public class AddEditCredentialsService {
 //	    String encryptStrPass = encryptPasswd(this.passwordStr, key);
 		if(Credentials.isCredentialsFileExists()) {
 			JSONObject cred = Credentials.getCredentialsFromFile();
-			pass = cred.get("password").toString();
-			passKey = cred.get("key").toString();
+			if(cred.get("key") != null) {
+				pass = cred.get("password").toString();
+				passKey = cred.get("key").toString();	
+			} else {
+				pass = encryptPasswd(this.passwordStr, key);
+				passKey = new String(new Base64().encode(key.getEncoded()));
+			}
 		} else {
 			pass = encryptPasswd(this.passwordStr, key);
 			passKey = new String(new Base64().encode(key.getEncoded()));
