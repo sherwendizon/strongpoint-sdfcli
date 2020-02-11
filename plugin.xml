@@ -8,6 +8,11 @@
             id="strongpoint-sdfcli.commands.category"
             name="Sample Category">
       </category>
+      <command
+            categoryId="strongpoint-sdfcli.commands.category"
+            name="Attach Change Request"
+            id="strongpoint-sdfcli.commands.attachCrCommand">
+      </command>
       <!--<command
             categoryId="strongpoint-sdfcli.commands.category"
             name="Create Project"
@@ -68,6 +73,10 @@
    </extension>
    <extension
          point="org.eclipse.ui.handlers">
+      <handler
+            class="org.strongpoint.sdfcli.plugin.handlers.SdfcliAttachCrHandler"
+            commandId="strongpoint-sdfcli.commands.attachCrCommand">
+      </handler> 
       <!--<handler
             class="org.strongpoint.sdfcli.plugin.handlers.SdfcliHandler"
             commandId="strongpoint-sdfcli.commands.sampleCommand">
