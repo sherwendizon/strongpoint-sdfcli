@@ -64,6 +64,7 @@ public class Credentials {
 			JSONObject credRoleObject = (JSONObject) roles.get(i);
 			if (credRoleObject.get("accountId").toString().equalsIgnoreCase(accountId)
 					&& credRoleObject.get("roleName").toString().equalsIgnoreCase("Strongpoint SDF Developer Role")) {
+				System.out.println("Role: " +credRoleObject.toJSONString());
 				role = credRoleObject.get("roleId").toString();
 			}
 		}

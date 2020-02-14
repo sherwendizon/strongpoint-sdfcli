@@ -232,7 +232,7 @@ public class RequestDeploymentDialog extends TitleAreaDialog {
         changeTypeCombo.setLayoutData(changeTypeGridData);
 		if(selectedValue.isEmpty()) {
 			changeTypeCombo.setText("Select an Change Type");
-			changeTypeCombo.setEnabled(false);
+//			changeTypeCombo.setEnabled(false);
 		}	
 //		} else {
 //			String accountID = (selectedValue.substring(selectedValue.indexOf("(") + 1,

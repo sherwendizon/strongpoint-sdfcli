@@ -132,6 +132,12 @@
             contextId="org.eclipse.ui.contexts.window"
             sequence="M1+6">
       </key>-->
+       <key
+            commandId="strongpoint-sdfcli.commands.attachCrCommand"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            contextId="org.eclipse.ui.contexts.window"
+            sequence="M1+6">
+      </key>     
       <key
             commandId="strongpoint-sdfcli.commands.createCrCommand"
             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
@@ -202,6 +208,11 @@
                   id="strongpoint-sdfcli.menus.sampleCommand"
                   mnemonic="S">
             </command>-->
+            <command
+                  commandId="strongpoint-sdfcli.commands.attachCrCommand"
+                  id="strongpoint-sdfcli.menus.attachCrCommand"
+                  mnemonic="T">
+            </command>            
             <command
                   commandId="strongpoint-sdfcli.commands.createCrCommand"
                   id="strongpoint-sdfcli.menus.createCrCommand"

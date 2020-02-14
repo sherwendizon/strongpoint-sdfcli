@@ -1,6 +1,7 @@
 package org.strongpoint.sdfcli.plugin.utils.enums;
 
 public enum JobTypes {
+	attach_change_request("Attach To Change Request"),
 	impact_analysis("Impact Analysis"),
 	deployment("Deployment"),
 	savedSearch("Deploy Saved Search"),

@@ -209,6 +209,9 @@ public class StrongpointDirectoryGeneralUtility {
 				JSONArray results = (JSONArray) obj.get("results");
 				String messageResult = (String) obj.get("message");
 				if (messageResult != null) {
+					if(jobType.equalsIgnoreCase(JobTypes.attach_change_request.getJobType())) {
+						messageResult += " project attached to change request, import.json has been updated.";
+					}
 					printWriter.println("Message: " + messageResult);
 				} else {
 					if ((JSONObject) results.get(0) != null) {
