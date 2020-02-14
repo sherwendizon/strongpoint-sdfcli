@@ -212,9 +212,9 @@ public class HttpAttachCrService {
 	
 	private void createSavedSearchDirectory(String projectPath) {
 		if(projectPath != null) {
-			boolean isDirectoryExist = Files.isDirectory(Paths.get(projectPath + "/FileCabinet/SavedSearch"));
+			boolean isDirectoryExist = Files.isDirectory(Paths.get(projectPath + "/FileCabinet/SavedSearches"));
 			if(!isDirectoryExist) {
-				File newDir = new File(projectPath + "/FileCabinet/SavedSearch");
+				File newDir = new File(projectPath + "/FileCabinet/SavedSearches");
 				newDir.mkdir();
 			}	
 		}
