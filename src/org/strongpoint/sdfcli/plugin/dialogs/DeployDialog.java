@@ -231,6 +231,8 @@ public class DeployDialog extends TitleAreaDialog {
 	private void processDeploy() {
 		List<String> scriptIds = this.scriptIDs;
 		JSONObject creds = Credentials.getCredentialsFromFile();
+		JSONObject importObjects = StrongpointDirectoryGeneralUtility.newInstance()
+				.readImportJsonFile(this.projectPath);
 		String emailCred = "";
 		String passwordCred = "";
 		String encryptedKey = "";
@@ -251,7 +253,8 @@ public class DeployDialog extends TitleAreaDialog {
 			}
 		}
 		StrongpointLogger.logger(DeployDialog.class.getName(), "info", "WINDOW: " + this.project);
-		String crId = this.project.getName().substring(0, this.project.getName().indexOf("_"));
+//		String crId = this.project.getName().substring(0, this.project.getName().indexOf("_"));
+		String crId = importObjects.get("parentCrId").toString();
 		if (crId != null && !crId.isEmpty()) {
 			params = crId;
 		} else {
@@ -269,8 +272,6 @@ public class DeployDialog extends TitleAreaDialog {
 		isApproved = (boolean) data.get("result");
 		JSONObject supportedObjs = DeployCliService.newInstance().getSupportedObjects(accountId, emailCred,
 				passwordCred, encryptedKey, encryptedPassword);
-		JSONObject importObjects = StrongpointDirectoryGeneralUtility.newInstance()
-				.readImportJsonFile(this.projectPath);
 		JSONArray objects = (JSONArray) importObjects.get("objects");
 		List<String> listStr = new ArrayList<String>();
 		boolean isExcessObj = false;
