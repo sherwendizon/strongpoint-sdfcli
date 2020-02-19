@@ -98,7 +98,7 @@ public class TestConnectionDialog extends TitleAreaDialog{
 	
 	@Override
 	protected Point getInitialSize() {
-		return new Point(450, 210);
+		return new Point(650, 500);
 	}
 	
 	@Override
