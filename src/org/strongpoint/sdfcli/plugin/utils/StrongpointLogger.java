@@ -9,13 +9,13 @@ public class StrongpointLogger {
 	
 	public static void logger(String className, String logType, String logMessage) {
 		Logger log = Logger.getLogger("Strongpoint");
-		FileHandler fileHandler;
+//		FileHandler fileHandler;
 		
 		try {
-			fileHandler = new FileHandler(System.getProperty("user.home") + "/strongpoint_logs.log", true);
-			log.addHandler(fileHandler);
-			SimpleFormatter simpleFormatter = new SimpleFormatter();
-			fileHandler.setFormatter(simpleFormatter);		
+//			fileHandler = new FileHandler(System.getProperty("user.home") + "/strongpoint_logs.log", true);
+//			log.addHandler(fileHandler);
+//			SimpleFormatter simpleFormatter = new SimpleFormatter();
+//			fileHandler.setFormatter(simpleFormatter);		
 			if(logType.equalsIgnoreCase("info")) {
 				log.info(className +" :: "+ logMessage);
 			} else if(logType.equalsIgnoreCase("warn")) {
@@ -23,7 +23,7 @@ public class StrongpointLogger {
 			} else if(logType.equalsIgnoreCase("error")) {
 				log.severe(className +" :: "+ logMessage);
 			}
-		} catch (SecurityException | IOException e) {
+		} catch (SecurityException e) {
 			e.printStackTrace();
 		}
 		

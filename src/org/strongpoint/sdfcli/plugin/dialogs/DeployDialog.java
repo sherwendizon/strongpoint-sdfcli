@@ -150,25 +150,30 @@ public class DeployDialog extends TitleAreaDialog {
 
 	@Override
 	protected Point getInitialSize() {
-		return new Point(450, 210);
+		return new Point(650, 500);
 	}
 
 	@Override
 	protected void okPressed() {
 		StrongpointLogger.logger(DeployDialog.class.getName(), "info",
 				"[Logger] --- Deploy Dialog OK button is pressed");
-		Job deploymentJob = new Job(JobTypes.deployment.getJobType()) {
+		if(!selectedValue.isEmpty() && selectedValue != "") {
+			Job deploymentJob = new Job(JobTypes.deployment.getJobType()) {
 
-			@Override
-			protected IStatus run(IProgressMonitor arg0) {
-				processDeploy();
-				return Status.OK_STATUS;
-			}
-		};
-		deploymentJob.setUser(true);
-		deploymentJob.schedule();
-		this.okButtonPressed = true;
-		super.okPressed();
+				@Override
+				protected IStatus run(IProgressMonitor arg0) {
+					processDeploy();
+					return Status.OK_STATUS;
+				}
+			};
+			deploymentJob.setUser(true);
+			deploymentJob.schedule();
+			this.okButtonPressed = true;
+			super.okPressed();
+		} else {
+			MessageDialog.openWarning(this.parentShell, "No target account selected",
+					"Please select a target account to Deploy to.");			
+		}
 	}
 
 	private void syncWithUi(String job) {
