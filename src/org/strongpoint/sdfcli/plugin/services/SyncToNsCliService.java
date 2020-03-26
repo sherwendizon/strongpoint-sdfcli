@@ -242,6 +242,7 @@ public class SyncToNsCliService {
 							+ projectPath/* .replace("\\", "/") */ + " -role "+role+" -scriptid "
 							+ String.join(" ", objsStr).toString().replaceAll("null", "")
 							+ " -type ALL -url system.netsuite.com";
+					System.out.println("WIndows >>>>>>>>>>>>>>>>>>>>>>>>>>>>>> " +windowsImportObjectsCommand);
 					String[] windowsCommands = { "cmd.exe", "/c", "cd " + projectPath + " && cd " + projectPath,
 							" && " + windowsImportObjectsCommand };
 //					MessageDialog.openInformation(this.parentShell, "Import Object", "cmd.exe"+ " /c "+"cd " +projectPath+" && cd "+projectPath+ " && "+windowsImportObjectsCommand);
@@ -348,6 +349,7 @@ public class SyncToNsCliService {
 							+ " -email " + email + " -p " + projectPath + " -role "+role+" -url system.netsuite.com";
 					String[] windowsCommands = { "cmd.exe", "/c", "cd " + projectPath + " && cd " + projectPath,
 							" && " + windowsImportFilesCommand };
+					System.out.println("WIndows >>>>>>>>>>>>>>>>>>>>>>>>>>>>>> " +windowsImportFilesCommand);
 //					MessageDialog.openInformation(this.parentShell, "Import Files", "cmd.exe"+ " /c "+"cd " +projectPath+" && cd "+projectPath+ " && "+windowsImportFilesCommand);
 					ProcessBuilder processBuilderForWindows = new ProcessBuilder(windowsCommands);
 					processBuilderForWindows.redirectError(new File(projectPath + "/errorSync.log"));
@@ -453,6 +455,7 @@ public class SyncToNsCliService {
 							+ projectPath + " -role "+role+" -url system.netsuite.com";
 					String[] windowsCommands = { "cmd.exe", "/c", "cd " + projectPath + " && cd " + projectPath,
 							" && " + windowsAddDependenciesCommand };
+					System.out.println("WIndows >>>>>>>>>>>>>>>>>>>>>>>>>>>>>> " +windowsAddDependenciesCommand);
 //					MessageDialog.openInformation(this.parentShell, "Add Dependencies", "cmd.exe"+ " /c "+"cd " +projectPath+" && cd "+projectPath+ " && "+windowsAddDependenciesCommand);
 					ProcessBuilder processBuilderForWindows = new ProcessBuilder(windowsCommands);
 					processBuilderForWindows.redirectError(new File(projectPath + "/errorSync.log"));

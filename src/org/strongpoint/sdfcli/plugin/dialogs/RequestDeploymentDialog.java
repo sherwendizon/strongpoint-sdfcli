@@ -132,7 +132,7 @@ public class RequestDeploymentDialog extends TitleAreaDialog {
 	
 	@Override
 	protected Point getInitialSize() {
-		return new Point(650, 500);
+		return new Point(775, 500);
 	}
 	
 	@Override
