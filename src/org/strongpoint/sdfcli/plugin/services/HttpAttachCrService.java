@@ -261,6 +261,7 @@ public class HttpAttachCrService {
 			deployXml += "\t</configuration>\n";
 			deployXml += "\t<files>\n";
 			deployXml += "\t\t<path>~/FileCabinet/SuiteScripts/*</path>\n";
+			deployXml += "\t\t<path>~/FileCabinet/Templates/*</path>\n";
 			deployXml += "\t</files>\n";
 			deployXml += "\t<objects>\n";
 			deployXml += "\t\t<path>~/Objects/*</path>\n";
