@@ -201,6 +201,7 @@ public class HttpAttachCrService {
 				}
 			}
 		}
+		writeManifestFile(projectPath);
 		results = changeRequestImportJsonObjRes;
 		createSavedSearchDirectory(projectPath);
 		StrongpointLogger.logger(HttpAttachCrService.class.getName(), "info", "Writing to Attach project to change request file..." +results.toJSONString() );
@@ -208,6 +209,47 @@ public class HttpAttachCrService {
 		StrongpointLogger.logger(HttpAttachCrService.class.getName(), "info", "Finished writing Attach project to change request file...");
 		
 		return results;		
+	}
+	
+	private void writeManifestFile(String projectPath) {
+		String projectName = projectPath.substring(projectPath.lastIndexOf('/') + 1,projectPath.length());
+		String manifestXml = "<manifest projecttype='ACCOUNTCUSTOMIZATION'>\n";
+			manifestXml += "\t<projectname>"+ projectName +"</projectname>\n";
+			manifestXml += "\t<frameworkversion>1.0</frameworkversion>\n";
+			manifestXml += "\t<dependencies>\n";
+			manifestXml += "\t\t<features>\n";
+			manifestXml += "\t\t\t<feature required='true'>CUSTOMRECORDS</feature>\n";
+			manifestXml += "\t\t\t<feature required='true'>SERVERSIDESCRIPTING</feature>\n";
+			manifestXml += "\t\t\t<feature required='false'>CREATESUITEBUNDLES</feature>\n";
+			manifestXml += "\t\t\t<feature required='false'>CRM</feature>\n";
+			manifestXml += "\t\t</features>\n";
+			manifestXml += "\t\t<objects>\n";
+			manifestXml += "\t\t</objects>\n";
+			manifestXml += "\t\t<files>\n";
+			manifestXml += "\t\t</files>\n";
+			manifestXml += "\t\t<applications/>\n";
+			manifestXml += "\t</dependencies>\n";
+			manifestXml += "</manifest>\n";
+		boolean isDirectoryExist = Files.isDirectory(Paths.get(projectPath));
+		if (isDirectoryExist) {
+			File file = new File(projectPath + "/import.json");
+			if (!file.exists()) {
+				try {
+					file.createNewFile();
+				} catch (IOException e) {
+					StrongpointLogger.logger(StrongpointDirectoryGeneralUtility.class.getName(), "error", e.getMessage());
+				}
+			}
+			FileWriter writer;
+			try {
+				writer = new FileWriter(projectPath + "/manifest.xml");
+				PrintWriter printWriter = new PrintWriter(writer);
+				printWriter.println(manifestXml);
+				printWriter.close();
+			} catch (IOException e) {
+				StrongpointLogger.logger(StrongpointDirectoryGeneralUtility.class.getName(), "error", e.getMessage());
+			}
+		}		
 	}
 	
 	private void createSavedSearchDirectory(String projectPath) {

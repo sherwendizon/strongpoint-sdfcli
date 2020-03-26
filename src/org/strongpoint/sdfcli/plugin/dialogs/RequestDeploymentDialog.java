@@ -26,6 +26,7 @@ import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Point;
+import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Combo;
@@ -103,7 +104,7 @@ public class RequestDeploymentDialog extends TitleAreaDialog {
 	public void create() {
 		super.create();
 		setTitle("Request Deployment");
-		setMessage("Enter details of your Request Deployment.", IMessageProvider.INFORMATION);
+		setMessage("Enter details of your Request Deployment.\n", IMessageProvider.INFORMATION);
 	}
 	
 	@Override
@@ -119,8 +120,9 @@ public class RequestDeploymentDialog extends TitleAreaDialog {
         createAccountIDElement(container);
         createChangeTypeElement(container);
         createChangeOverviewElement(container);
-        
-		return area;
+        createLabelElement(container);
+          
+        return area;
 	}
 	
 	@Override
@@ -130,7 +132,7 @@ public class RequestDeploymentDialog extends TitleAreaDialog {
 	
 	@Override
 	protected Point getInitialSize() {
-		return new Point(450, 450);
+		return new Point(650, 500);
 	}
 	
 	@Override
@@ -265,6 +267,17 @@ public class RequestDeploymentDialog extends TitleAreaDialog {
 
         changeOverviewText = new Text(container, SWT.MULTI | SWT.BORDER | SWT.WRAP | SWT.V_SCROLL);
         changeOverviewText.setLayoutData(changeOverviewGridData);
+	}
+	
+	private void createLabelElement(Composite container) {
+        Label changeLabelLabel = new Label(container, SWT.NONE);
+        changeLabelLabel.setText("  ");
+
+        GridData changeLabelGridData = new GridData(GridData.FILL_BOTH);
+
+        Label changeLabelValueLabel = new Label(container, SWT.NONE);
+        changeLabelValueLabel.setText("NOTE: If no CR is created, this happens because there is an open CR with \nthe same set of customizations. You need to complete/cancel the existing \nCR and request for deployment again.");
+        changeLabelValueLabel.setLayoutData(changeLabelGridData);
 	}
 	
 	private void createAccountIDElement(Composite container) {
