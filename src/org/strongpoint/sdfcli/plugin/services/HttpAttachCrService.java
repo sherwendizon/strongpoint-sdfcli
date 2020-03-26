@@ -202,6 +202,7 @@ public class HttpAttachCrService {
 			}
 		}
 		writeManifestFile(projectPath);
+		writeDeployXmlFile(projectPath);
 		results = changeRequestImportJsonObjRes;
 		createSavedSearchDirectory(projectPath);
 		StrongpointLogger.logger(HttpAttachCrService.class.getName(), "info", "Writing to Attach project to change request file..." +results.toJSONString() );
@@ -232,7 +233,7 @@ public class HttpAttachCrService {
 			manifestXml += "</manifest>\n";
 		boolean isDirectoryExist = Files.isDirectory(Paths.get(projectPath));
 		if (isDirectoryExist) {
-			File file = new File(projectPath + "/import.json");
+			File file = new File(projectPath + "/manifest.xml");
 			if (!file.exists()) {
 				try {
 					file.createNewFile();
@@ -245,6 +246,41 @@ public class HttpAttachCrService {
 				writer = new FileWriter(projectPath + "/manifest.xml");
 				PrintWriter printWriter = new PrintWriter(writer);
 				printWriter.println(manifestXml);
+				printWriter.close();
+			} catch (IOException e) {
+				StrongpointLogger.logger(StrongpointDirectoryGeneralUtility.class.getName(), "error", e.getMessage());
+			}
+		}		
+	}
+	
+	private void writeDeployXmlFile(String projectPath) {
+		String projectName = projectPath.substring(projectPath.lastIndexOf('/') + 1,projectPath.length());
+		String deployXml = "<deploy>\n";
+			deployXml += "\t<configuration>\n";
+			deployXml += "\t\t<path>~/AccountConfiguration/*</path>\n";
+			deployXml += "\t</configuration>\n";
+			deployXml += "\t<files>\n";
+			deployXml += "\t\t<path>~/FileCabinet/SuiteScripts/*</path>\n";
+			deployXml += "\t</files>\n";
+			deployXml += "\t<objects>\n";
+			deployXml += "\t\t<path>~/Objects/*</path>\n";
+			deployXml += "\t</objects>\n";
+			deployXml += "</deploy>\n";
+		boolean isDirectoryExist = Files.isDirectory(Paths.get(projectPath));
+		if (isDirectoryExist) {
+			File file = new File(projectPath + "/deploy.xml");
+			if (!file.exists()) {
+				try {
+					file.createNewFile();
+				} catch (IOException e) {
+					StrongpointLogger.logger(StrongpointDirectoryGeneralUtility.class.getName(), "error", e.getMessage());
+				}
+			}
+			FileWriter writer;
+			try {
+				writer = new FileWriter(projectPath + "/deploy.xml");
+				PrintWriter printWriter = new PrintWriter(writer);
+				printWriter.println(deployXml);
 				printWriter.close();
 			} catch (IOException e) {
 				StrongpointLogger.logger(StrongpointDirectoryGeneralUtility.class.getName(), "error", e.getMessage());

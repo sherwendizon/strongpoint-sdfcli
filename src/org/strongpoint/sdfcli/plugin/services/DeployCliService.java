@@ -57,6 +57,7 @@ public class DeployCliService {
 						+ " && (FOR /L %G IN (1,1,1500) DO @ECHO YES) && (FOR /L %G IN (1,1,1500) DO @ECHO YES)) | "
 						+ "sdfcli deploy -account " + accountID + " -email " + email + " -p " + projectPath
 						+ " -role "+role+" -url system.netsuite.com";
+				//System.out.println("Deploy Windows >>>>>>>>>>>>>>>>>>>>>>>>>>>>> " + windowsDeployCommand);
 				String[] windowsCommands = { "cmd.exe", "/c", "cd " + projectPath + " && cd " + projectPath,
 						" && " + windowsDeployCommand };
 				ProcessBuilder processBuilderForWindows = new ProcessBuilder(windowsCommands);
