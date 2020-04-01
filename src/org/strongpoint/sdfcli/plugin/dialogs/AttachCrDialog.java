@@ -153,8 +153,8 @@ public class AttachCrDialog extends TitleAreaDialog {
 		
 	@Override
 	protected void okPressed() {
-		MessageDialog.openInformation(this.parentShell, "Attaching project to Change Request",
-				"Attaching to a Change Request will remove existing objects when executing Sync to NS operation.");
+//		MessageDialog.openInformation(this.parentShell, "Attaching project to Change Request",
+//				"Attaching to a Change Request will remove existing objects when executing Sync to NS operation.");
 		StrongpointLogger.logger(AttachCrDialog.class.getName(), "info", "[Logger] --- Attach Change Request Attach button is pressed");
 		final String accountID = (selectedValue.substring(selectedValue.indexOf("(") + 1,
 				selectedValue.indexOf(")")) != null)
