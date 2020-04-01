@@ -134,7 +134,7 @@ public class SdfcliChangeRequestHandler extends AbstractHandler{
                 project = jProject.getProject();    
             }    
         } 
-        IPath path = project.getRawLocation();
+        IPath path;
         if(project.getRawLocation() != null) {
         	path = project.getRawLocation();
         } else {
