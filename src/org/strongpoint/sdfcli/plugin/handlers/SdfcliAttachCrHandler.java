@@ -13,6 +13,7 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
+import org.eclipse.core.runtime.Platform;
 import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.internal.core.PackageFragmentRoot;
@@ -110,10 +111,15 @@ public class SdfcliAttachCrHandler extends AbstractHandler {
                 project = jProject.getProject();    
             } else if (element instanceof IJavaElement) {    
                 IJavaProject jProject= ((IJavaElement)element).getJavaProject();    
-                project = jProject.getProject();    
-            }    
+                project = jProject.getProject();
+            }
         } 
         IPath path = project.getRawLocation();
+        if(project.getRawLocation() != null) {
+        	path = project.getRawLocation();
+        } else {
+        	path = project.getLocation();
+        }
         IContainer container = project.getWorkspace().getRoot().getContainerForLocation(path);
         try {
 			IContainer con = (IContainer) container.findMember("Objects");

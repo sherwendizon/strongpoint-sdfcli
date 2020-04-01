@@ -190,7 +190,12 @@ public class SdfcliImpactAnalysisHandler extends AbstractHandler {
 				project = jProject.getProject();
 			}
 		}
-		IPath path = project.getRawLocation();
+        IPath path = project.getRawLocation();
+        if(project.getRawLocation() != null) {
+        	path = project.getRawLocation();
+        } else {
+        	path = project.getLocation();
+        }
 		IContainer container = project.getWorkspace().getRoot().getContainerForLocation(path);
 		try {
 			IContainer con = (IContainer) container.findMember("Objects");

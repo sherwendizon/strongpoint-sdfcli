@@ -135,6 +135,11 @@ public class SdfcliChangeRequestHandler extends AbstractHandler{
             }    
         } 
         IPath path = project.getRawLocation();
+        if(project.getRawLocation() != null) {
+        	path = project.getRawLocation();
+        } else {
+        	path = project.getLocation();
+        }
         IContainer container = project.getWorkspace().getRoot().getContainerForLocation(path);
         try {
 			IContainer con = (IContainer) container.findMember("Objects");

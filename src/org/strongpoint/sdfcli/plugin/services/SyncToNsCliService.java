@@ -242,7 +242,7 @@ public class SyncToNsCliService {
 							+ projectPath/* .replace("\\", "/") */ + " -role "+role+" -scriptid "
 							+ String.join(" ", objsStr).toString().replaceAll("null", "")
 							+ " -type ALL -url system.netsuite.com";
-					//System.out.println("WIndows >>>>>>>>>>>>>>>>>>>>>>>>>>>>>> " +windowsImportObjectsCommand);
+					//System.out.println("Windows >>>>>>>>>>>>>>>>>>>>>>>>>>>>>> " +windowsImportObjectsCommand);
 					String[] windowsCommands = { "cmd.exe", "/c", "cd " + projectPath + " && cd " + projectPath,
 							" && " + windowsImportObjectsCommand };
 //					MessageDialog.openInformation(this.parentShell, "Import Object", "cmd.exe"+ " /c "+"cd " +projectPath+" && cd "+projectPath+ " && "+windowsImportObjectsCommand);
@@ -287,8 +287,8 @@ public class SyncToNsCliService {
 		StrongpointLogger.logger(SyncToNsCliService.class.getName(), "info", "Finished writing Import Object file...");
 		try {
 			project.refreshLocal(IResource.DEPTH_INFINITE, null);
-			StrongpointDirectoryGeneralUtility.newInstance().removeUncessaryImportedObjects(projectPath);
-			project.refreshLocal(IResource.DEPTH_INFINITE, null);
+			//StrongpointDirectoryGeneralUtility.newInstance().removeUncessaryImportedObjects(projectPath);
+			//project.refreshLocal(IResource.DEPTH_INFINITE, null);
 		} catch (CoreException e1) {
 			e1.printStackTrace();
 		}
