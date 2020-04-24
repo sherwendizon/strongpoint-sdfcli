@@ -260,15 +260,16 @@ public class DeployDialog extends TitleAreaDialog {
 		StrongpointLogger.logger(DeployDialog.class.getName(), "info", "WINDOW: " + this.project);
 //		String crId = this.project.getName().substring(0, this.project.getName().indexOf("_"));
 		String crId = importObjects.get("parentCrId").toString();
-		if (crId != null && !crId.isEmpty()) {
-			params = crId;
-		} else {
+		String sourceAccountId = importObjects.get("accountId").toString();
+//		if (crId != null && !crId.isEmpty()) {
+//			params = crId;
+//		} else {
 			params = String.join(",", scriptIds);
 			StrongpointLogger.logger(DeployDialog.class.getName(), "info", "DEPLOY SCRIPT IDS: " + params);
-		}
+//		}
 		String accountId = selectedValue.substring(selectedValue.indexOf("(") + 1, selectedValue.indexOf(")"));
 		JSONObject approveResult = DeployCliService.newInstance().isApprovedDeployment(parentShell, accountId,
-				emailCred, passwordCred, String.join(",", this.scriptIDs), encryptedKey, encryptedPassword);
+				emailCred, passwordCred, String.join(",", this.scriptIDs), encryptedKey, encryptedPassword, sourceAccountId, crId);
 //		JSONObject targetUpdates = TargetUpdatesService.newInstance().localUpdatedWithTarget(accountId,
 //				this.projectPath, scriptIds);
 		StrongpointLogger.logger(DeployDialog.class.getName(), "info",
@@ -280,19 +281,19 @@ public class DeployDialog extends TitleAreaDialog {
 		JSONArray objects = (JSONArray) importObjects.get("objects");
 		List<String> listStr = new ArrayList<String>();
 		boolean isExcessObj = false;
-		if (objects != null) {
-			for (int i = 0; i < objects.size(); i++) {
-//				JSONObject scriptObj = (JSONObject) objects.get(i);
-//				listStr.add(scriptObj.get("name").toString());
-				listStr.add(objects.get(i).toString());
-			}
-		}
-		for (String objStr : scriptIds) {
-			if (!listStr.contains(objStr)) {
-				isExcessObj = true;
-				break;
-			}
-		}
+//		if (objects != null) {
+//			for (int i = 0; i < objects.size(); i++) {
+////				JSONObject scriptObj = (JSONObject) objects.get(i);
+////				listStr.add(scriptObj.get("name").toString());
+//				listStr.add(objects.get(i).toString());
+//			}
+//		}
+//		for (String objStr : scriptIds) {
+//			if (!listStr.contains(objStr)) {
+//				isExcessObj = true;
+//				break;
+//			}
+//		}
 		if (isExcessObj) {
 			JSONObject messageObject = new JSONObject();
 			String message = "Object List Error. \r\nObjects in the project changed after approval. Request a new Change Request.";
