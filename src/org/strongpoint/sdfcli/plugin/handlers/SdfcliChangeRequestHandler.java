@@ -67,7 +67,7 @@ public class SdfcliChangeRequestHandler extends AbstractHandler{
 				StrongpointView strongpointView = (StrongpointView) viewPart;
 				strongpointView.setJobType(JobTypes.request_deployment.getJobType());
 				strongpointView.setDisplayObject(requestDeploymentDialog.getResults());
-				strongpointView.setTargetAccountId(accountId);
+				strongpointView.setTargetAccountId(requestDeploymentDialog.getTargetAccountId());
 				strongpointView.setTimestamp(timestamp.toString());
 				String statusStr = "";
 				if (requestDeploymentDialog.isOkButtonPressed()) {

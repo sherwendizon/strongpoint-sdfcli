@@ -46,10 +46,14 @@ public class HttpRequestDeploymentService {
 			pathCred = creds.get("path").toString();
 		}
         JSONObject importObj = StrongpointDirectoryGeneralUtility.newInstance().readImportJsonFile(projectPath);
-        if(importObj != null) {
-//        	accountId = importObj.get("accountId").toString();
-        	parameters.put("parentCrId", importObj.get("parentCrId").toString());
-        }
+    	String sourceAccountId = importObj.get("accountId").toString();
+//        if(importObj != null) {
+////        	accountId = importObj.get("accountId").toString();
+//        	parameters.put("parentCrId", importObj.get("parentCrId").toString());
+//        }
+    	if(sourceAccountId.equalsIgnoreCase(accountId)) {
+    		parameters.put("parentCrId", importObj.get("parentCrId").toString());
+    	}
         parameters.put("h", creds.get("key").toString());
         parameters.put("g", creds.get("password").toString());
         parameters.put("email", emailCred);

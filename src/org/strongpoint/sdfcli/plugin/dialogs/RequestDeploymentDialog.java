@@ -71,6 +71,7 @@ public class RequestDeploymentDialog extends TitleAreaDialog {
 	private boolean okButtonPressed;
 	private List<String> scriptIDs;
 	private String selectedValue = "";
+	private String selectedAccountId = "";
 	
 	public RequestDeploymentDialog(Shell parentShell) {
 		super(parentShell);
@@ -98,6 +99,10 @@ public class RequestDeploymentDialog extends TitleAreaDialog {
 	
 	public void setScriptIDs(List<String> scriptIds) {
 		this.scriptIDs = scriptIds;
+	}
+	
+	public String getTargetAccountId() {
+		return this.selectedAccountId;
 	}
 
 	@Override
@@ -155,6 +160,7 @@ public class RequestDeploymentDialog extends TitleAreaDialog {
 				selectedValue.indexOf(")")) != null)
 						? selectedValue.substring(selectedValue.indexOf("(") + 1, selectedValue.indexOf(")"))
 						: "";
+		selectedAccountId = accountID;
 		Job requestDeploymentJob = new Job(JobTypes.request_deployment.getJobType()) {
 			
 			@Override
@@ -179,8 +185,11 @@ public class RequestDeploymentDialog extends TitleAreaDialog {
 						Table table = strongpointView.getTable();
 						String accountId = "";
 				        JSONObject importObj = StrongpointDirectoryGeneralUtility.newInstance().readImportJsonFile(projectPath);
-				        if(importObj != null) {
-				        	accountId = importObj.get("accountId").toString();
+//				        if(importObj != null) {
+//				        	accountId = importObj.get("accountId").toString();
+//				        }
+				        if(selectedAccountId != "") {
+				        	accountId = selectedAccountId;
 				        }
 						for (int i = 0; i < table.getItems().length; i++) {
 							TableItem tableItem = table.getItem(i);
