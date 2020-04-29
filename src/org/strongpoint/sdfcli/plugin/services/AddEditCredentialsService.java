@@ -33,6 +33,7 @@ import org.json.simple.JSONValue;
 import org.strongpoint.sdfcli.plugin.utils.Accounts;
 import org.strongpoint.sdfcli.plugin.utils.Credentials;
 import org.strongpoint.sdfcli.plugin.utils.StrongpointDirectoryGeneralUtility;
+import org.strongpoint.sdfcli.plugin.utils.StrongpointLogger;
 import org.strongpoint.sdfcli.plugin.utils.jobs.StrongpointJobManager;
 
 public class AddEditCredentialsService {
@@ -74,9 +75,17 @@ public class AddEditCredentialsService {
 //	    String encryptStrPass = encryptPasswd(this.passwordStr, key);
 		if(Credentials.isCredentialsFileExists()) {
 			JSONObject cred = Credentials.getCredentialsFromFile();
+//			String oldPassword = Credentials.decryptPass(cred.get("password").toString().getBytes(), cred.get("key").toString());
+//			System.out.println("Old Password ==================================> " +oldPassword);
+//			System.out.println("New Password ==================================> " +this.passwordStr);
 			if(cred.get("key") != null) {
-				pass = cred.get("password").toString();
-				passKey = cred.get("key").toString();	
+				if(this.passwordStr.equals(cred.get("password").toString())) {
+					pass = cred.get("password").toString();
+					passKey = cred.get("key").toString();					
+				} else {
+					pass = encryptPasswd(this.passwordStr, key);
+					passKey = new String(new Base64().encode(key.getEncoded()));					
+				}	
 			} else {
 				pass = encryptPasswd(this.passwordStr, key);
 				passKey = new String(new Base64().encode(key.getEncoded()));
@@ -160,6 +169,7 @@ public class AddEditCredentialsService {
 //		String strongpointURL = "https://forms.netsuite.com/app/site/hosting/scriptlet.nl?script=1145&deploy=1&compid=TSTDRV1049933&h=9b265f0bc6e8cc5f673e&email="+email+"&pass="+password;
  		String strongpointURL = "https://rest.netsuite.com/rest/roles";
 		System.out.println(strongpointURL);
+//		System.out.println("Password ============================> " +passString);
 		HttpGet httpGet = null;
 		int statusCode;
 		String responseBodyStr;
